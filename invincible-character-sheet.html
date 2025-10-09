@@ -28,6 +28,7 @@
 
     .hero-header { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); }
     .calculated-field { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+    .opt-label { @apply text-sm font-semibold mb-1 block; }
   </style>
 </head>
 <body class="min-h-full bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 text-white font-sans">
@@ -36,6 +37,62 @@
     <div class="hero-header rounded-lg p-6 mb-6 text-center">
       <h1 class="hero-title text-5xl font-bold mb-2">INVINCIBLE</h1>
       <h2 class="text-xl opacity-90">Superhero Character Sheet</h2>
+    </div>
+
+    <!-- Randomiser Options -->
+    <div class="section-card rounded-lg p-4 mb-6">
+      <details class="group">
+        <summary class="cursor-pointer flex items-center justify-between">
+          <span class="text-red-400 text-xl font-bold">Randomiser Options</span>
+          <span class="text-slate-300 text-sm group-open:hidden">click to expand</span>
+          <span class="text-slate-300 text-sm hidden group-open:inline">click to collapse</span>
+        </summary>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div>
+            <label class="opt-label">Seed (optional)</label>
+            <input id="randSeed" type="text" placeholder="e.g., INVINCIBLE-001"
+                   class="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none">
+            <p class="text-xs text-slate-400 mt-1">Use the same seed to repeat results.</p>
+          </div>
+          <div>
+            <label class="opt-label">Powers to roll</label>
+            <input id="optPowers" type="number" min="1" max="6" value="3"
+                   class="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-red-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="opt-label">Talents to roll</label>
+            <input id="optTalents" type="number" min="1" max="6" value="2"
+                   class="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-red-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="opt-label">Drawbacks to roll</label>
+            <input id="optDrawbacks" type="number" min="0" max="5" value="1"
+                   class="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-red-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="opt-label">Gear items to roll</label>
+            <input id="optGear" type="number" min="0" max="6" value="2"
+                   class="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-red-400 focus:outline-none">
+          </div>
+          <div class="flex items-center gap-2">
+            <input id="optPreserve" type="checkbox" class="h-5 w-5">
+            <label for="optPreserve" class="text-sm">Preserve non-empty fields (only fill blanks)</label>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-3">
+          <button onclick="importRandomTables()" class="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg font-semibold transition-colors">
+            Import Random Tables (JSON)
+          </button>
+          <input type="file" id="randomTablesInput" accept=".json" class="hidden" onchange="handleRandomTablesImport(event)">
+          <button onclick="downloadRandomSchema()" class="bg-slate-600 hover:bg-slate-700 px-4 py-2 rounded-lg font-semibold transition-colors">
+            Download Schema
+          </button>
+        </div>
+        <p class="text-xs text-slate-400 mt-3">
+          Imported tables merge into defaults. Keys: heroNames, civilianNames, roles, powerSources, powers, talents, drawbacks, gear, occupations, personalities, appearances, drives, flaws, relationships.
+        </p>
+      </details>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -275,13 +332,101 @@
       <p class="text-xs text-slate-400 mt-2">Enjoying this character sheet? Support its development!</p>
     </div>
 
-    <!-- Hidden file input for import -->
-    <input type="file" id="fileInput" accept=".json" style="display:none;" onchange="handleFileImport(event)">
+    <!-- Hidden file inputs -->
+    <input type="file" id="fileInput" accept=".json" class="hidden" onchange="handleFileImport(event)">
   </div>
 
   <!-- Scripts -->
   <script>
-    // Storage
+    /* -------------------- Random Tables (Defaults) -------------------- 
+       To import your own: prepare a JSON like:
+       {
+         "heroNames": ["Red Comet","Night Ember"],
+         "civilianNames": ["Avery Kim","Dev Patel"],
+         "roles": ["Blaster","Brains","..."],
+         "powerSources": ["Alien lineage","Bioengineering","..."],
+         "powers": ["Flight","Blast","Telekinesis","..."],
+         "talents": ["Determined","Supportive","Tactician","..."],
+         "drawbacks": ["Targeted","Code of Honour","Power Drain","..."],
+         "gear": ["Communicator","Armoured suit","Grapple line","..."],
+         "occupations": ["Paramedic","Journalist","AI researcher","..."],
+         "personalities": ["Calm under pressure","Hot-headed but loyal","..."],
+         "appearances": ["Sleek red-and-black suit with glowing sigils","..."],
+         "drives": ["Protect the city that raised me","..."],
+         "flaws": ["Impulsive risk-taker","..."],
+         "relationships": ["Mentor at the agency","Estranged sibling","..."]
+       }
+    ------------------------------------------------------------------ */
+
+    const defaultRandomTables = {
+      heroNames: [
+        "ATOM EVE","REX SPLODE","MONSTER GIRL","DUPLI-KATE","ROBOT","SHRINKING RAE",
+        "Skybound Sentinel","Crimson Dynamo","Silver Warden","Arc Pulse","Volt Ranger",
+        "Star Slinger","Night Aegis","Solaris Prime","Neon Valkyrie","Quantum Jack"
+      ],
+      civilianNames: [
+        "SAMANTHA EVE WILKINS","REX SLOAN","AMANDA","KATE CHA","RUDOLPH CONNORS","RAE",
+        "Avery Kim","Dev Patel","Maya Lopez","Jonah Sinclair","Priya Das","Liam Brooks",
+        "Nadia Karim","Theo Shaw","Iris Bennett"
+      ],
+      roles: ["Blaster","Brains","Brawn","Controller","Defender","Leader","Striker","Wildcard"],
+      powerSources: [
+        "Viltrumite Hybrid Physiology","Bioengineering","Illicit Experiment","Robotic Automaton",
+        "Genetic Mutation","Arcane Anomaly","Alien Relic Bond","Nano-augmented Physiology",
+        "Dimensional Imprint"
+      ],
+      powers: [
+        "Flight","Blast","Protection","Super Strength","Super Speed","Telekinesis","Telepathy",
+        "Invisibility","Force Fields","Shapeshifting","Elasticity","Energy Absorption",
+        "Regeneration","Matter Manipulation","Seismic Shock","Magnetism","Phasing","Gadgeteer"
+      ],
+      talents: [
+        "Determined","Supportive","Tactician","Intimidating","Investigator","Acrobat",
+        "Martial Artist","Field Medic","Pilot","Polyglot","Sharpshooter","Tech Savvy"
+      ],
+      drawbacks: [
+        "Alternate Form","Targeted","Power Drain","Public Identity","Code of Honour",
+        "Unstable Powers","Nemesis","Energy Dependency","Glass Jaw"
+      ],
+      gear: [
+        "Communicator","Armoured Suit","Grapple Line","Multi-tool","Drone Scout",
+        "First Aid Kit","Energy Bracers","Holo-Projector","Stealth Cloak","Tracking Beacons"
+      ],
+      occupations: [
+        "Student","Forensic Analyst","Photojournalist","Paramedic","Teacher",
+        "AI Researcher","Social Worker","Mechanic","Bartender","Pilot","Security Consultant"
+      ],
+      personalities: [
+        "Calm under pressure","Hot-headed but loyal","Dry sense of humour","Stoic and observant",
+        "Charismatic optimist","Brooding strategist","Reckless thrill-seeker","Compassionate mediator"
+      ],
+      appearances: [
+        "Sleek red-and-black suit with glowing sigils",
+        "Armoured plating over flexible nano-mesh",
+        "Retro leather jacket with neon piping and visor",
+        "Cloaked silhouette with mirrored mask",
+        "Cerulean bodysuit with comet-trail motif",
+        "Urban tactical gear with reinforced gauntlets"
+      ],
+      drives: [
+        "Protect the city that raised me","Redeem a family legacy",
+        "Expose corruption at any cost","Prove I deserve this power",
+        "Keep my team safe","Avenge a fallen mentor"
+      ],
+      flaws: [
+        "Impulsive risk-taker","Overconfident","Trust issues","Secretive to a fault",
+        "Freezes when civilians are in danger","Reluctant to ask for help"
+      ],
+      relationships: [
+        "Mentor at the agency","Estranged sibling","On-again off-again partner",
+        "Rival hero who pushes you","Neighbour who suspects your identity",
+        "Tech supplier who charges favours"
+      ]
+    };
+
+    let randomTables = structuredClone(defaultRandomTables);
+
+    /* -------------------- Storage -------------------- */
     function saveToLocalStorage() {
       const data = {};
       document.querySelectorAll('input, textarea, select').forEach(field => {
@@ -305,7 +450,7 @@
       }
     }
 
-    // Calculated stats
+    /* -------------------- Calculated stats -------------------- */
     function updateCalculatedStats() {
       const fighting = parseInt(document.getElementById('fighting').value) || 1;
       const agility = parseInt(document.getElementById('agility').value) || 1;
@@ -334,7 +479,61 @@
       }
     }
 
-    // Actions
+    /* -------------------- Helpers: RNG & picking -------------------- */
+    function xmur3(str) {
+      let h = 1779033703 ^ str.length;
+      for (let i = 0; i < str.length; i++) {
+        h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+        h = (h << 13) | (h >>> 19);
+      }
+      return function() {
+        h = Math.imul(h ^ (h >>> 16), 2246822507);
+        h = Math.imul(h ^ (h >>> 13), 3266489909);
+        h ^= h >>> 16;
+        return h >>> 0;
+      };
+    }
+    function mulberry32(a) {
+      return function() {
+        let t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    function getRNG(seed) {
+      if (!seed) return Math.random;
+      const seedFn = xmur3(seed);
+      return mulberry32(seedFn());
+    }
+    function pickOne(arr, rng = Math.random) {
+      if (!arr || arr.length === 0) return "";
+      return arr[Math.floor(rng() * arr.length)];
+    }
+    function pickMany(arr, n, rng = Math.random) {
+      if (!arr || arr.length === 0) return [];
+      const copy = [...arr];
+      const out = [];
+      for (let i = 0; i < n && copy.length; i++) {
+        const idx = Math.floor(rng() * copy.length);
+        out.push(copy.splice(idx, 1)[0]);
+      }
+      return out;
+    }
+    // 2d6-like distribution clamped to [min,max]
+    function rollAttribute(rng, min = 1, max = 12) {
+      const d = Math.floor(rng() * 6) + 1 + Math.floor(rng() * 6) + 1; // 2–12
+      return Math.min(max, Math.max(min, d));
+    }
+
+    function fillIfAllowed(id, value, preserve) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (preserve && el.value && String(el.value).trim().length > 0) return;
+      el.value = value;
+    }
+
+    /* -------------------- Actions -------------------- */
     function clearSheet() {
       if (!confirm('Are you sure you want to clear the entire character sheet? This will also delete your saved data.')) return;
       document.querySelectorAll('input, textarea, select').forEach(field => {
@@ -349,22 +548,47 @@
     }
 
     function randomHero() {
-      const heroNames = ['ATOM EVE', 'REX SPLODE', 'MONSTER GIRL', 'DUPLI-KATE', 'ROBOT', 'SHRINKING RAE'];
-      const civilianNames = ['SAMANTHA EVE WILKINS', 'REX SLOAN', 'AMANDA', 'KATE CHA', 'RUDOLPH CONNORS', 'RAE'];
-      const roles = ['Blaster', 'Brains', 'Brawn', 'Controller', 'Defender', 'Leader', 'Striker', 'Wildcard'];
-      const powerSources = ['Viltrumite Hybrid Physiology', 'Bioengineering', 'Illicit Experiment', 'Robotic Automaton', 'Genetic Mutation'];
+      const seed = document.getElementById('randSeed').value.trim();
+      const rng = getRNG(seed || null);
+      const preserve = document.getElementById('optPreserve').checked;
 
-      document.getElementById('heroName').value = heroNames[Math.floor(Math.random() * heroNames.length)];
-      document.getElementById('civilianName').value = civilianNames[Math.floor(Math.random() * civilianNames.length)];
-      document.getElementById('role').value = roles[Math.floor(Math.random() * roles.length)];
-      document.getElementById('powerSource').value = powerSources[Math.floor(Math.random() * powerSources.length)];
+      const powersN = Math.max(1, parseInt(document.getElementById('optPowers').value) || 3);
+      const talentsN = Math.max(1, parseInt(document.getElementById('optTalents').value) || 2);
+      const drawbacksN = Math.max(0, parseInt(document.getElementById('optDrawbacks').value) || 1);
+      const gearN = Math.max(0, parseInt(document.getElementById('optGear').value) || 2);
 
+      // Names / Role / Source / Appearance / Personal
+      fillIfAllowed('heroName',        pickOne(randomTables.heroNames, rng), preserve);
+      fillIfAllowed('civilianName',    pickOne(randomTables.civilianNames, rng), preserve);
+      const role = pickOne(randomTables.roles, rng);
+      const roleEl = document.getElementById('role');
+      if (!(preserve && roleEl.value)) roleEl.value = role;
+
+      fillIfAllowed('powerSource',     pickOne(randomTables.powerSources, rng), preserve);
+      fillIfAllowed('appearance',      pickOne(randomTables.appearances, rng), preserve);
+      fillIfAllowed('occupation',      pickOne(randomTables.occupations, rng), preserve);
+      fillIfAllowed('personality',     pickOne(randomTables.personalities, rng), preserve);
+      fillIfAllowed('drive',           pickOne(randomTables.drives, rng), preserve);
+      fillIfAllowed('flaw',            pickOne(randomTables.flaws, rng), preserve);
+      fillIfAllowed('relationships',   pickMany(randomTables.relationships, 2, rng).join(', '), preserve);
+
+      // Lists: powers/talents/drawbacks/gear
+      fillIfAllowed('powers',   pickMany(randomTables.powers, powersN, rng).join(', '), preserve);
+      fillIfAllowed('talents',  pickMany(randomTables.talents, talentsN, rng).join(', '), preserve);
+      if (drawbacksN > 0) fillIfAllowed('drawbacks', pickMany(randomTables.drawbacks, drawbacksN, rng).join(', '), preserve);
+      if (gearN > 0) fillIfAllowed('gear', pickMany(randomTables.gear, gearN, rng).join(', '), preserve);
+
+      // Attributes: slightly bell-curved, clamped 1–12
       ['fighting','agility','strength','reason','intuition','presence'].forEach(attr => {
-        document.getElementById(attr).value = Math.floor(Math.random() * 6) + 3; // 3-8
+        const el = document.getElementById(attr);
+        if (preserve && el.value && String(el.value).trim().length > 0) return;
+        el.value = rollAttribute(rng, 1, 12);
       });
 
-      document.getElementById('reputation').value = Math.floor(Math.random() * 5) + 1;
-      document.getElementById('karma').value = Math.floor(Math.random() * 10) + 5;
+      // Other numeric bits
+      fillIfAllowed('reputation', Math.floor(rng() * 6), preserve); // 0–5
+      fillIfAllowed('karma',      Math.floor(rng() * 16) + 1, preserve); // 1–16
+      fillIfAllowed('resources',  Math.floor(rng() * 6), preserve); // 0–5
 
       updateCalculatedStats();
       saveToLocalStorage();
@@ -377,7 +601,6 @@
     function handleFileImport(event) {
       const file = event.target.files[0];
       if (!file) return;
-
       if (!file.name.endsWith('.json')) {
         alert('Please select a valid JSON file.');
         event.target.value = '';
@@ -430,7 +653,6 @@
         a.href = url;
         a.download = filename;
 
-        // Safari and iOS fallback
         const downloadSupported = typeof a.download !== 'undefined';
         if (!downloadSupported) {
           window.open('data:application/json;charset=utf-8,' + encodeURIComponent(json), '_blank');
@@ -448,7 +670,61 @@
       }
     }
 
-    // Expose functions for inline onclick and ensure init after DOM is ready
+    /* -------------------- Random Table Import/Schema -------------------- */
+    function importRandomTables() {
+      document.getElementById('randomTablesInput').click();
+    }
+    function handleRandomTablesImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          // Merge arrays by key; ignore unknown keys
+          Object.keys(data).forEach(k => {
+            if (Array.isArray(data[k]) && Array.isArray(randomTables[k])) {
+              randomTables[k] = [...randomTables[k], ...data[k]];
+            }
+          });
+          alert('Random tables imported and merged successfully.');
+        } catch (err) {
+          console.error('Random table import error:', err);
+          alert('Failed to import random tables. Ensure it is valid JSON.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+    function downloadRandomSchema() {
+      const schema = {
+        heroNames: ["Example Hero"],
+        civilianNames: ["Example Civilian"],
+        roles: ["Blaster","Brains"],
+        powerSources: ["Alien lineage"],
+        powers: ["Flight","Blast"],
+        talents: ["Determined","Tactician"],
+        drawbacks: ["Targeted"],
+        gear: ["Communicator"],
+        occupations: ["Journalist"],
+        personalities: ["Calm under pressure"],
+        appearances: ["Sleek red-and-black suit with glowing sigils"],
+        drives: ["Protect the city that raised me"],
+        flaws: ["Impulsive risk-taker"],
+        relationships: ["Mentor at the agency"]
+      };
+      const blob = new Blob([JSON.stringify(schema, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'random_tables_schema.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    }
+
+    // Expose for inline handlers
     Object.assign(window, {
       saveToLocalStorage,
       loadFromLocalStorage,
@@ -457,9 +733,13 @@
       randomHero,
       importSheet,
       handleFileImport,
-      exportSheet
+      exportSheet,
+      importRandomTables,
+      handleRandomTablesImport,
+      downloadRandomSchema
     });
 
+    // Init
     window.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('input, textarea, select').forEach(field => {
         if (!field.id) return;
