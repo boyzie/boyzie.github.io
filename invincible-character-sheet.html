@@ -28,7 +28,19 @@
 
     .hero-header { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); }
     .calculated-field { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
-    .opt-label { @apply text-sm font-semibold mb-1 block; }
+    .opt-label { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; display: block; }
+
+    /* ---- Print/PDF styles ---- */
+    @page { size: A4; margin: 12mm; }
+
+    @media print {
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: #fff !important; }
+      .no-print { display: none !important; }
+      .container { max-width: 100% !important; padding: 0 !important; }
+      .section-card { break-inside: avoid; page-break-inside: avoid; }
+      .hero-header { margin-bottom: 8mm !important; }
+    }
   </style>
 </head>
 <body class="min-h-full bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 text-white font-sans">
@@ -40,7 +52,7 @@
     </div>
 
     <!-- Randomiser Options -->
-    <div class="section-card rounded-lg p-4 mb-6">
+    <div class="section-card rounded-lg p-4 mb-6 no-print">
       <details class="group">
         <summary class="cursor-pointer flex items-center justify-between">
           <span class="text-red-400 text-xl font-bold">Randomiser Options</span>
@@ -308,7 +320,7 @@
     </div>
 
     <!-- Action Buttons -->
-    <div class="flex flex-wrap gap-4 mt-6 justify-center">
+    <div class="flex flex-wrap gap-4 mt-6 justify-center no-print">
       <button onclick="clearSheet()" class="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg font-semibold transition-colors">
         Clear Sheet
       </button>
@@ -321,10 +333,13 @@
       <button onclick="exportSheet()" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition-colors">
         Export Character
       </button>
+      <button onclick="exportPDF()" class="bg-teal-600 hover:bg-teal-700 px-6 py-3 rounded-lg font-semibold transition-colors">
+        Export PDF
+      </button>
     </div>
 
     <!-- Support Button -->
-    <div class="text-center mt-8">
+    <div class="text-center mt-8 no-print">
       <a href="https://ko-fi.com/boyzie" target="_blank" rel="noopener noreferrer"
          class="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors opacity-80 hover:opacity-100">
         ☕ Buy me a coffee
@@ -338,89 +353,49 @@
 
   <!-- Scripts -->
   <script>
-    /* -------------------- Random Tables (Defaults) -------------------- 
-       To import your own: prepare a JSON like:
-       {
-         "heroNames": ["Red Comet","Night Ember"],
-         "civilianNames": ["Avery Kim","Dev Patel"],
-         "roles": ["Blaster","Brains","..."],
-         "powerSources": ["Alien lineage","Bioengineering","..."],
-         "powers": ["Flight","Blast","Telekinesis","..."],
-         "talents": ["Determined","Supportive","Tactician","..."],
-         "drawbacks": ["Targeted","Code of Honour","Power Drain","..."],
-         "gear": ["Communicator","Armoured suit","Grapple line","..."],
-         "occupations": ["Paramedic","Journalist","AI researcher","..."],
-         "personalities": ["Calm under pressure","Hot-headed but loyal","..."],
-         "appearances": ["Sleek red-and-black suit with glowing sigils","..."],
-         "drives": ["Protect the city that raised me","..."],
-         "flaws": ["Impulsive risk-taker","..."],
-         "relationships": ["Mentor at the agency","Estranged sibling","..."]
-       }
-    ------------------------------------------------------------------ */
-
+    /* -------------------- Random Tables (Defaults with your cleaned lists) -------------------- */
     const defaultRandomTables = {
       heroNames: [
-        "ATOM EVE","REX SPLODE","MONSTER GIRL","DUPLI-KATE","ROBOT","SHRINKING RAE",
-        "Skybound Sentinel","Crimson Dynamo","Silver Warden","Arc Pulse","Volt Ranger",
-        "Star Slinger","Night Aegis","Solaris Prime","Neon Valkyrie","Quantum Jack"
+        "The Bear","The Mad","Professor Emeritus","Earl of Hanover","Of the Dawn","The Awkward","The Generous","Redlight","No Jump Shot","Dancer","Ironfist","Labmaster","The Coat","The Pipette Pirate","The Microscope Magician","Ice Heart","Spockalock","Baby Driver","The Miser","The Prodigy","No-Nonsense Nick","The Inspectigator","Muscles","Abs","Shirtless Steve","Chief","Dean of Science","President of the Owlbear Fanclub","Sword Dude","Pizza","Frog","Wet Spot","Goat","Batman","Three-Fingers","Black Thumb","Chef","Darth Vader","Mouse","Commander","The Hammer","The Walking Apocalypse","The Living Typo","Firedude","Charizard Sensei","Mumbles","Treekiller","Beardy","The Gorilla","The Fox"
       ],
       civilianNames: [
-        "SAMANTHA EVE WILKINS","REX SLOAN","AMANDA","KATE CHA","RUDOLPH CONNORS","RAE",
-        "Avery Kim","Dev Patel","Maya Lopez","Jonah Sinclair","Priya Das","Liam Brooks",
-        "Nadia Karim","Theo Shaw","Iris Bennett"
+        "Tennant","Smith","Capaldi","Baker","Jonathan","Leliana","Domon","Lisa","Koroschev","Nancy","Christopher","Anthony","DiCaprio","Kasshu","Paxton","Hale","Bhandari","Karnik","Ying","Loyal","Khosla","Grover","Dyal","Chomsky","Mann","Oak","Ramanathan","Spencer","Kent","Wayne","Nye","Iliff","Dahl","Castella","Bakir","Nova","Clancy","Quail","Clinton","Reagan","Hendricksen","Roosevelt","Palth","Mandela","Rosewater","Finnegan","Stewart","Ashen","Moore","Sato"
       ],
-      roles: ["Blaster","Brains","Brawn","Controller","Defender","Leader","Striker","Wildcard"],
+      roles: [
+        "Solo","Corporate","Fixer","Netrunner","Nomad","Rocker","Medtechie","Administrator","Attorney","Private Eye","Prowler","Bodyguard","Street Samurai","Mercenary","Agent","AI","Artisan","Assassin","Bounty Hunter","Courier","Criminal","Cultist","Diplomat","Engineer","Entertainer","Explorer","Farmer","Fugitive","Guard","Guide","Healer","Historian","Hunter","Investigator","Laborer","Lawkeeper","Leader","Merchant","Miner","Mystic","Navigator","Outcast","Pilgrim","Pilot","Pirate","Preacher","Prophet","Raider","Researcher","Scholar"
+      ],
       powerSources: [
-        "Viltrumite Hybrid Physiology","Bioengineering","Illicit Experiment","Robotic Automaton",
-        "Genetic Mutation","Arcane Anomaly","Alien Relic Bond","Nano-augmented Physiology",
-        "Dimensional Imprint"
+        "Ghost of a woman trapped in a cabinet","Mondays","Bog mummy flesh","Opposite of nudity","Polyandric relationships","Children's screams","Magic skimmed from the laughter of anyone who responds to the quipster's last joke","Serene and perfect understanding of cats","The nightmares of plants","Ancient articulated mask that never comes off once it's worn","Face-blind godlike entity that can only recognize the 'correct' people deserving of power if they're wearing a special kind of hat","Hypothalamus glands of elves","Blood of an entity from a prior universe","Chunk of nihonium hit by lightning","Idols made of dark matter","Heart of a child that is removed and consumed according to a particular occult rite","Adrenaline of a cyborg","Body parts of a barely living dismembered god","Fatigued time particles","Your own brain tissue","Enormous sea beasts that sometimes stride on their many legs across the waves","Moon-sized red eye orbiting near Earth","Collision","Departed Visitor (The magic is linked to an otherworldly entity who was on the same plane as the location, but no longer is)","Historic Impetus (The magic is a lingering effect of something that happened here prior to the destination's founding)","Intentional (The magic was created on purpose by an entity who wanted this magic here)","Mistake (The magic was created unintentionally by an entity who was using magic to complete a task, but something went wrong)","Natural Occurrence","Remote Influence (The magic is linked to, or caused by, an otherworldly entity who has not been to the destination's location or plane)","Draconic bloodline","Wild Magic","Shadow Magic","Elemental Magic","Ghost (individual is the vessel for a ghost)","Celestial (individual harbors a celestial or angelic spirit within them)","Fiend (individual is possessed by a fiend/made a pact)","Aberration (An aberrant being from another dimension influences this individual's behavior)","Fiendish loan sharks that offer magical abilities at steep interest rates","Distant red star; when occluded by other celestial bodies, magic temporarily fails","Shimmery mineral mined from the earth","Bodies of previous magical practitioners killed, petrified, and stored in a giant underground vault","Distant ancestor who must remain alive for the magic to flow","Massive machine tended by all manner of beings, all of them good with a wrench","Ancient artifact that holds an entire alternate dimension in a palm-sized shard of crystal set in an amulet","Closely guarded recipe that produces a satisfying biscuit","Accumulated nerves from enduring the rites conducted in the Temple of Blood Ice","Writing of a completely novel pangram","Gasoline burned with a slow fire flame","Spread of a magical disease similar to bubonic plague"
       ],
       powers: [
-        "Flight","Blast","Protection","Super Strength","Super Speed","Telekinesis","Telepathy",
-        "Invisibility","Force Fields","Shapeshifting","Elasticity","Energy Absorption",
-        "Regeneration","Matter Manipulation","Seismic Shock","Magnetism","Phasing","Gadgeteer"
+        "Generate any smell, powerfully enough to attract or repel","Summon tornadoes","Cause others to fall asleep with a touch","Body shines as dimly as a candle or as brightly as daylight","Turn limbs invisible","Create images on skin and move them to any location on the body","Has guns for hands","Induce severe diarrhea in others","Make appropriate music play out of thin air","Spit poisoned darts","Touched object glows like a candle","Memorize any book for an hour","Create mannequin limbs in the shape of your current limbs","Create cigarettes","Make people bored","Stickiness","Hover like riding a skateboard","Expand like a pufferfish","Accelerate others' aging","Make you forget what abilities you have","Write words in the air","Rampant organ growth","See a person's previous 24 hours","Steal brainpower","Phase through wood","Attract uncontrolled swarms of insects","Grow or shrink by about 3 feet (1 m)","Give cravings for specific foods","Filter materials out of water","Immune to bullets","Disintegrate into a flavorless, odorless powder","Make free-standing illusions of constellations, up to the size of a human","Touch grows mushrooms or shelf fungi on solid surfaces","Breathe out almost any kind of odor (food, dirty laundry, manure, and so on)","Ignite cotton and other natural fabrics","Instant nudity (partial or total)","Slowly absorb metal items into body (up to about 100 pounds [45 kg] total) and release them instantly","Make bottles, windows, and other glass vibrate to produce noises, like a speaker","Limited earth control can bury anything just under the surface of the ground","Break apart and reassemble as if made of solid wax","Partially formed external parasitic twin with its own mind and personality","Put things in cages made of psionic force","Eat a creature's hair to temporarily gain its abilities","Touch inebriates others or relieves them of drunkenness","Command animals by using a cutesy voice","Absorb colors","Scramble speech and telepathy","Stunning sneezes","See and talk to ghosts"
       ],
       talents: [
-        "Determined","Supportive","Tactician","Intimidating","Investigator","Acrobat",
-        "Martial Artist","Field Medic","Pilot","Polyglot","Sharpshooter","Tech Savvy"
+        "Passionate","Committed","Appreciative","Brave","Courageous","Competent","Strategic","Smart","Experienced","Tough","Adaptable","Inspiring","Independent","Ambitious","True-to-self","Wise","Optimistic","Imaginative","Pure","Drive","Creativity","Vision","Leader","Powerful","Charismatic","Loving","Selfless","Generous","Realistic","Empathetic","Fun","Likeable","Happy","Climb (at walking speed/up walls)","Flight (wings/ring)","Improved Senses (night-vision/feel vibrations)","Superior Agility (quick reflexes/amazing speed)","Perfect Memory","Telepathy","Telekinesis","Charm (bring others under sway/enthrall)","Uses Investigation (Spy Talent)","Mastered Defensive Tactics (Warden Talent)","Calls someone to deal with conflict","Delegates conflict resolution","Gathers minions","Motivates the crowd","Flawless Prediction","Healer's Hands (double healing results)"
       ],
       drawbacks: [
-        "Alternate Form","Targeted","Power Drain","Public Identity","Code of Honour",
-        "Unstable Powers","Nemesis","Energy Dependency","Glass Jaw"
+        "People-pleaser","Arrogant","Confrontational","Hubris","Anger","Not much traditional power/status/resources","May not fit in","Wanderer","Easily distracted","Overthinks","Delays","Naive","Low physical capability","Vulnerable","Perfectionist","Egotistical","Self-sacrificing","Suspicious","Worrisome","Will not accept help","Can be taken advantage of","Desperate to belong","Unreliable","Frivolous","Selfish","Own reflection","Smell of lemons","A particular song","Snakes","Pictures hung askew","A specific word or name","Milk","Very loud sounds (140 decibels+)","Seeing shapes reminiscent of a bullseye","Seeing blood","A particular childhood stuffed animal","Being asked to solve simple arithmetic problems","Waterfowl eggs","Superhero costumes","Protein powder","Bubbles","The sound of bells","Electric guitars","National parks and public nature reserves","Unsolved mysteries (must solve immediately)","Bug spray","Plaid","Uncooked vegetables","Gerbils","Friendly overtures (gullible)"
       ],
       gear: [
-        "Communicator","Armoured Suit","Grapple Line","Multi-tool","Drone Scout",
-        "First Aid Kit","Energy Bracers","Holo-Projector","Stealth Cloak","Tracking Beacons"
+        "Replies automatically to electronic communications","Psionically suggests appropriate comebacks in social situations","Visually marks others who have high net worth","Emits an eerie whisper when used","Keeps a log of the bearer's nutritional intake","Sends notifications of trending topics on social media","Worsens the flavor of nearby foods it doesn't like","Plays local radio broadcasts, but distorted and with much static","Quotes television shows","Has a small aperture for collecting DNA remnants","Melts and decomposes nearby wax","Shoots harmless paintball-like projectiles","Makes inappropriate noises in a heavily synthesized electronic voice","Controlled by a limited AI who is insecure and needs praise and reassurance","Switches its digital interface to a foreign language continuously","Afraid of redheads","Enjoys philosophical arguments about artificial intelligence, transhumanism, and souls","Has a limited AI, calls the bearer 'Daddy'","Has a handle sized and shaped for inhuman hands with the wrong number of fingers","Slowly creates elaborately burned runes on whatever surface it rests on","Has a weathered sticker that says 'mental prototype, use with'","Sometimes reconfigures itself into a mirror of its normal shape","Vents microwave-like energy that melts or cooks nearby foods","Induces vertigo in the bearer unless they spin clockwise several times","Causes orange nosebleeds","Power level display regularly fluctuates for no reason","Displays three six-sided dice (with symbols instead of numbers) on its interface that roll on each use","Creates unusual allergy symptoms (blue-tinted eyes, sneezing red mist, reverse coughing, hexagonal hives)","Works only if it can burrow deep into the meat of the bearer's arm","Works only if swallowed (embeds itself in the bearer's throat)","Feels paranoid, and burns away the bearer's fingerprints","Changes nearby televisions, radios, and displays to obscure religious programming","Announces the countdown to the 'actual' end of the Mayan calendar","Spherical attachment can process almost any biological material into nutritional food cubes","Can spray a translucent foam that smells like coconut and functions as sunblock","Can use frozen kosher hot dogs in place of power cells or ammunition","Monitors and stabilizes bearer's blood glucose level and kidney function","Can track and speak with satellites in low orbit","Can project a unique holographic symbol that indicates the bearer is a diplomat, extremely dangerous, or both","Holographic video game function allows playing several addictive puzzle games","Blocks (but does not cure) symptoms of addiction to various chemical substances","Scanning attachment identifies whether a gemstone is a conflict resource (such as a blood diamond)","Multispectrum analyzer with a 1-mile (1.6 km) range measures and reports exact distances and areas","Telekinetic excavation feature can dig a grave-sized hole in packed earth in about a minute","Tracks celestial events (especially eclipses and stellar conjunctions), allowing bearer to accurately predict them","Creates sharp, brittle knives by extracting carbon from the air","Causes the bearer's eyes to glow with ominous red light while item is in use","When charge begins to wane, item audibly grumbles and complains about the bearer's competence","When the item is used, temperature in the area plunges and snow falls","First use (or first use in a while) triggers a holographic 'assistant' character determined to run through its tutorial"
       ],
       occupations: [
-        "Student","Forensic Analyst","Photojournalist","Paramedic","Teacher",
-        "AI Researcher","Social Worker","Mechanic","Bartender","Pilot","Security Consultant"
+        "Professor Emeritus","Dean of Science","President of the Owlbear Fanclub","Senator","Governor","Captain","Administrator","Arbiter","Architect","Arms Dealer","Attorney","Biochemist","Broker","CEO","Chef","Constable","Corporate Flunky","Crop Specialist","Customs Official","Deep Space Nutritionist","Doctor","Explosives Expert","Gas Extractor","Gunner","Hydroponicist","ID Specialist","Inspector","Journalist","Junkyard Worker","Livestock Farmer","Nano Technician","Officer, Comms","Officer, Helmsman","Officer, Medical","Officer, Security","Orbital Debris Scrubber","Politician","Programmer","Reclamator","Rental Agent","Socialite","Spaceship Dealer","Supply Dealer","Tactical Officer","Technomage","Transportation","Waste Manager","Xenoanthropologist","Xenoecologist"
       ],
       personalities: [
-        "Calm under pressure","Hot-headed but loyal","Dry sense of humour","Stoic and observant",
-        "Charismatic optimist","Brooding strategist","Reckless thrill-seeker","Compassionate mediator"
+        "Accented","Accompanied","Adorned","Aged","Alluring","Armed","Armored","Athletic","Attractive","Augmented","Concealed","Distracted","Eccentric","Energetic","Flashy","Graceful","Grim","Haggard","Illequipped","Imposing","Large","Mutated","Plain","Poised","Scarred","Scruffy","Shifty","Sickly","Slight","Swaggering","Tattooed","Threatened","Uncanny","Visibly disabled","Weathered","Well-equipped","Wiry","Wounded","Youthful","Passionate","Committed","Brave","Courageous","Strategic","Smart","Tough","Adaptable","Inspiring","Independent","Optimistic"
       ],
       appearances: [
-        "Sleek red-and-black suit with glowing sigils",
-        "Armoured plating over flexible nano-mesh",
-        "Retro leather jacket with neon piping and visor",
-        "Cloaked silhouette with mirrored mask",
-        "Cerulean bodysuit with comet-trail motif",
-        "Urban tactical gear with reinforced gauntlets"
+        "Face gradually recontours itself to resemble whoever they're talking to","Tongue has a tendril under it that can extend and be used like a third hand","Pupils take on the silhouette shape of whatever object or creature they're looking at","Feet are replaced with fleshy wheels","Additional length of arm can unfold at the wrist to reveal an additional hand","Acne-like pustules create stuff that looks and tastes like gourmet cheese","Sweat glands produce chemicals identical to garlic","Skin grows bumps that turn into thumbs, which can break off and twitch like a lizard dropping its tail","Thick cartilage extends from just under the earlobes to the tips of their shoulders, giving them a 'triangle neck'","Fingers are very long, as they have two extra joints","Nipples are made of a horn-like material and are sharp enough to cut glass","Network of subdermal muscle fibers allows them to loosen or tighten any portion of their skin","Hump on their back stores fat and water","No nose; center of their face is flat","Oversized hairy clawed 'wolfman' hands","Green blood","Patches of transparent skin","Foot-long tongue","Acidic fingerprints","Six or more fingers on each hand","Cloven hooves instead of feet","Tentacle for a left arm","Hygroscopic skin absorbs touched liquid until saturation point is reached and then a mini-flood occurs","Can pull their elastic neck skin entirely over the rest of their head","Exudes an electromagnetic field that kills insects","Skin glows different colors depending on their emotional state","Legs can elongate by about 2 feet (60 cm)","Most of their bone structure is replaced by cartilage","Shining light inside their body illuminates mysterious traceries in their flesh","Instead of ears, they have antenna bristling with tiny hairs","Tiny insect wings on their back (too small to lift them)","Strongly smells of cherries","Moth-themed: has a moth-shaped microjet, a costume with moth wings and antennae","Never speaks; costume with a mask with no mouth; haloed by silence","Expressionist art canvas-themed costume; wields a paintbrush to paint and attack","Eyes cover costume (painted on, sewn on, some robotic, some organic and can blink)","LEDs cover costume; wields flashlight laser weapon; always spot lit by a hovering drone; is afraid of the dark","Wears a sandwich board; hands out sandwiches to the hungry","Constantly drips water; forms a pool if they stay in one place for too long; shoots water jets","Dressed like a coal miner; fights with a mining pick; rides around in what looks like an old-time mining cart","Costume has metal airplane wings; can fly; throws jet-shaped boomerangs","Costume covered in tiny speakers; creates disruptive sonic feedback","Costume covered in clocks; uses time puns when speaking, and obsessed with time and clocks","Crescent moon on their chest; throws crescent-shaped weapons","Wears a skeletal costume; uses bone-shaped weapons","Dressed in a black undertaker's suit; drives a hearse","Dust-themed; uses toxic powders as weapons, as well as flash powder","Coated in slippery slime; throws blobs of hardening slime to bind foes","Wears coveralls, carries special tools in belt, uses a nail gun and a power drill","Battlesuit equipped with a helicopter rotor; throws propeller-like blades as weapons"
       ],
       drives: [
-        "Protect the city that raised me","Redeem a family legacy",
-        "Expose corruption at any cost","Prove I deserve this power",
-        "Keep my team safe","Avenge a fallen mentor"
+        "Advance a settlement","Attack a place","Be left alone","Be the very best","Bring balance","Broker a treaty","Capture a person","Change the system","Collect works of art","Complete a collection","Deepen mystic power","Destroy a technology","Develop a technology","Educate others","Exploit others","Feed an addiction","Find a soulmate","Find peace","Fracture an alliance","Gain fame and glory","Gain power and influence","Grow a business","Help the helpless","Hide a truth","Leave their mark","Live in luxury","Oppress the weak","Professional development","Protect an innocent","Raise a family","Rescue a person","Scheme machinations","Seek forgiveness","Spread knowledge","End time","Conquer death","Hoard wealth","Raise an elder god","Open the gates of heaven","Open the gates of hell","Catalyze the birth of a deity","Collect souls on behalf of an ancient horror","Make lots of money","Guard a terrible secret","Find a lost artifact","Control the underworld","Protect an arcane prison","Seal the doors to all the other planes","Collect dragon eggs","Obtain a powerful weapon"
       ],
       flaws: [
-        "Impulsive risk-taker","Overconfident","Trust issues","Secretive to a fault",
-        "Freezes when civilians are in danger","Reluctant to ask for help"
+        "Caffeine","Wheat products","Injections and syringes","Firearms","Triangles","Bicycles","Laughter","Police","Musical instruments","Street drugs","Synthetic fabrics (polyester, nylon, spandex, and so on)","Coughing","Wet paint","Urine (must pee before confronting their arch-nemesis)","Plastic film","Images of dogs (not seeing dogs in person)","Conspiracy theories","Must struggle not to stop and answer any riddle posed","Absolute darkness","Lies (they are weirdly gullible)","Questions about their mother","Getting angry","Puns","Crying babies","Wind","Ghosts (or anything scary suggesting ghosts might be present)","Their twin","Zero gravity","Blessed water","Broadway music","Historical martial arts","Discussions of pseudoscience","Video game cutscenes","Weapons made of clay","Praise, applause, and other signs of admiration","Clowns","Being wet","Physical contact","Haircuts","Naps","Broken glass","Hedgehogs, platypuses, echidnas, and similar weird mammals","Sports","Cash","Wheels","Traffic lights","Anything flying","Skinny people","Communists","Baldness"
       ],
       relationships: [
-        "Mentor at the agency","Estranged sibling","On-again off-again partner",
-        "Rival hero who pushes you","Neighbour who suspects your identity",
-        "Tech supplier who charges favours"
+        "Erim Kaan","Esana Taylan","Eveline Legrand","Faye Jemison","Fletcher Arden","Flint Sayer","Florian Kai","Gavin Slater","Halia Edris","Ike Sutton","Isaac Savarin","James Bridger","Janya Mital","Jihun Shin","Jorunn Nadir","Juliana Santos","Juro Mihara","Kaisa Buhari","Karthik Salvi","Kayla Adler","Kei Takara","Kiana Shelton","Kieran Vandu","Kierra Vega","Kimora Zhang","Kiri Savela","Kirsa Hawking","Kwan Jen","Kylar Hobbs","Landry Holland","Logan Silvius","Lowell Freeman","Lucas Barbosa","Curtis Winter","Luna Hammond","Lux Archer","Mae Barlowe","Magnus Shepherd","Mave Griffin","Merrick Frost","Mina Quon","Nashida Malek","Nassar Murad","Ostara Becker","Qasira Ammar","Quinn Braddock","Ragnar Blackstone","Raven Hadley","Ria Farin","Rokuro Kobayashi"
       ]
     };
 
@@ -520,7 +495,7 @@
       }
       return out;
     }
-    // 2d6-like distribution clamped to [min,max]
+    // 2d6-like distribution clamped to [1,12]
     function rollAttribute(rng, min = 1, max = 12) {
       const d = Math.floor(rng() * 6) + 1 + Math.floor(rng() * 6) + 1; // 2–12
       return Math.min(max, Math.max(min, d));
@@ -578,7 +553,7 @@
       if (drawbacksN > 0) fillIfAllowed('drawbacks', pickMany(randomTables.drawbacks, drawbacksN, rng).join(', '), preserve);
       if (gearN > 0) fillIfAllowed('gear', pickMany(randomTables.gear, gearN, rng).join(', '), preserve);
 
-      // Attributes: slightly bell-curved, clamped 1–12
+      // Attributes
       ['fighting','agility','strength','reason','intuition','presence'].forEach(attr => {
         const el = document.getElementById(attr);
         if (preserve && el.value && String(el.value).trim().length > 0) return;
@@ -670,6 +645,12 @@
       }
     }
 
+    /* ---- NEW: Export PDF via print ---- */
+    function exportPDF() {
+      saveToLocalStorage();
+      window.print();
+    }
+
     /* -------------------- Random Table Import/Schema -------------------- */
     function importRandomTables() {
       document.getElementById('randomTablesInput').click();
@@ -734,6 +715,7 @@
       importSheet,
       handleFileImport,
       exportSheet,
+      exportPDF,           // <-- added
       importRandomTables,
       handleRandomTablesImport,
       downloadRandomSchema
