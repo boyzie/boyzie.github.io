@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Invincible - Superhero Character Sheet</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Nosifer&family=Metal+Mania&display=swap" rel="stylesheet">
+  <style>
+    body { box-sizing: border-box; }
+
+    .hero-title {
+      font-family: 'Metal Mania', cursive;
+      text-shadow: 3px 3px 0px #000000, 6px 6px 10px rgba(0,0,0,0.8);
+      letter-spacing: 3px;
+    }
+
+    .attribute-input { transition: all 0.2s ease; }
+    .attribute-input:focus {
+      transform: scale(1.05);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    }
+
+    .section-card {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: 2px solid #475569;
+    }
+
+    .hero-header { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); }
+    .calculated-field { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+  </style>
+</head>
+<body class="min-h-full bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 text-white font-sans">
+  <div class="container mx-auto p-6 max-w-6xl">
+    <!-- Header -->
+    <div class="hero-header rounded-lg p-6 mb-6 text-center">
+      <h1 class="hero-title text-5xl font-bold mb-2">INVINCIBLE</h1>
+      <h2 class="text-xl opacity-90">Superhero Character Sheet</h2>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Section I: Hero Identification -->
+      <div class="section-card rounded-lg p-6">
+        <h3 class="text-2xl font-bold mb-4 text-red-400">I. Hero Identification</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-semibold mb-2">Hero Name</label>
+            <input type="text" id="heroName" placeholder="e.g., ATOM EVE, REX SPLODE"
+                   class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Civilian Name</label>
+            <input type="text" id="civilianName" placeholder="e.g., SAMANTHA EVE WILKINS"
+                   class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Role</label>
+            <select id="role" class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-red-400 focus:outline-none">
+              <option value="">Select Role</option>
+              <option value="Blaster">Blaster</option>
+              <option value="Brains">Brains</option>
+              <option value="Brawn">Brawn</option>
+              <option value="Controller">Controller</option>
+              <option value="Defender">Defender</option>
+              <option value="Leader">Leader</option>
+              <option value="Striker">Striker</option>
+              <option value="Wildcard">Wildcard</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Appearance</label>
+            <textarea id="appearance" rows="3" placeholder="Describe your hero's appearance..."
+                      class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none resize-none"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-2">Reputation</label>
+              <input type="number" id="reputation" min="0" max="12"
+                     class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-red-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-2">Karma</label>
+              <input type="number" id="karma" min="0"
+                     class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-red-400 focus:outline-none">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section II: Attributes -->
+      <div class="section-card rounded-lg p-6">
+        <h3 class="text-2xl font-bold mb-4 text-red-400">II. Attributes (1-12)</h3>
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-2">FIGHTING</label>
+              <input type="number" id="fighting" min="1" max="12" value="1"
+                     class="attribute-input w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-center text-xl font-bold focus:border-blue-400 focus:outline-none">
+              <p class="text-xs text-slate-400 mt-1">Physical</p>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-2">AGILITY</label>
+              <input type="number" id="agility" min="1" max="12" value="1"
+                     class="attribute-input w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-center text-xl font-bold focus:border-blue-400 focus:outline-none">
+              <p class="text-xs text-slate-400 mt-1">Physical</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-2">STRENGTH</label>
+              <input type="number" id="strength" min="1" max="12" value="1"
+                     class="attribute-input w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-center text-xl font-bold focus:border-blue-400 focus:outline-none">
+              <p class="text-xs text-slate-400 mt-1">Physical</p>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-2">REASON</label>
+              <input type="number" id="reason" min="1" max="12" value="1"
+                     class="attribute-input w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-center text-xl font-bold focus:border-blue-400 focus:outline-none">
+              <p class="text-xs text-slate-400 mt-1">Mental</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-2">INTUITION</label>
+              <input type="number" id="intuition" min="1" max="12" value="1"
+                     class="attribute-input w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-center text-xl font-bold focus:border-blue-400 focus:outline-none">
+              <p class="text-xs text-slate-400 mt-1">Mental</p>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-2">PRESENCE</label>
+              <input type="number" id="presence" min="1" max="12" value="1"
+                     class="attribute-input w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-center text-xl font-bold focus:border-blue-400 focus:outline-none">
+              <p class="text-xs text-slate-400 mt-1">Mental</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section III: Core Stats -->
+      <div class="section-card rounded-lg p-6">
+        <h3 class="text-2xl font-bold mb-4 text-red-400">III. Core Stats</h3>
+        <div class="space-y-4">
+          <div class="calculated-field rounded-lg p-4">
+            <label class="block text-sm font-semibold mb-2">Base Slugfest Damage</label>
+            <div id="baseDamage" class="text-2xl font-bold text-center">1</div>
+            <p class="text-xs text-green-200 mt-1">= STRENGTH ÷ 2 (rounded up)</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="calculated-field rounded-lg p-4">
+              <label class="block text-sm font-semibold mb-2">Max Health</label>
+              <div id="maxHealth" class="text-xl font-bold text-center">2</div>
+              <p class="text-xs text-green-200 mt-1">(F+A+S) ÷ 2</p>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-2">Current Health</label>
+              <input type="number" id="currentHealth" min="0" value="2"
+                     class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-center text-xl font-bold focus:border-red-400 focus:outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="calculated-field rounded-lg p-4">
+              <label class="block text-sm font-semibold mb-2">Max Resolve</label>
+              <div id="maxResolve" class="text-xl font-bold text-center">2</div>
+              <p class="text-xs text-green-200 mt-1">(R+I+P) ÷ 2</p>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-2">Current Resolve</label>
+              <input type="number" id="currentResolve" min="0" value="2"
+                     class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-center text-xl font-bold focus:border-red-400 focus:outline-none">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-2">Critical Injuries</label>
+            <textarea id="criticalInjuries" rows="2" placeholder="List any critical injuries and penalties..."
+                      class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none resize-none"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section IV: Personal Stuff -->
+      <div class="section-card rounded-lg p-6">
+        <h3 class="text-2xl font-bold mb-4 text-red-400">IV. Personal Stuff</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-semibold mb-2">Occupation</label>
+            <input type="text" id="occupation" placeholder="Background, civilian life, or day job"
+                   class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Personality</label>
+            <input type="text" id="personality" placeholder="How others initially perceive the hero"
+                   class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Drive</label>
+            <input type="text" id="drive" placeholder="Why the hero exposes themselves to danger"
+                   class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Flaw</label>
+            <input type="text" id="flaw" placeholder="A weakness that causes trouble"
+                   class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Key Relationships</label>
+            <textarea id="relationships" rows="3" placeholder="Family, friends, rivals who play large roles..."
+                      class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none resize-none"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section V: Powers, Talents, and Drawbacks -->
+    <div class="section-card rounded-lg p-6 mt-6">
+      <h3 class="text-2xl font-bold mb-4 text-red-400">V. Powers, Talents, and Drawbacks</h3>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-semibold mb-2">Power Source</label>
+          <input type="text" id="powerSource" placeholder="e.g., Viltrumite Hybrid Physiology, Bioengineering"
+                 class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none mb-4">
+
+          <label class="block text-sm font-semibold mb-2">Powers</label>
+          <textarea id="powers" rows="4" placeholder="List superhuman capabilities (BLAST, FLIGHT, PROTECTION, etc.)"
+                    class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none resize-none mb-4"></textarea>
+
+          <label class="block text-sm font-semibold mb-2">Talents</label>
+          <textarea id="talents" rows="3" placeholder="Tricks, moves, minor abilities (DETERMINED, SUPPORTIVE, etc.)"
+                    class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none resize-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2">Drawbacks</label>
+          <textarea id="drawbacks" rows="4" placeholder="Limitations or vulnerabilities (ALTERNATE FORM, TARGETED, etc.)"
+                    class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none resize-none mb-4"></textarea>
+
+          <label class="block text-sm font-semibold mb-2">Resources</label>
+          <input type="number" id="resources" min="0" placeholder="Standard of living score"
+                 class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none mb-4">
+
+          <label class="block text-sm font-semibold mb-2">Gear</label>
+          <textarea id="gear" rows="3" placeholder="Equipment the hero possesses"
+                    class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none resize-none mb-4"></textarea>
+
+          <label class="block text-sm font-semibold mb-2">Team/Base</label>
+          <input type="text" id="teamBase" placeholder="Organizational information"
+                 class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-red-400 focus:outline-none">
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-wrap gap-4 mt-6 justify-center">
+      <button onclick="clearSheet()" class="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg font-semibold transition-colors">
+        Clear Sheet
+      </button>
+      <button onclick="randomHero()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors">
+        Generate Random Hero
+      </button>
+      <button onclick="importSheet()" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold transition-colors">
+        Import Character
+      </button>
+      <button onclick="exportSheet()" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition-colors">
+        Export Character
+      </button>
+    </div>
+
+    <!-- Support Button -->
+    <div class="text-center mt-8">
+      <a href="https://ko-fi.com/boyzie" target="_blank" rel="noopener noreferrer"
+         class="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors opacity-80 hover:opacity-100">
+        ☕ Buy me a coffee
+      </a>
+      <p class="text-xs text-slate-400 mt-2">Enjoying this character sheet? Support its development!</p>
+    </div>
+
+    <!-- Hidden file input for import -->
+    <input type="file" id="fileInput" accept=".json" style="display:none;" onchange="handleFileImport(event)">
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    // Storage
+    function saveToLocalStorage() {
+      const data = {};
+      document.querySelectorAll('input, textarea, select').forEach(field => {
+        if (field.id) data[field.id] = field.value;
+      });
+      localStorage.setItem('invincible_character_sheet', JSON.stringify(data));
+    }
+
+    function loadFromLocalStorage() {
+      const saved = localStorage.getItem('invincible_character_sheet');
+      if (!saved) return;
+      try {
+        const data = JSON.parse(saved);
+        Object.keys(data).forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = data[id];
+        });
+        updateCalculatedStats();
+      } catch (e) {
+        console.log('Error loading saved data:', e);
+      }
+    }
+
+    // Calculated stats
+    function updateCalculatedStats() {
+      const fighting = parseInt(document.getElementById('fighting').value) || 1;
+      const agility = parseInt(document.getElementById('agility').value) || 1;
+      const strength = parseInt(document.getElementById('strength').value) || 1;
+      const reason = parseInt(document.getElementById('reason').value) || 1;
+      const intuition = parseInt(document.getElementById('intuition').value) || 1;
+      const presence = parseInt(document.getElementById('presence').value) || 1;
+
+      const baseDamage = Math.ceil(strength / 2);
+      document.getElementById('baseDamage').textContent = baseDamage;
+
+      const maxHealth = Math.ceil((fighting + agility + strength) / 2);
+      document.getElementById('maxHealth').textContent = maxHealth;
+
+      const currentHealthField = document.getElementById('currentHealth');
+      if (!currentHealthField.value || parseInt(currentHealthField.value) === parseInt(document.getElementById('maxHealth').textContent)) {
+        currentHealthField.value = maxHealth;
+      }
+
+      const maxResolve = Math.ceil((reason + intuition + presence) / 2);
+      document.getElementById('maxResolve').textContent = maxResolve;
+
+      const currentResolveField = document.getElementById('currentResolve');
+      if (!currentResolveField.value || parseInt(currentResolveField.value) === parseInt(document.getElementById('maxResolve').textContent)) {
+        currentResolveField.value = maxResolve;
+      }
+    }
+
+    // Actions
+    function clearSheet() {
+      if (!confirm('Are you sure you want to clear the entire character sheet? This will also delete your saved data.')) return;
+      document.querySelectorAll('input, textarea, select').forEach(field => {
+        if (field.type === 'number' && ['fighting','agility','strength','reason','intuition','presence'].includes(field.id)) {
+          field.value = 1;
+        } else {
+          field.value = '';
+        }
+      });
+      updateCalculatedStats();
+      localStorage.removeItem('invincible_character_sheet');
+    }
+
+    function randomHero() {
+      const heroNames = ['ATOM EVE', 'REX SPLODE', 'MONSTER GIRL', 'DUPLI-KATE', 'ROBOT', 'SHRINKING RAE'];
+      const civilianNames = ['SAMANTHA EVE WILKINS', 'REX SLOAN', 'AMANDA', 'KATE CHA', 'RUDOLPH CONNORS', 'RAE'];
+      const roles = ['Blaster', 'Brains', 'Brawn', 'Controller', 'Defender', 'Leader', 'Striker', 'Wildcard'];
+      const powerSources = ['Viltrumite Hybrid Physiology', 'Bioengineering', 'Illicit Experiment', 'Robotic Automaton', 'Genetic Mutation'];
+
+      document.getElementById('heroName').value = heroNames[Math.floor(Math.random() * heroNames.length)];
+      document.getElementById('civilianName').value = civilianNames[Math.floor(Math.random() * civilianNames.length)];
+      document.getElementById('role').value = roles[Math.floor(Math.random() * roles.length)];
+      document.getElementById('powerSource').value = powerSources[Math.floor(Math.random() * powerSources.length)];
+
+      ['fighting','agility','strength','reason','intuition','presence'].forEach(attr => {
+        document.getElementById(attr).value = Math.floor(Math.random() * 6) + 3; // 3-8
+      });
+
+      document.getElementById('reputation').value = Math.floor(Math.random() * 5) + 1;
+      document.getElementById('karma').value = Math.floor(Math.random() * 10) + 5;
+
+      updateCalculatedStats();
+      saveToLocalStorage();
+    }
+
+    function importSheet() {
+      document.getElementById('fileInput').click();
+    }
+
+    function handleFileImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!file.name.endsWith('.json')) {
+        alert('Please select a valid JSON file.');
+        event.target.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          Object.keys(data).forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = data[id] ?? '';
+          });
+          updateCalculatedStats();
+          saveToLocalStorage();
+
+          const heroName = data.heroName || 'Imported Hero';
+          alert(`Successfully imported character: ${heroName}`);
+        } catch (error) {
+          console.error('Import error:', error);
+          alert('Error reading file. Please make sure it is a valid character sheet JSON file.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function exportSheet() {
+      try {
+        const data = {};
+        document.querySelectorAll('input, textarea, select').forEach(el => {
+          if (el.id && el.id !== 'fileInput') data[el.id] = el.value;
+        });
+
+        const json = JSON.stringify(data, null, 2);
+        const heroName = (data.heroName || 'Unnamed Hero').trim();
+        const filename = `${heroName.replace(/[^\w\-]+/g, '_')}_character_sheet.json`;
+        const blob = new Blob([json], { type: 'application/json' });
+
+        // Legacy Edge and IE
+        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+          window.navigator.msSaveOrOpenBlob(blob, filename);
+          alert(`Character "${heroName}" exported successfully!`);
+          return;
+        }
+
+        const a = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        a.href = url;
+        a.download = filename;
+
+        // Safari and iOS fallback
+        const downloadSupported = typeof a.download !== 'undefined';
+        if (!downloadSupported) {
+          window.open('data:application/json;charset=utf-8,' + encodeURIComponent(json), '_blank');
+        } else {
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 0);
+        }
+
+        alert(`Character "${heroName}" exported successfully!`);
+      } catch (err) {
+        console.error('Export error:', err);
+        alert('Export failed. See console for details.');
+      }
+    }
+
+    // Expose functions for inline onclick and ensure init after DOM is ready
+    Object.assign(window, {
+      saveToLocalStorage,
+      loadFromLocalStorage,
+      updateCalculatedStats,
+      clearSheet,
+      randomHero,
+      importSheet,
+      handleFileImport,
+      exportSheet
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('input, textarea, select').forEach(field => {
+        if (!field.id) return;
+        field.addEventListener('input', () => {
+          if (['fighting','agility','strength','reason','intuition','presence'].includes(field.id)) {
+            updateCalculatedStats();
+          }
+          saveToLocalStorage();
+        });
+      });
+      loadFromLocalStorage();
+      updateCalculatedStats();
+    });
+  </script>
+</body>
+</html>
