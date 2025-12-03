@@ -195,7 +195,7 @@
             { name: "Spellcaster Lv2", cost: 2, desc: "Knows two colours of magic from the Spellbook." },
             { name: "Spellcaster Lv3", cost: 3, desc: "Knows three colours of magic from the Spellbook." },
             { name: "Spellcaster Lv4", cost: 4, desc: "Knows four colours of magic from the Spellbook." },
-            { name: "Spellcaster Lv1 (old)", cost: 1, desc: "Legacy entry; treat as Spellcaster Lv1 if seen in old JSON." }, // safety if you had older names – optional
+            { name: "Spellcaster Lv1 (old)", cost: 1, desc: "Legacy entry; treat as Spellcaster Lv1 if seen in old JSON." },
             { name: "Spellcaster Lv2 (old)", cost: 2, desc: "Legacy entry; treat as Spellcaster Lv2 if seen in old JSON." },
             { name: "Spellcaster Lv3 (old)", cost: 3, desc: "Legacy entry; treat as Spellcaster Lv3 if seen in old JSON." },
             { name: "Spellcaster Lv1*", cost: 1, desc: "Legacy alt-name (if any older lists used it)." },
@@ -219,46 +219,145 @@
         const LEADER_UPGRADE_SUFFIX = "(L)";
         const UNSTOPPABLE_NAME = "Unstoppable March of the Dead (L)";
 
-        // --- DATA: Spellbook (colours & spells) ---
+        // --- DATA: Spellbook (colours & spells) with your summaries ---
         const SPELLBOOK = {
             Amber: [
-                { name: "Almighty Prod! (6+)", summary: "Target: Friendly unit within 18".
-    ◦ Effect: If the unit fails an ordered activation roll, it may immediately reroll it once. The spell ends immediately after use" },
-                { name: "Be Brave!", summary: "Friendly unit rerolls failed Courage checks for a short time." }
+                {
+                    name: "Almighty Prod!",
+                    difficulty: "6+",
+                    target: `Friendly unit within 18".`,
+                    effect: `If the unit fails an ordered activation roll, it may immediately reroll it once. The spell ends immediately after use.`
+                },
+                {
+                    name: "Be Brave!",
+                    difficulty: "6+",
+                    target: `Friendly unit within 18".`,
+                    effect: `The unit may reroll all failed Courage tests (once per test).`
+                }
             ],
             Crimson: [
-                { name: "Take That You Rotter!", summary: "Magical ranged attack; works much like a short-ranged Shoot action." },
-                { name: "Utter Chaos!", summary: "Target becomes unpredictable, acting under a chaotic rule for a turn." }
+                {
+                    name: "Take That You Rotter!",
+                    difficulty: "7+",
+                    target: `Enemy unit within 18".`,
+                    effect: `Immediate magical attack. Treat as a Shoot action with a Shoot Value of 5+ (suffers -1 to rolls if over 12" away).`
+                },
+                {
+                    name: "Utter Chaos!",
+                    difficulty: "6+",
+                    target: `Any unit within 18".`,
+                    effect: `Target gains the Chaotic rule (uses a d12 for rolls instead of 2d6).`
+                }
             ],
             Emerald: [
-                { name: "Heal Thee!", summary: "Restore one or two lost Strength Points to a friendly unit in range." },
-                { name: "Sod-Off Spell!", summary: "Cancels one Spell currently affecting the chosen unit." }
+                {
+                    name: "Heal Thee!",
+                    difficulty: "6+",
+                    target: `Friendly unit within 18" (cannot target self).`,
+                    effect: `Restores 1 Strength Point (cannot exceed starting value). If the casting roll was an 8+, restores 2 Strength Points.`
+                },
+                {
+                    name: "Sod-Off Spell!",
+                    difficulty: "8+",
+                    target: `Any bespelled unit within 18".`,
+                    effect: `Immediate cancellation of any spell currently affecting the target.`
+                }
             ],
             Indigo: [
-                { name: "Superglue You!", summary: "Pins the target in place so it cannot move, even when retreating." },
-                { name: "You Shall Not Pass!", summary: "Creates a temporary barrier that blocks movement and line of sight." }
+                {
+                    name: "Superglue You!",
+                    difficulty: "7+",
+                    target: `Self or any unit within 18".`,
+                    effect: `Target cannot move or Retreat (enemies bounce off). They are stuck in place.`
+                },
+                {
+                    name: "You Shall Not Pass!",
+                    difficulty: "8+",
+                    target: `A spot within 12" and line of sight.`,
+                    effect: `Places a 12" long, 1" thick impassable barrier. Blocks line of sight, movement, shooting, and attacking.`
+                }
             ],
             Jade: [
-                { name: "Bog Thee!", summary: "Makes the ground around the target count as rough terrain for a while." },
-                { name: "Spring Heeled!", summary: "Friendly unit moves through rough ground at full speed for a short time." },
-                { name: "You Have Wings!", summary: "Grants the Flyer rule briefly to the chosen unit." }
+                {
+                    name: "Bog Thee!",
+                    difficulty: "7+",
+                    target: `Enemy unit within 18".`,
+                    effect: `Target counts as being in rough terrain for any movement or combat.`
+                },
+                {
+                    name: "Spring Heeled!",
+                    difficulty: "6+",
+                    target: `Self or friendly unit within 18".`,
+                    effect: `Target does not halve its movement distance in rough terrain.`
+                },
+                {
+                    name: "You Have Wings!",
+                    difficulty: "7+",
+                    target: `Self or friendly unit within 18".`,
+                    effect: `Target gains the Flyer rule.`
+                }
             ],
             Magenta: [
-                { name: "Sharp Blades!", summary: "Friendly unit rerolls its failed Attack or Defence dice for a turn." },
-                { name: "Sharp Darts!", summary: "Friendly unit rerolls failed Shooting dice for a turn." },
-                { name: "Stronger Shields!", summary: "Temporarily increases the unit’s Armour value by one." }
+                {
+                    name: "Sharp Blades!",
+                    difficulty: "7+",
+                    target: `Self or friendly unit within 18".`,
+                    effect: `Target rerolls all failed Attack or Defence dice.`
+                },
+                {
+                    name: "Sharp Darts!",
+                    difficulty: "7+",
+                    target: `Self or friendly unit within 18".`,
+                    effect: `Target rerolls all failed Shooting dice.`
+                },
+                {
+                    name: "Stronger Shields!",
+                    difficulty: "7+",
+                    target: `Self or friendly unit within 18".`,
+                    effect: `Target's Armour increases by 1.`
+                }
             ],
             Saffron: [
-                { name: "Dragon’s Breath!", summary: "Creates a drifting cloud that stops shooting in or through the target." },
-                { name: "Go Wild!", summary: "Gives a unit the Berserk rule for a brief window, even when weakened." }
+                {
+                    name: "Dragon's Breath!",
+                    difficulty: "6+",
+                    target: `Self or any unit within 18".`,
+                    effect: `Creates a wall of mist. Target cannot Shoot or be Shot at, but moves as normal.`
+                },
+                {
+                    name: "Go Wild!",
+                    difficulty: "6+",
+                    target: `Self or friendly unit within 18".`,
+                    effect: `Target gains the Berserk rule. Can be used to reinvigorate a Berserk unit that has dropped to half strength.`
+                }
             ],
             Turquoise: [
-                { name: "Teleport Thee!", summary: "Relocates one friendly unit a short distance without using its activation." },
-                { name: "Transpose Thee!", summary: "Swaps the positions of two nearby units, friend or foe." }
+                {
+                    name: "Teleport Thee!",
+                    difficulty: "7+",
+                    target: `Self or friendly unit within 12".`,
+                    effect: `Immediate. Move target up to 12" in any direction (cannot engage enemies or enter impassable terrain).`
+                },
+                {
+                    name: "Transpose Thee!",
+                    difficulty: "8+",
+                    target: `Two units (friend or foe) within 12" of the caster AND 12" of each other.`,
+                    effect: `Immediate. The two units swap places. Caster cannot target itself.`
+                }
             ],
             Violet: [
-                { name: "Befuddle Thee!", summary: "Automatically batters one enemy unit unless they are already broken or Undead." },
-                { name: "Curse Thee!", summary: "Gives the target the Cursed rule for a short time, making damage worse." }
+                {
+                    name: "Befuddle Thee!",
+                    difficulty: "8+",
+                    target: `Enemy unit within 18".`,
+                    effect: `Automatically Batters a non-Battered target. Duration lasts until the target Rallies. Cannot affect Undead.`
+                },
+                {
+                    name: "Curse Thee!",
+                    difficulty: "7+",
+                    target: `Enemy unit within 18".`,
+                    effect: `Target gains the Cursed rule (takes an extra hit whenever it takes at least one hit).`
+                }
             ]
         };
 
@@ -317,12 +416,11 @@
                 const upgradeObj = UPGRADES_LIST.find(u => u.name === upgradeName);
                 const currentUpgrades = unit.selectedUpgrades || [];
 
-                // Prevent stacking multiple Spellcaster levels accidentally – keep all but this is safer
+                // Prevent stacking multiple Spellcaster levels accidentally
                 const isSpellUpgrade = SPELL_UPGRADE_NAMES.includes(upgradeName);
                 let newUpgrades = currentUpgrades.slice();
 
                 if (isSpellUpgrade) {
-                    // Remove any existing spellcaster levels, then add the chosen one
                     newUpgrades = currentUpgrades.filter(u => !SPELL_UPGRADE_NAMES.includes(u.name));
                     if (!newUpgrades.some(u => u.name === upgradeName) && upgradeObj) {
                         newUpgrades.push(upgradeObj);
@@ -407,7 +505,13 @@
                     spells.forEach(sp => {
                         const chosen = (cfg.selectedSpells || []).some(s => s.name === sp.name && s.colour === colour);
                         if (chosen) {
-                            result.push({ colour, name: sp.name, summary: sp.summary });
+                            result.push({
+                                colour,
+                                name: sp.name,
+                                difficulty: sp.difficulty,
+                                target: sp.target,
+                                effect: sp.effect
+                            });
                         }
                     });
                 }
@@ -583,7 +687,7 @@
                                     </div>
                                 </div>
 
-                                {/* Spell list & quick reference (prints) */}
+                                {/* Spell list & quick reference (config + prints) */}
                                 {spellConfig.colours.length > 0 && (
                                     <div className="space-y-1">
                                         {spellConfig.colours.map(colour => (
@@ -607,9 +711,14 @@
                                                                 />
                                                                 <div className="text-[11px] leading-snug">
                                                                     <span className="font-semibold text-indigo-100">
-                                                                        {spell.name}
+                                                                        {spell.name} ({spell.difficulty})
                                                                     </span>
-                                                                    <span className="text-stone-300"> – {spell.summary}</span>
+                                                                    <div className="text-[11px] text-stone-300">
+                                                                        <span className="font-semibold">Target:</span> {spell.target}
+                                                                    </div>
+                                                                    <div className="text-[11px] text-stone-300">
+                                                                        <span className="font-semibold">Effect:</span> {spell.effect}
+                                                                    </div>
                                                                 </div>
                                                             </li>
                                                         );
@@ -672,8 +781,18 @@
                                 <ul className="space-y-0.5">
                                     {selectedSpellObjects.map((sp, idx) => (
                                         <li key={idx}>
-                                            <span className="font-semibold">{sp.name}</span>
-                                            <span className="text-stone-400"> ({sp.colour}) – {sp.summary}</span>
+                                            <div>
+                                                <span className="font-semibold">
+                                                    {sp.name} ({sp.difficulty})
+                                                </span>
+                                                <span className="text-stone-400"> – {sp.colour} Magic</span>
+                                            </div>
+                                            <div>
+                                                <span className="font-semibold">Target:</span> {sp.target}
+                                            </div>
+                                            <div>
+                                                <span className="font-semibold">Effect:</span> {sp.effect}
+                                            </div>
                                         </li>
                                     ))}
                                 </ul>
@@ -789,7 +908,7 @@
                 const data = {
                     armyName,
                     army,
-                    version: 2,
+                    version: 3,
                     exportedAt: new Date().toISOString()
                 };
                 const pretty = JSON.stringify(data, null, 2);
