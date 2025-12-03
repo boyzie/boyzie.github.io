@@ -77,12 +77,10 @@
                 color: #000 !important;
             }
             .bg-stone-900,
-            .bg-stone-800,
-            .bg-stone-950 {
+            .bg-stone-800 {
                 background-color: #fff !important;
                 border: 1px solid #000;
             }
-            .text-stone-200,
             .text-stone-300,
             .text-stone-400,
             .text-stone-500 {
@@ -188,14 +186,11 @@
             { name: "Single Entity", cost: 0, desc: "If SP is 12, reduce to 6 and gain +1 Armor." },
             { name: "Skirmisher", cost: 1, desc: "+1 Armor vs Shooting and Casters." },
             { name: "Slow", cost: -1, desc: "Movement -2\"." },
-            { name: "Spellcaster Lv1", cost: 1, desc: "Spellcaster Level 1: choose 1 colour of magic." },
-            { name: "Spellcaster Lv2", cost: 2, desc: "Spellcaster Level 2: choose 2 colours of magic." },
-            { name: "Spellcaster Lv3", cost: 3, desc: "Spellcaster Level 3: choose 3 colours of magic." },
-            { name: "Spellcaster Lv4", cost: 4, desc: "Spellcaster Level 4: choose 4 colours of magic." },
-            { name: "Spellcaster (Legacy)", cost: 0, desc: "Legacy placeholder – ignore or replace with Lv1–4." },
-            { name: "Spell Resistant", cost: 1, desc: "5+ to ignore any Spell that targets this unit." },
+            { name: "Spellcaster Lv1", cost: 1, desc: "Spellcaster Level 1: one school." },
+            { name: "Spellcaster Lv2", cost: 2, desc: "Spellcaster Level 2: two schools." },
+            { name: "Spellcaster Lv3", cost: 3, desc: "Spellcaster Level 3: three schools." },
             { name: "Stout", cost: 1, desc: "Ignore first hit each turn." },
-            { name: "Summoner", cost: 3, desc: "May Summon units mid-game (see DR2e rules)." },
+            { name: "Summoner", cost: 3, desc: "May summon units." },
             { name: "Terrific", cost: 2, desc: "Enemy suffers -2 Courage." },
             { name: "Undead", cost: 1, desc: "Never test Courage. Crumble instead." },
             { name: "Venemous", cost: 3, desc: "Any Attack roll of 6 counts as two hits." },
@@ -207,62 +202,6 @@
             { name: "Wild", cost: -1, desc: "Must test to Move. If failed, charge nearest unit." },
             { name: "18/100 Strength*", cost: 4, desc: "Reroll 3 failed dice." }
         ].sort((a, b) => a.name.localeCompare(b.name));
-
-        // --- DATA: Spell colours and spell lists (name + page ref only) ---
-
-        const SPELL_COLOURS = [
-            { id: "Amber", label: "Amber Magic" },
-            { id: "Crimson", label: "Crimson Magic" },
-            { id: "Emerald", label: "Emerald Magic" },
-            { id: "Indigo", label: "Indigo Magic" },
-            { id: "Jade", label: "Jade Magic" },
-            { id: "Magenta", label: "Magenta Magic" },
-            { id: "Saffron", label: "Saffron Magic" },
-            { id: "Turquoise", label: "Turquoise Magic" },
-            { id: "Violet", label: "Violet Magic" }
-        ];
-
-        // From the Spellbook Table / Quick Reference in DR2e – spell names and pages only.
-        const SPELLS_BY_COLOUR = {
-            Amber: [
-                { name: "Almighty Prod!", page: 129 },
-                { name: "Be Brave!", page: 130 }
-            ],
-            Crimson: [
-                { name: "Take That You Rotter!", page: 130 },
-                { name: "Utter Chaos!", page: 130 }
-            ],
-            Emerald: [
-                { name: "Heal Thee!", page: 131 },
-                { name: "Sod-Off Spell!", page: 131 }
-            ],
-            Indigo: [
-                { name: "Superglue You!", page: 131 },
-                { name: "You Shall Not Pass!", page: 132 }
-            ],
-            Jade: [
-                { name: "Bog Thee!", page: 132 },
-                { name: "Spring Heeled!", page: 132 },
-                { name: "You Have Wings!", page: 133 }
-            ],
-            Magenta: [
-                { name: "Sharp Blades!", page: 133 },
-                { name: "Sharp Darts!", page: 133 },
-                { name: "Stronger Shields!", page: 133 }
-            ],
-            Saffron: [
-                { name: "Dragon's Breath!", page: 134 },
-                { name: "Go Wild!", page: 134 }
-            ],
-            Turquoise: [
-                { name: "Teleport Thee!", page: 134 },
-                { name: "Transpose Thee!", page: 135 }
-            ],
-            Violet: [
-                { name: "Befuddle Thee!", page: 135 },
-                { name: "Curse Thee!", page: 135 }
-            ]
-        };
 
         const LEADER_UPGRADE_SUFFIX = "(L)";
         const UNSTOPPABLE_NAME = "Unstoppable March of the Dead (L)";
@@ -313,39 +252,6 @@
             const hasLeaderUpgradeOnNonLeader =
                 !unit.isLeader &&
                 (unit.selectedUpgrades || []).some(up => up.name.indexOf(LEADER_UPGRADE_SUFFIX) !== -1);
-
-            // --- Spellcaster logic: determine max colours based on Spellcaster Lv upgrades ---
-            const spellUpgrades = (unit.selectedUpgrades || []).filter(u =>
-                u.name.startsWith("Spellcaster Lv")
-            );
-            let maxSpellColours = 0;
-            spellUpgrades.forEach(up => {
-                const m = up.name.match(/(\d+)/);
-                if (m) {
-                    const level = parseInt(m[1], 10);
-                    if (level > maxSpellColours) maxSpellColours = level;
-                }
-            });
-
-            const selectedColours = unit.spellColours || [];
-
-            const toggleColour = (colourId) => {
-                const current = unit.spellColours || [];
-                const isSelected = current.includes(colourId);
-                if (isSelected) {
-                    const next = current.filter(c => c !== colourId);
-                    onUpdate(unit.id, { ...unit, spellColours: next });
-                } else {
-                    if (current.length >= maxSpellColours) {
-                        // hard cap – ignore extra clicks
-                        return;
-                    }
-                    const next = [...current, colourId];
-                    onUpdate(unit.id, { ...unit, spellColours: next });
-                }
-            };
-
-            const hasSpellcaster = maxSpellColours > 0;
 
             return (
                 <div className={cardClasses}>
@@ -507,79 +413,6 @@
                                 Warband Leader
                             </div>
                         )}
-
-                        {/* Spellcasting section (if this unit has Spellcaster LvX) */}
-                        {hasSpellcaster && (
-                            <div className="mt-4 pt-3 border-t border-stone-700">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="text-xs font-semibold text-stone-300 uppercase tracking-wide flex items-center gap-1">
-                                        <Icon name="sparkle" size={14} />
-                                        Spellcasting
-                                    </span>
-                                    <span className="text-[10px] text-stone-400">
-                                        Level {maxSpellColours} – choose up to {maxSpellColours} colour{maxSpellColours > 1 ? "s" : ""}
-                                    </span>
-                                </div>
-
-                                <div className="flex flex-wrap gap-2 mb-2 no-print">
-                                    {SPELL_COLOURS.map(col => {
-                                        const checked = selectedColours.includes(col.id);
-                                        const disabled = !checked && selectedColours.length >= maxSpellColours;
-                                        return (
-                                            <label
-                                                key={col.id}
-                                                className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded border cursor-pointer ${
-                                                    checked
-                                                        ? "border-amber-400 bg-stone-800 text-amber-200"
-                                                        : disabled
-                                                        ? "border-stone-700 bg-stone-900 text-stone-600 opacity-60 cursor-not-allowed"
-                                                        : "border-stone-700 bg-stone-900 text-stone-300 hover:border-amber-400"
-                                                }`}
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    className="accent-amber-400"
-                                                    checked={checked}
-                                                    disabled={disabled}
-                                                    onChange={() => toggleColour(col.id)}
-                                                />
-                                                <span>{col.label}</span>
-                                            </label>
-                                        );
-                                    })}
-                                </div>
-
-                                {selectedColours.length > 0 && (
-                                    <div className="bg-stone-950 border border-stone-800 rounded p-2 text-xs space-y-2">
-                                        {selectedColours.map(colId => {
-                                            const colourMeta = SPELL_COLOURS.find(c => c.id === colId);
-                                            const spells = SPELLS_BY_COLOUR[colId] || [];
-                                            if (!colourMeta || spells.length === 0) return null;
-                                            return (
-                                                <div key={colId}>
-                                                    <div className="font-semibold text-amber-300 mb-1">
-                                                        {colourMeta.label}
-                                                    </div>
-                                                    <ul className="ml-3 space-y-0.5">
-                                                        {spells.map(spell => (
-                                                            <li key={spell.name} className="flex justify-between gap-2">
-                                                                <span className="text-stone-100">{spell.name}</span>
-                                                                <span className="text-[10px] text-stone-500 whitespace-nowrap">
-                                                                    DR2e p.{spell.page}
-                                                                </span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            );
-                                        })}
-                                        <div className="text-[10px] text-stone-500 italic pt-1">
-                                            Spell effects: see Dragon Rampant 2e, Spellbook chapter.
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
                     </div>
                 </div>
             );
@@ -618,8 +451,7 @@
                     id: Date.now() + Math.random(),
                     customName: "",
                     selectedUpgrades: [],
-                    isLeader: false,
-                    spellColours: []
+                    isLeader: false
                 };
                 setArmy(prev => [...prev, newUnit]);
             };
@@ -637,6 +469,7 @@
                     ...unit,
                     id: Date.now() + Math.random(),
                     customName: unit.customName ? `${unit.customName} (copy)` : "",
+                    // keep leader flag off on copies
                     isLeader: false
                 };
                 setArmy(prev => [...prev, cloned]);
@@ -689,7 +522,7 @@
                 const data = {
                     armyName,
                     army,
-                    version: 2,
+                    version: 1,
                     exportedAt: new Date().toISOString()
                 };
                 const pretty = JSON.stringify(data, null, 2);
@@ -707,8 +540,7 @@
                         id: unit.id || (Date.now() + Math.random() + idx),
                         selectedUpgrades: unit.selectedUpgrades || [],
                         isLeader: !!unit.isLeader,
-                        rules: unit.rules || [],
-                        spellColours: unit.spellColours || []
+                        rules: unit.rules || []
                     }));
 
                     setArmy(normalizedArmy);
@@ -826,4 +658,80 @@
                                         ))}
                                     </select>
                                     <p className="text-xs text-stone-500">
-                                        Tip: tick <strong>Leader</strong> on the unit that carries your Leader tr
+                                        Tip: tick <strong>Leader</strong> on the unit that carries your Leader traits.
+                                    </p>
+                                </div>
+
+                                {/* JSON export/import */}
+                                <div className="bg-stone-900 border border-stone-700 rounded-lg p-4 shadow mt-4">
+                                    <h2 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                                        <Icon name="file-json" size={16} className="text-amber-300" />
+                                        Export / Import JSON
+                                    </h2>
+                                    <p className="text-[11px] text-stone-400 mb-2">
+                                        Click <strong>Export</strong> to generate JSON for this warband, then copy and save it somewhere.
+                                        Paste JSON back in and click <strong>Import</strong> to load it on another device.
+                                    </p>
+                                    <textarea
+                                        rows="6"
+                                        className="w-full bg-stone-950 border border-stone-700 rounded p-2 text-xs text-stone-100 mb-2 font-mono"
+                                        placeholder='Click "Export" to generate JSON here, or paste JSON then click "Import".'
+                                        value={jsonText}
+                                        onChange={(e) => setJsonText(e.target.value)}
+                                    ></textarea>
+                                    <div className="flex gap-2 justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={handleExportJson}
+                                            className="px-3 py-1 rounded bg-stone-800 hover:bg-stone-700 text-xs flex items-center gap-1"
+                                        >
+                                            <Icon name="export" size={14} />
+                                            Export
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleImportJson}
+                                            className="px-3 py-1 rounded bg-emerald-800 hover:bg-emerald-700 text-xs flex items-center gap-1"
+                                        >
+                                            <Icon name="import" size={14} />
+                                            Import
+                                        </button>
+                                    </div>
+                                </div>
+                            </aside>
+
+                            {/* Right panel: army list */}
+                            <section>
+                                <h2 className="sr-only">Army list</h2>
+                                {army.length === 0 ? (
+                                    <div className="border border-dashed border-stone-700 rounded-lg p-8 text-center text-stone-400">
+                                        <p className="mb-2 text-sm">No units in this warband yet.</p>
+                                        <p className="text-xs">
+                                            Use the panel on the left to add your first unit.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {army.map((unit) => (
+                                            <UnitCard
+                                                key={unit.id}
+                                                unit={unit}
+                                                onUpdate={updateUnit}
+                                                onDelete={deleteUnit}
+                                                onDuplicate={duplicateUnit}
+                                                onSetLeader={setLeader}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </section>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
