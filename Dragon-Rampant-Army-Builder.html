@@ -123,98 +123,291 @@
             { name: "Beserkers", sp: 6, cost: 4, attackOrder: "5+", attackVal: "3+", shootOrder: "-", shootVal: "-", moveOrder: "6+", moveDist: '8"', armor: 2, defense: "6+", courage: "3+", rules: ["Wild Charge", "Beserk"] }
         ];
 
-        // --- DATA: Fantastical Rules & Upgrades (including Leader traits) ---
+        // --- DATA: Fantastical Rules & Upgrades (now matching your full list) ---
         const UPGRADES_LIST = [
-            // Leader traits
+            // Leader-only traits (we tag with (L) for detection)
             {
                 name: "Brutal (L)",
                 cost: 1,
-                desc: "Leader trait: friendly units near this Leader can push themselves harder when rallying."
+                desc: "Leader only. Friendly units within 12\" may sacrifice 1 Strength Point to automatically pass a Rally test."
             },
             {
                 name: "Divine Leadership (L)",
                 cost: 2,
-                desc: "Leader trait: greatly extends the Leader’s influence range for rerolls and Courage."
+                desc: "Leader only. Grants Spell Resistant to all friendly units within 12\" of this Leader."
             },
             {
                 name: "Insipid (L)",
                 cost: -1,
-                desc: "Leader trait: this Leader gives no Courage bonus; the unit is cheaper as a result."
+                desc: "Leader only. This Leader provides no Courage bonus to nearby units."
             },
             {
                 name: "Unstoppable March of the Dead (L)",
                 cost: 3,
-                desc: "Leader trait: only for fully Undead warbands; represents relentless undead advance."
+                desc: "Undead Leader only. Warband ignores most Courage test triggers (e.g. Leader death) except for taking casualties."
             },
             {
                 name: "Wise Old Owl (L)",
                 cost: 1,
-                desc: "Leader trait: gives a small edge when deciding attacker/defender."
+                desc: "Leader only. Add or subtract 1 from the die roll when determining Attacker/Defender."
             },
 
-            // Standard Fantastical upgrades
-            { name: "18/100 Strength*", cost: 4, desc: "Dramatic one-off boost to hitting power; great for a key combat." },
-            { name: "Amphibious", cost: 1, desc: "Moves through water as if it were open ground." },
-            { name: "Armor-Piercing", cost: 1, desc: "Attacks are especially good at punching through armour." },
-            { name: "Beserk", cost: 1, desc: "Gains extra ferocity when charging into combat." },
-            { name: "Blessed Blades*", cost: 4, desc: "Superb enchanted weapons; much more reliable in melee." },
-            { name: "Brave", cost: 1, desc: "More reliable under fire or in frightening situations." },
-            { name: "Burrower", cost: 1, desc: "Can emerge unexpectedly from underground positions." },
-            { name: "Chariot", cost: 1, desc: "Heavy Riders upgrade; adds a short-ranged shooting attack." },
-            { name: "Cleric", cost: 1, desc: "Can restore a small amount of lost Strength to allies." },
-            { name: "Cowardly", cost: -1, desc: "More likely to fall back; cheaper but less dependable." },
-            { name: "Cunning", cost: 1, desc: "Once per turn, can retry a failed Move or Attack test." },
-            { name: "Cursed", cost: -1, desc: "Suffers a little extra damage each time it is hurt." },
-            { name: "Enchanted Weapons", cost: 1, desc: "Attacks are slightly more accurate in melee." },
-            { name: "Fear", cost: 1, desc: "Nearby enemies find it harder to stand their ground." },
-            { name: "Fearful", cost: -1, desc: "More timid in the face of danger, but cheaper to field." },
-            { name: "Fleet Footed", cost: 1, desc: "Moves faster than normal for its type." },
-            { name: "Flying", cost: 2, desc: "Ignores terrain and units when moving; counts as a flyer." },
-            { name: "Hatred", cost: 1, desc: "Particularly dangerous against one chosen enemy type." },
-            { name: "Heavy Missiles", cost: 1, desc: "Extends missile range and punch." },
-            { name: "Holy", cost: 1, desc: "Much less affected by fear- or terror-based effects." },
-            { name: "Hunter", cost: 1, desc: "Comfortable shooting in rough or awkward terrain." },
-            { name: "Invisibility", cost: 2, desc: "Hard to target at long range with shooting." },
-            { name: "Magic Missiles", cost: 3, desc: "Extra dice when using ranged magical attacks." },
-            { name: "Mystical Armor", cost: 2, desc: "Sometimes shrugs off damage entirely." },
-            { name: "Offensive", cost: 1, desc: "More attacks in melee than usual." },
-            { name: "Pikes", cost: 1, desc: "Blunts the advantages of mounted units charging it." },
-            { name: "Poison", cost: 2, desc: "Occasional hits count extra due to venom or toxins." },
-            { name: "Ponderous", cost: 1, desc: "Cannot charge or run; very deliberate movement." },
-            { name: "Ranger", cost: 1, desc: "Moves easily through woods and other rough ground." },
-            { name: "Regeneration", cost: 3, desc: "Can spend actions recovering lost Strength." },
-            { name: "Scary", cost: 1, desc: "Harder for nearby foes to pass Courage tests." },
-            { name: "Sharpshooter", cost: 2, desc: "More accurate when shooting at range." },
-            { name: "Shieldwall", cost: 1, desc: "Better protected against shooting attacks." },
-            { name: "Short Range Missiles", cost: 1, desc: "Missile range is shorter but still useful in close." },
-            { name: "Single Entity", cost: 0, desc: "Represented by a single formidable model; fewer SP but tougher." },
-            { name: "Skirmisher", cost: 1, desc: "More resilient to shooting and magic while harassing." },
-            { name: "Slow", cost: -1, desc: "Reduced movement speed, but cheaper overall." },
-            // Spellcaster levels – special handling in UI
-            { name: "Spellcaster Lv1", cost: 1, desc: "Knows one colour of magic from the Spellbook." },
-            { name: "Spellcaster Lv2", cost: 2, desc: "Knows two colours of magic from the Spellbook." },
-            { name: "Spellcaster Lv3", cost: 3, desc: "Knows three colours of magic from the Spellbook." },
-            { name: "Spellcaster Lv4", cost: 4, desc: "Knows four colours of magic from the Spellbook." },
-            { name: "Spellcaster Lv1 (old)", cost: 1, desc: "Legacy entry; treat as Spellcaster Lv1 if seen in old JSON." },
-            { name: "Spellcaster Lv2 (old)", cost: 2, desc: "Legacy entry; treat as Spellcaster Lv2 if seen in old JSON." },
-            { name: "Spellcaster Lv3 (old)", cost: 3, desc: "Legacy entry; treat as Spellcaster Lv3 if seen in old JSON." },
-            { name: "Spellcaster Lv1*", cost: 1, desc: "Legacy alt-name (if any older lists used it)." },
-            { name: "Spellcaster Lv2*", cost: 2, desc: "Legacy alt-name (if any older lists used it)." },
-            { name: "Spellcaster Lv3*", cost: 3, desc: "Legacy alt-name (if any older lists used it)." },
-            { name: "Stout", cost: 1, desc: "Shrugs off the first hit it suffers each turn." },
-            { name: "Summoner", cost: 3, desc: "Can bring in extra units mid-battle from reserves." },
-            { name: "Terrific", cost: 2, desc: "Extremely frightening; enemies struggle with Courage tests." },
-            { name: "Undead", cost: 1, desc: "Does not behave like normal troops when it suffers losses." },
-            { name: "Venemous", cost: 3, desc: "Some attacks inflict extra damage when the venom bites." },
-            { name: "Wall of Spears", cost: 1, desc: "Good at receiving charges; strikes first in many cases." },
-            { name: "Weak", cost: -1, desc: "Its attacks usually inflict slightly fewer hits." },
-            { name: "Weighty Projectiles", cost: 1, desc: "Missiles are especially good at cracking armour." },
-            { name: "Well Led", cost: 1, desc: "Leader effect is a little stronger than normal." },
-            { name: "Were-Creature", cost: 2, desc: "Can change form and fighting style during the game." },
-            { name: "Wild", cost: -1, desc: "Unpredictable; sometimes charges the nearest foe instead of obeying orders." }
-        ].filter((u, index, self) =>
-            index === self.findIndex(v => v.name === u.name)
-        ).sort((a, b) => a.name.localeCompare(b.name));
+            // A–C
+            {
+                name: "18/00 Strength",
+                cost: 4,
+                desc: "Reroll up to three failed hit dice when Attacking or Defending. Only one unit allowed per 24 army points."
+            },
+            {
+                name: "Amphibious",
+                cost: 1,
+                desc: "Counts as Fast, Ranger, and Fleet Footed while in water-based terrain."
+            },
+            {
+                name: "Berserk",
+                cost: 2,
+                desc: "Attack dice that roll a 6 cause a hit and are rolled again (exploding 6s). Stops working if the unit is at half strength or below."
+            },
+            {
+                name: "Blessed Blades",
+                cost: 4,
+                desc: "Roll 3 additional dice when Attacking or Defending. Only one unit allowed per 24 army points."
+            },
+            {
+                name: "Bloodthirsty",
+                cost: 3,
+                desc: "Effect is identical to Venomous (6s count as 2 hits). Choose this name for flavour."
+            },
+            {
+                name: "Bodkins",
+                cost: 3,
+                desc: "When Shooting, each die that rolls a 6 causes 2 hits."
+            },
+            {
+                name: "Burrower",
+                cost: 2,
+                desc: "Unit is held in reserve and dices from turn 3 onwards to appear anywhere on the table away from enemies."
+            },
+            {
+                name: "Cannibalistic",
+                cost: 3,
+                desc: "Regain 1 lost Strength Point every time this unit inflicts damage on an enemy."
+            },
+            {
+                name: "Champion (Hewing)",
+                cost: 1,
+                desc: "Melee Champion. Reroll one failed hit die in melee. Combine with Champion (Eagle-Eyed) for the full 2-point Champion."
+            },
+            {
+                name: "Champion (Eagle-Eyed)",
+                cost: 1,
+                desc: "Shooting Champion. Reroll one failed hit die when Shooting. Combine with Champion (Hewing) for the full 2-point Champion."
+            },
+            {
+                name: "Chaotic",
+                cost: 1,
+                desc: "Use a 12-sided die (d12) for all rolls instead of 2d6."
+            },
+            {
+                name: "Cleric",
+                cost: 2,
+                desc: "Counts as Courageous. Against Undead also counts as Champion and Repellent. Cost is 2–4 depending on how many Undead the opponent has; builder uses 2 as a base – adjust manually if needed."
+            },
+            {
+                name: "Concealment",
+                cost: 3,
+                desc: "Unit cannot be Shot at, Attacked, or Wild Charged if the enemy starts more than 6\" away."
+            },
+            {
+                name: "Courageous",
+                cost: 2,
+                desc: "Automatically pass one Courage test per game."
+            },
+            {
+                name: "Cowardly",
+                cost: -1,
+                desc: "When Retreating, the unit must fall back its full movement distance instead of half."
+            },
+            {
+                name: "Cursed",
+                cost: -1,
+                desc: "If the unit takes at least 1 hit, it takes 1 additional hit."
+            },
+
+            // D–H
+            {
+                name: "Drums and Flags",
+                cost: 2,
+                desc: "Improves the unit’s Courage by 1 point."
+            },
+            {
+                name: "Enchanted Blades",
+                cost: 3,
+                desc: "Roll 2 additional dice when Attacking or Defending."
+            },
+            {
+                name: "Exploder",
+                cost: 2,
+                desc: "Unit can be ordered to explode, causing a Strength 3+ hit on every unit (friend and foe) within 6\"."
+            },
+            {
+                name: "Fanatical",
+                cost: 2,
+                desc: "May reroll unsuccessful Rally tests."
+            },
+            {
+                name: "Fast",
+                cost: 1,
+                desc: "Maximum Move distance is increased by 2\"."
+            },
+            {
+                name: "Fearful",
+                cost: -1,
+                desc: "Suffers -1 to all Courage tests (-2 if attacked by Fearsome)."
+            },
+            {
+                name: "Fearless",
+                cost: 1,
+                desc: "Ignores the penalties caused by Fearsome enemies."
+            },
+            {
+                name: "Fearsome",
+                cost: 2,
+                desc: "Enemies Attacking this unit suffer -1 to their Courage tests."
+            },
+            {
+                name: "Flyer",
+                cost: 2,
+                desc: "Moves over other units and terrain; ignores terrain and cover effects during movement and Attacks."
+            },
+            {
+                name: "Hatred",
+                cost: 1,
+                desc: "Gains Wild Charge against one specific race chosen before the game."
+            },
+
+            // I–R
+            {
+                name: "Large",
+                cost: 1,
+                desc: "Adds +2 to the unit's starting Strength Points. Cost is 1–3 depending on Armour; builder uses 1 as a base – check the rules and adjust manually."
+            },
+            {
+                name: "Longer Range",
+                cost: 2,
+                desc: "Increases the unit’s Shooting range by 4\"."
+            },
+            {
+                name: "Lucky",
+                cost: 3,
+                desc: "Force a reroll of any one set of dice (friend or foe) once per game. Only one Lucky unit per 24 army points."
+            },
+            {
+                name: "Magical Missiles",
+                cost: 3,
+                desc: "Roll 2 additional dice when Shooting."
+            },
+            {
+                name: "Mystical Armour",
+                cost: 2,
+                desc: "Each time the unit loses a Strength Point, roll a die; on a 6, the damage is ignored."
+            },
+            {
+                name: "Regeneration",
+                cost: 3,
+                desc: "On a successful Move order the unit may choose to stand still and regain 1 lost Strength Point instead of moving."
+            },
+            {
+                name: "Repellent",
+                cost: 2,
+                desc: "Enemies suffer -1 to their activation rolls when trying to Attack this unit."
+            },
+            {
+                name: "Ring of Uncertain Power",
+                cost: 2,
+                desc: "Roll on a random table at the start of the game to determine a permanent (possibly risky) magical effect."
+            },
+
+            // S–Z
+            {
+                name: "Slayer",
+                cost: 2,
+                desc: "Functions like Cleric but aimed at a specific enemy type (e.g. Goblin Slayer, Beast Slayer). Cost can vary by opponent; builder uses 2 as a base – adjust manually if needed."
+            },
+            {
+                name: "Slow",
+                cost: -1,
+                desc: "Maximum Move distance is reduced by 2\"."
+            },
+            {
+                name: "Sneakers",
+                cost: 1,
+                desc: "Unit may make one free Move action before the game begins."
+            },
+
+            // Spellcaster levels – we expose as Lv1–Lv4 for clarity
+            {
+                name: "Spellcaster Lv1",
+                cost: 1,
+                desc: "Spellcaster Level 1. Knows 1 colour of magic from the Spellbook."
+            },
+            {
+                name: "Spellcaster Lv2",
+                cost: 2,
+                desc: "Spellcaster Level 2. Knows 2 colours of magic from the Spellbook."
+            },
+            {
+                name: "Spellcaster Lv3",
+                cost: 3,
+                desc: "Spellcaster Level 3. Knows 3 colours of magic from the Spellbook."
+            },
+            {
+                name: "Spellcaster Lv4",
+                cost: 4,
+                desc: "Spellcaster Level 4. Knows 4 colours of magic from the Spellbook."
+            },
+
+            {
+                name: "Spell Resistant",
+                cost: 1,
+                desc: "Ignore the effect of a Spell on a roll of 5+."
+            },
+            {
+                name: "Super Spell Resistant",
+                cost: 2,
+                desc: "Ignore the effect of a Spell on a roll of 4+."
+            },
+            {
+                name: "Summoner",
+                cost: 3,
+                desc: "May attempt to summon allies (up to 50% of your warband’s points) onto the table during the game."
+            },
+            {
+                name: "Undead",
+                cost: 0,
+                desc: "Courage becomes 0+ (never Battered, but routs on negative scores). Fragile (hits taken are rounded up). Ignores Fearsome."
+            },
+            {
+                name: "Venomous",
+                cost: 3,
+                desc: "Attack dice that roll a 6 cause 2 hits."
+            },
+            {
+                name: "Weak",
+                cost: -1,
+                desc: "Unit rolls 1 fewer die when Attacking or Shooting."
+            },
+            {
+                name: "Well Led",
+                cost: 1,
+                desc: "May reroll a single test or activation once per game."
+            },
+            {
+                name: "Were-Creature",
+                cost: 2,
+                desc: "Unit starts in human form but transforms into a Lesser Warbeast-style unit after taking damage. Cost is 2 plus any additional profile cost; builder shows the base 2 – adjust manually."
+            }
+        ].sort((a, b) => a.name.localeCompare(b.name));
 
         const LEADER_UPGRADE_SUFFIX = "(L)";
         const UNSTOPPABLE_NAME = "Unstoppable March of the Dead (L)";
@@ -654,9 +847,6 @@
                                         <Icon name="sparkle" size={14} />
                                         <span>Spellcaster Level {spellLevel}</span>
                                     </div>
-                                    <div className="text-[11px] text-indigo-200">
-                                        Colours chosen: {spellConfig.colours.length}/{spellLevel}
-                                    </div>
                                 </div>
 
                                 {/* Colour selection (no-print) */}
@@ -908,7 +1098,7 @@
                 const data = {
                     armyName,
                     army,
-                    version: 3,
+                    version: 4,
                     exportedAt: new Date().toISOString()
                 };
                 const pretty = JSON.stringify(data, null, 2);
