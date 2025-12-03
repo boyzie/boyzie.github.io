@@ -25,6 +25,7 @@
             font-family: 'Lato', sans-serif;
             background-color: #1a1a1a;
             color: #e5e5e5;
+            margin: 0;
         }
         
         h1, h2, h3, .fantasy-font {
@@ -62,14 +63,14 @@
                 color: black;
             }
             .no-print {
-                display: none;
+                display: none !important;
             }
             .card-print {
                 border: 1px solid #ccc;
                 break-inside: avoid;
                 margin-bottom: 1rem;
-                background-color: white;
-                color: black;
+                background-color: white !important;
+                color: black !important;
             }
             .text-amber-500,
             .text-amber-400,
@@ -80,12 +81,12 @@
             .bg-stone-800,
             .bg-stone-950 {
                 background-color: #fff !important;
-                border: 1px solid #000;
+                border-color: #000 !important;
             }
-            .text-stone-200,
             .text-stone-300,
             .text-stone-400,
-            .text-stone-500 {
+            .text-stone-500,
+            .text-stone-200 {
                 color: #333 !important;
             }
         }
@@ -122,152 +123,181 @@
             { name: "Beserkers", sp: 6, cost: 4, attackOrder: "5+", attackVal: "3+", shootOrder: "-", shootVal: "-", moveOrder: "6+", moveDist: '8"', armor: 2, defense: "6+", courage: "3+", rules: ["Wild Charge", "Beserk"] }
         ];
 
-        // --- DATA: Fantastical Rules and Upgrades (including Leader traits) ---
+        // --- DATA: Fantastical Rules & Upgrades (including Leader traits) ---
         const UPGRADES_LIST = [
-            // Leader traits (available as upgrades; cost applied to that unit)
+            // Leader traits
             {
                 name: "Brutal (L)",
                 cost: 1,
-                desc: "Leader trait: Units within 12\" of this Leader may automatically pass a failed Rally test by removing 1 Strength Point."
+                desc: "Leader trait: friendly units near this Leader can push themselves harder when rallying."
             },
             {
                 name: "Divine Leadership (L)",
                 cost: 2,
-                desc: "Leader trait: This Leader's command or Courage bonus extends to 18\" instead of 12\"."
+                desc: "Leader trait: greatly extends the Leader’s influence range for rerolls and Courage."
             },
             {
                 name: "Insipid (L)",
                 cost: -1,
-                desc: "Leader trait: Units within 12\" gain no Courage bonus from this Leader. Reduces the unit cost by 1 point."
+                desc: "Leader trait: this Leader gives no Courage bonus; the unit is cheaper as a result."
             },
             {
                 name: "Unstoppable March of the Dead (L)",
                 cost: 3,
-                desc: "Leader trait (Undead warbands only): Use only if all units in the warband are Undead."
+                desc: "Leader trait: only for fully Undead warbands; represents relentless undead advance."
             },
             {
                 name: "Wise Old Owl (L)",
                 cost: 1,
-                desc: "Leader trait: When rolling to decide attacker or defender, you may add or subtract 1 from your final total."
+                desc: "Leader trait: gives a small edge when deciding attacker/defender."
             },
 
-            // Standard Fantastical Rules / upgrades
-            { name: "Amphibious", cost: 1, desc: "Treat water as open terrain." },
-            { name: "Armor-Piercing", cost: 1, desc: "-1 to Target Armor." },
-            { name: "Beserk", cost: 1, desc: "+2 Attacks on Charge." },
-            { name: "Blessed Blades*", cost: 4, desc: "Reroll failed hits." },
-            { name: "Brave", cost: 1, desc: "+1 Courage." },
-            { name: "Burrower", cost: 1, desc: "Start off board. Appear 3\" from enemy." },
-            { name: "Chariot", cost: 1, desc: "Upgrade for Heavy Riders. Gain Shoot 6+/5+." },
-            { name: "Cleric", cost: 1, desc: "Heal 1 SP on 5+." },
-            { name: "Cowardly", cost: -1, desc: "Retreat full distance. If flyer, full distance +1D6." },
-            { name: "Cunning", cost: 1, desc: "Reroll failed Move or Attack once per turn." },
-            { name: "Cursed", cost: -1, desc: "When this unit is hit, add 1 additional hit." },
-            { name: "Enchanted Weapons", cost: 1, desc: "+1 to Hit in Melee." },
-            { name: "Fear", cost: 1, desc: "Enemy suffers -1 Courage." },
-            { name: "Fearful", cost: -1, desc: "Courage tests -1. -2 if enemy is Fearsome. Cannot mix with Fearsome or Undead." },
-            { name: "Fleet Footed", cost: 1, desc: "Move +2\"." },
-            { name: "Flying", cost: 2, desc: "Ignore terrain and units when moving." },
-            { name: "Hatred", cost: 1, desc: "Reroll misses vs a specific enemy." },
-            { name: "Heavy Missiles", cost: 1, desc: "Range 18\"." },
-            { name: "Holy", cost: 1, desc: "Immune to Fear and Terror." },
-            { name: "Hunter", cost: 1, desc: "No terrain penalty when shooting." },
-            { name: "Invisibility", cost: 2, desc: "Cannot be shot at over 12\"." },
-            { name: "Magic Missiles", cost: 3, desc: "+2 dice when Shooting." },
-            { name: "Mystical Armor", cost: 2, desc: "Roll 6+ to ignore SP loss." },
-            { name: "Offensive", cost: 1, desc: "+2 Attack Dice." },
-            { name: "Pikes", cost: 1, desc: "No bonus for mounted charging this unit." },
-            { name: "Poison", cost: 2, desc: "Hits on 6s count as 2." },
-            { name: "Ponderous", cost: 1, desc: "Cannot run or charge." },
-            { name: "Ranger", cost: 1, desc: "Move through rough terrain without penalty." },
-            { name: "Regeneration", cost: 3, desc: "Instead of Move, heal 1 SP." },
-            { name: "Scary", cost: 1, desc: "-1 Courage to enemy in melee." },
-            { name: "Sharpshooter", cost: 2, desc: "+1 to Hit when Shooting." },
-            { name: "Shieldwall", cost: 1, desc: "+1 Armor vs Shooting." },
-            { name: "Short Range Missiles", cost: 1, desc: "Range 12\"." },
-            { name: "Single Entity", cost: 0, desc: "If SP is 12, reduce to 6 and gain +1 Armor." },
-            { name: "Skirmisher", cost: 1, desc: "+1 Armor vs Shooting and Casters." },
-            { name: "Slow", cost: -1, desc: "Movement -2\"." },
-            { name: "Spellcaster Lv1", cost: 1, desc: "Spellcaster Level 1: choose 1 colour of magic." },
-            { name: "Spellcaster Lv2", cost: 2, desc: "Spellcaster Level 2: choose 2 colours of magic." },
-            { name: "Spellcaster Lv3", cost: 3, desc: "Spellcaster Level 3: choose 3 colours of magic." },
-            { name: "Spellcaster Lv4", cost: 4, desc: "Spellcaster Level 4: choose 4 colours of magic." },
-            { name: "Spellcaster (Legacy)", cost: 0, desc: "Legacy placeholder – ignore or replace with Lv1–4." },
-            { name: "Spell Resistant", cost: 1, desc: "5+ to ignore any Spell that targets this unit." },
-            { name: "Stout", cost: 1, desc: "Ignore first hit each turn." },
-            { name: "Summoner", cost: 3, desc: "May Summon units mid-game (see DR2e rules)." },
-            { name: "Terrific", cost: 2, desc: "Enemy suffers -2 Courage." },
-            { name: "Undead", cost: 1, desc: "Never test Courage. Crumble instead." },
-            { name: "Venemous", cost: 3, desc: "Any Attack roll of 6 counts as two hits." },
-            { name: "Wall of Spears", cost: 1, desc: "Strike first when charged." },
-            { name: "Weak", cost: -1, desc: "Subtract 1 from total hits inflicted." },
-            { name: "Weighty Projectiles", cost: 1, desc: "-1 Armor to the target." },
-            { name: "Well Led", cost: 1, desc: "Leadership bubble +1." },
-            { name: "Were-Creature", cost: 2, desc: "Change stats mid game." },
-            { name: "Wild", cost: -1, desc: "Must test to Move. If failed, charge nearest unit." },
-            { name: "18/100 Strength*", cost: 4, desc: "Reroll 3 failed dice." }
-        ].sort((a, b) => a.name.localeCompare(b.name));
-
-        // --- DATA: Spell colours and spell lists (name + page ref only) ---
-
-        const SPELL_COLOURS = [
-            { id: "Amber", label: "Amber Magic" },
-            { id: "Crimson", label: "Crimson Magic" },
-            { id: "Emerald", label: "Emerald Magic" },
-            { id: "Indigo", label: "Indigo Magic" },
-            { id: "Jade", label: "Jade Magic" },
-            { id: "Magenta", label: "Magenta Magic" },
-            { id: "Saffron", label: "Saffron Magic" },
-            { id: "Turquoise", label: "Turquoise Magic" },
-            { id: "Violet", label: "Violet Magic" }
-        ];
-
-        // From the Spellbook Table / Quick Reference in DR2e – spell names and pages only.
-        const SPELLS_BY_COLOUR = {
-            Amber: [
-                { name: "Almighty Prod! Almighty Prod! (6+)
-    ◦ Target: Friendly unit within 18".
-    ◦ Effect: If the unit fails an ordered activation roll, it may immediately reroll it once. The spell ends immediately after use", page: 129 },
-                { name: "Be Brave!", page: 130 }
-            ],
-            Crimson: [
-                { name: "Take That You Rotter!", page: 130 },
-                { name: "Utter Chaos!", page: 130 }
-            ],
-            Emerald: [
-                { name: "Heal Thee!", page: 131 },
-                { name: "Sod-Off Spell!", page: 131 }
-            ],
-            Indigo: [
-                { name: "Superglue You!", page: 131 },
-                { name: "You Shall Not Pass!", page: 132 }
-            ],
-            Jade: [
-                { name: "Bog Thee!", page: 132 },
-                { name: "Spring Heeled!", page: 132 },
-                { name: "You Have Wings!", page: 133 }
-            ],
-            Magenta: [
-                { name: "Sharp Blades!", page: 133 },
-                { name: "Sharp Darts!", page: 133 },
-                { name: "Stronger Shields!", page: 133 }
-            ],
-            Saffron: [
-                { name: "Dragon's Breath!", page: 134 },
-                { name: "Go Wild!", page: 134 }
-            ],
-            Turquoise: [
-                { name: "Teleport Thee!", page: 134 },
-                { name: "Transpose Thee!", page: 135 }
-            ],
-            Violet: [
-                { name: "Befuddle Thee!", page: 135 },
-                { name: "Curse Thee!", page: 135 }
-            ]
-        };
+            // Standard Fantastical upgrades
+            { name: "18/100 Strength*", cost: 4, desc: "Dramatic one-off boost to hitting power; great for a key combat." },
+            { name: "Amphibious", cost: 1, desc: "Moves through water as if it were open ground." },
+            { name: "Armor-Piercing", cost: 1, desc: "Attacks are especially good at punching through armour." },
+            { name: "Beserk", cost: 1, desc: "Gains extra ferocity when charging into combat." },
+            { name: "Blessed Blades*", cost: 4, desc: "Superb enchanted weapons; much more reliable in melee." },
+            { name: "Brave", cost: 1, desc: "More reliable under fire or in frightening situations." },
+            { name: "Burrower", cost: 1, desc: "Can emerge unexpectedly from underground positions." },
+            { name: "Chariot", cost: 1, desc: "Heavy Riders upgrade; adds a short-ranged shooting attack." },
+            { name: "Cleric", cost: 1, desc: "Can restore a small amount of lost Strength to allies." },
+            { name: "Cowardly", cost: -1, desc: "More likely to fall back; cheaper but less dependable." },
+            { name: "Cunning", cost: 1, desc: "Once per turn, can retry a failed Move or Attack test." },
+            { name: "Cursed", cost: -1, desc: "Suffers a little extra damage each time it is hurt." },
+            { name: "Enchanted Weapons", cost: 1, desc: "Attacks are slightly more accurate in melee." },
+            { name: "Fear", cost: 1, desc: "Nearby enemies find it harder to stand their ground." },
+            { name: "Fearful", cost: -1, desc: "More timid in the face of danger, but cheaper to field." },
+            { name: "Fleet Footed", cost: 1, desc: "Moves faster than normal for its type." },
+            { name: "Flying", cost: 2, desc: "Ignores terrain and units when moving; counts as a flyer." },
+            { name: "Hatred", cost: 1, desc: "Particularly dangerous against one chosen enemy type." },
+            { name: "Heavy Missiles", cost: 1, desc: "Extends missile range and punch." },
+            { name: "Holy", cost: 1, desc: "Much less affected by fear- or terror-based effects." },
+            { name: "Hunter", cost: 1, desc: "Comfortable shooting in rough or awkward terrain." },
+            { name: "Invisibility", cost: 2, desc: "Hard to target at long range with shooting." },
+            { name: "Magic Missiles", cost: 3, desc: "Extra dice when using ranged magical attacks." },
+            { name: "Mystical Armor", cost: 2, desc: "Sometimes shrugs off damage entirely." },
+            { name: "Offensive", cost: 1, desc: "More attacks in melee than usual." },
+            { name: "Pikes", cost: 1, desc: "Blunts the advantages of mounted units charging it." },
+            { name: "Poison", cost: 2, desc: "Occasional hits count extra due to venom or toxins." },
+            { name: "Ponderous", cost: 1, desc: "Cannot charge or run; very deliberate movement." },
+            { name: "Ranger", cost: 1, desc: "Moves easily through woods and other rough ground." },
+            { name: "Regeneration", cost: 3, desc: "Can spend actions recovering lost Strength." },
+            { name: "Scary", cost: 1, desc: "Harder for nearby foes to pass Courage tests." },
+            { name: "Sharpshooter", cost: 2, desc: "More accurate when shooting at range." },
+            { name: "Shieldwall", cost: 1, desc: "Better protected against shooting attacks." },
+            { name: "Short Range Missiles", cost: 1, desc: "Missile range is shorter but still useful in close." },
+            { name: "Single Entity", cost: 0, desc: "Represented by a single formidable model; fewer SP but tougher." },
+            { name: "Skirmisher", cost: 1, desc: "More resilient to shooting and magic while harassing." },
+            { name: "Slow", cost: -1, desc: "Reduced movement speed, but cheaper overall." },
+            // Spellcaster levels – special handling in UI
+            { name: "Spellcaster Lv1", cost: 1, desc: "Knows one colour of magic from the Spellbook." },
+            { name: "Spellcaster Lv2", cost: 2, desc: "Knows two colours of magic from the Spellbook." },
+            { name: "Spellcaster Lv3", cost: 3, desc: "Knows three colours of magic from the Spellbook." },
+            { name: "Spellcaster Lv4", cost: 4, desc: "Knows four colours of magic from the Spellbook." },
+            { name: "Spellcaster Lv1 (old)", cost: 1, desc: "Legacy entry; treat as Spellcaster Lv1 if seen in old JSON." }, // safety if you had older names – optional
+            { name: "Spellcaster Lv2 (old)", cost: 2, desc: "Legacy entry; treat as Spellcaster Lv2 if seen in old JSON." },
+            { name: "Spellcaster Lv3 (old)", cost: 3, desc: "Legacy entry; treat as Spellcaster Lv3 if seen in old JSON." },
+            { name: "Spellcaster Lv1*", cost: 1, desc: "Legacy alt-name (if any older lists used it)." },
+            { name: "Spellcaster Lv2*", cost: 2, desc: "Legacy alt-name (if any older lists used it)." },
+            { name: "Spellcaster Lv3*", cost: 3, desc: "Legacy alt-name (if any older lists used it)." },
+            { name: "Stout", cost: 1, desc: "Shrugs off the first hit it suffers each turn." },
+            { name: "Summoner", cost: 3, desc: "Can bring in extra units mid-battle from reserves." },
+            { name: "Terrific", cost: 2, desc: "Extremely frightening; enemies struggle with Courage tests." },
+            { name: "Undead", cost: 1, desc: "Does not behave like normal troops when it suffers losses." },
+            { name: "Venemous", cost: 3, desc: "Some attacks inflict extra damage when the venom bites." },
+            { name: "Wall of Spears", cost: 1, desc: "Good at receiving charges; strikes first in many cases." },
+            { name: "Weak", cost: -1, desc: "Its attacks usually inflict slightly fewer hits." },
+            { name: "Weighty Projectiles", cost: 1, desc: "Missiles are especially good at cracking armour." },
+            { name: "Well Led", cost: 1, desc: "Leader effect is a little stronger than normal." },
+            { name: "Were-Creature", cost: 2, desc: "Can change form and fighting style during the game." },
+            { name: "Wild", cost: -1, desc: "Unpredictable; sometimes charges the nearest foe instead of obeying orders." }
+        ].filter((u, index, self) =>
+            index === self.findIndex(v => v.name === u.name)
+        ).sort((a, b) => a.name.localeCompare(b.name));
 
         const LEADER_UPGRADE_SUFFIX = "(L)";
         const UNSTOPPABLE_NAME = "Unstoppable March of the Dead (L)";
+
+        // --- DATA: Spellbook (colours & spells) ---
+        const SPELLBOOK = {
+            Amber: [
+                { name: "Almighty Prod!", summary: "One friendly unit gets a single reroll on a failed ordered activation." },
+                { name: "Be Brave!", summary: "Friendly unit rerolls failed Courage checks for a short time." }
+            ],
+            Crimson: [
+                { name: "Take That You Rotter!", summary: "Magical ranged attack; works much like a short-ranged Shoot action." },
+                { name: "Utter Chaos!", summary: "Target becomes unpredictable, acting under a chaotic rule for a turn." }
+            ],
+            Emerald: [
+                { name: "Heal Thee!", summary: "Restore one or two lost Strength Points to a friendly unit in range." },
+                { name: "Sod-Off Spell!", summary: "Cancels one Spell currently affecting the chosen unit." }
+            ],
+            Indigo: [
+                { name: "Superglue You!", summary: "Pins the target in place so it cannot move, even when retreating." },
+                { name: "You Shall Not Pass!", summary: "Creates a temporary barrier that blocks movement and line of sight." }
+            ],
+            Jade: [
+                { name: "Bog Thee!", summary: "Makes the ground around the target count as rough terrain for a while." },
+                { name: "Spring Heeled!", summary: "Friendly unit moves through rough ground at full speed for a short time." },
+                { name: "You Have Wings!", summary: "Grants the Flyer rule briefly to the chosen unit." }
+            ],
+            Magenta: [
+                { name: "Sharp Blades!", summary: "Friendly unit rerolls its failed Attack or Defence dice for a turn." },
+                { name: "Sharp Darts!", summary: "Friendly unit rerolls failed Shooting dice for a turn." },
+                { name: "Stronger Shields!", summary: "Temporarily increases the unit’s Armour value by one." }
+            ],
+            Saffron: [
+                { name: "Dragon’s Breath!", summary: "Creates a drifting cloud that stops shooting in or through the target." },
+                { name: "Go Wild!", summary: "Gives a unit the Berserk rule for a brief window, even when weakened." }
+            ],
+            Turquoise: [
+                { name: "Teleport Thee!", summary: "Relocates one friendly unit a short distance without using its activation." },
+                { name: "Transpose Thee!", summary: "Swaps the positions of two nearby units, friend or foe." }
+            ],
+            Violet: [
+                { name: "Befuddle Thee!", summary: "Automatically batters one enemy unit unless they are already broken or Undead." },
+                { name: "Curse Thee!", summary: "Gives the target the Cursed rule for a short time, making damage worse." }
+            ]
+        };
+
+        const SPELL_COLOURS = Object.keys(SPELLBOOK);
+
+        // --- Helpers for Spellcaster handling ---
+        const SPELL_UPGRADE_NAMES = [
+            "Spellcaster Lv1",
+            "Spellcaster Lv2",
+            "Spellcaster Lv3",
+            "Spellcaster Lv4",
+            "Spellcaster Lv1 (old)",
+            "Spellcaster Lv2 (old)",
+            "Spellcaster Lv3 (old)",
+            "Spellcaster Lv1*",
+            "Spellcaster Lv2*",
+            "Spellcaster Lv3*"
+        ];
+
+        function getSpellcasterLevel(unit) {
+            const names = (unit.selectedUpgrades || []).map(u => u.name);
+            if (names.includes("Spellcaster Lv4")) return 4;
+            if (names.includes("Spellcaster Lv3") || names.includes("Spellcaster Lv3*") || names.includes("Spellcaster Lv3 (old)")) return 3;
+            if (names.includes("Spellcaster Lv2") || names.includes("Spellcaster Lv2*") || names.includes("Spellcaster Lv2 (old)")) return 2;
+            if (names.includes("Spellcaster Lv1") || names.includes("Spellcaster Lv1*") || names.includes("Spellcaster Lv1 (old)")) return 1;
+            return 0;
+        }
+
+        function normalizeSpellConfig(raw) {
+            if (!raw || typeof raw !== "object") {
+                return { colours: [], selectedSpells: [] };
+            }
+            const colours = Array.isArray(raw.colours) ? raw.colours.filter(c => SPELL_COLOURS.includes(c)) : [];
+            const selectedSpells = Array.isArray(raw.selectedSpells)
+                ? raw.selectedSpells
+                    .filter(s => s && s.name && s.colour && SPELL_COLOURS.includes(s.colour))
+                    .map(s => ({ name: s.name, colour: s.colour }))
+                : [];
+            return { colours, selectedSpells };
+        }
 
         // Icon wrapper
         const Icon = ({ name, size = 20, className = "" }) => {
@@ -285,12 +315,28 @@
                 
                 const upgradeObj = UPGRADES_LIST.find(u => u.name === upgradeName);
                 const currentUpgrades = unit.selectedUpgrades || [];
-                if (!currentUpgrades.some(u => u.name === upgradeName)) {
-                    onUpdate(unit.id, { 
-                        ...unit, 
-                        selectedUpgrades: [...currentUpgrades, upgradeObj] 
-                    });
+
+                // Prevent stacking multiple Spellcaster levels accidentally – keep all but this is safer
+                const isSpellUpgrade = SPELL_UPGRADE_NAMES.includes(upgradeName);
+                let newUpgrades = currentUpgrades.slice();
+
+                if (isSpellUpgrade) {
+                    // Remove any existing spellcaster levels, then add the chosen one
+                    newUpgrades = currentUpgrades.filter(u => !SPELL_UPGRADE_NAMES.includes(u.name));
+                    if (!newUpgrades.some(u => u.name === upgradeName) && upgradeObj) {
+                        newUpgrades.push(upgradeObj);
+                    }
+                } else {
+                    if (!currentUpgrades.some(u => u.name === upgradeName) && upgradeObj) {
+                        newUpgrades = [...currentUpgrades, upgradeObj];
+                    }
                 }
+
+                onUpdate(unit.id, { 
+                    ...unit, 
+                    selectedUpgrades: newUpgrades 
+                });
+
                 e.target.value = "";
             };
 
@@ -316,38 +362,56 @@
                 !unit.isLeader &&
                 (unit.selectedUpgrades || []).some(up => up.name.indexOf(LEADER_UPGRADE_SUFFIX) !== -1);
 
-            // --- Spellcaster logic: determine max colours based on Spellcaster Lv upgrades ---
-            const spellUpgrades = (unit.selectedUpgrades || []).filter(u =>
-                u.name.startsWith("Spellcaster Lv")
-            );
-            let maxSpellColours = 0;
-            spellUpgrades.forEach(up => {
-                const m = up.name.match(/(\d+)/);
-                if (m) {
-                    const level = parseInt(m[1], 10);
-                    if (level > maxSpellColours) maxSpellColours = level;
-                }
-            });
+            const spellLevel = getSpellcasterLevel(unit);
+            const spellConfig = normalizeSpellConfig(unit.spellConfig);
 
-            const selectedColours = unit.spellColours || [];
+            const updateSpellConfig = (cfg) => {
+                onUpdate(unit.id, { ...unit, spellConfig: normalizeSpellConfig(cfg) });
+            };
 
-            const toggleColour = (colourId) => {
-                const current = unit.spellColours || [];
-                const isSelected = current.includes(colourId);
+            const handleToggleColour = (colour) => {
+                const current = normalizeSpellConfig(unit.spellConfig);
+                const isSelected = current.colours.includes(colour);
                 if (isSelected) {
-                    const next = current.filter(c => c !== colourId);
-                    onUpdate(unit.id, { ...unit, spellColours: next });
+                    const newColours = current.colours.filter(c => c !== colour);
+                    const newSelectedSpells = (current.selectedSpells || []).filter(s => s.colour !== colour);
+                    updateSpellConfig({ ...current, colours: newColours, selectedSpells: newSelectedSpells });
                 } else {
-                    if (current.length >= maxSpellColours) {
-                        // hard cap – ignore extra clicks
-                        return;
-                    }
-                    const next = [...current, colourId];
-                    onUpdate(unit.id, { ...unit, spellColours: next });
+                    if (current.colours.length >= spellLevel) return;
+                    updateSpellConfig({ ...current, colours: [...current.colours, colour] });
                 }
             };
 
-            const hasSpellcaster = maxSpellColours > 0;
+            const handleToggleSpell = (colour, spellName) => {
+                const current = normalizeSpellConfig(unit.spellConfig);
+                const existing = current.selectedSpells || [];
+                const idx = existing.findIndex(s => s.colour === colour && s.name === spellName);
+                if (idx >= 0) {
+                    const copy = existing.slice();
+                    copy.splice(idx, 1);
+                    updateSpellConfig({ ...current, selectedSpells: copy });
+                } else {
+                    updateSpellConfig({
+                        ...current,
+                        selectedSpells: [...existing, { colour, name: spellName }]
+                    });
+                }
+            };
+
+            const selectedSpellObjects = (() => {
+                const cfg = normalizeSpellConfig(unit.spellConfig);
+                const result = [];
+                for (const colour of cfg.colours) {
+                    const spells = SPELLBOOK[colour] || [];
+                    spells.forEach(sp => {
+                        const chosen = (cfg.selectedSpells || []).some(s => s.name === sp.name && s.colour === colour);
+                        if (chosen) {
+                            result.push({ colour, name: sp.name, summary: sp.summary });
+                        }
+                    });
+                }
+                return result;
+            })();
 
             return (
                 <div className={cardClasses}>
@@ -477,6 +541,93 @@
                             })}
                         </div>
 
+                        {/* Spellcaster configuration */}
+                        {spellLevel > 0 && (
+                            <div className="mt-3 text-xs border border-indigo-700/70 bg-stone-950/60 rounded p-2">
+                                <div className="flex items-center justify-between mb-1">
+                                    <div className="flex items-center gap-1 font-semibold text-indigo-200">
+                                        <Icon name="sparkle" size={14} />
+                                        <span>Spellcaster Level {spellLevel}</span>
+                                    </div>
+                                    <div className="text-[11px] text-indigo-200">
+                                        Colours chosen: {spellConfig.colours.length}/{spellLevel}
+                                    </div>
+                                </div>
+
+                                {/* Colour selection (no-print) */}
+                                <div className="no-print mb-2">
+                                    <div className="grid grid-cols-2 gap-1">
+                                        {SPELL_COLOURS.map(colour => {
+                                            const selected = spellConfig.colours.includes(colour);
+                                            const disabled = !selected && spellConfig.colours.length >= spellLevel;
+                                            return (
+                                                <label
+                                                    key={colour}
+                                                    className={`flex items-center gap-1 text-[11px] cursor-pointer ${disabled ? "opacity-40" : ""}`}
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selected}
+                                                        disabled={disabled && !selected}
+                                                        onChange={() => handleToggleColour(colour)}
+                                                        className="accent-indigo-400"
+                                                    />
+                                                    <span>{colour} Magic</span>
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
+                                    <div className="mt-1 text-[10px] text-stone-400">
+                                        Pick up to {spellLevel} colours. A colour gives access to all its spells.
+                                    </div>
+                                </div>
+
+                                {/* Spell list & quick reference (prints) */}
+                                {spellConfig.colours.length > 0 && (
+                                    <div className="space-y-1">
+                                        {spellConfig.colours.map(colour => (
+                                            <div key={colour} className="mt-1">
+                                                <div className="text-[11px] uppercase tracking-wide text-indigo-200">
+                                                    {colour} Magic
+                                                </div>
+                                                <ul className="mt-0.5 space-y-0.5">
+                                                    {(SPELLBOOK[colour] || []).map(spell => {
+                                                        const isSelected =
+                                                            (spellConfig.selectedSpells || []).some(
+                                                                s => s.name === spell.name && s.colour === colour
+                                                            );
+                                                        return (
+                                                            <li key={colour + ":" + spell.name} className="flex items-start gap-1">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    className="no-print mt-[2px] accent-indigo-400"
+                                                                    checked={!!isSelected}
+                                                                    onChange={() => handleToggleSpell(colour, spell.name)}
+                                                                />
+                                                                <div className="text-[11px] leading-snug">
+                                                                    <span className="font-semibold text-indigo-100">
+                                                                        {spell.name}
+                                                                    </span>
+                                                                    <span className="text-stone-300"> – {spell.summary}</span>
+                                                                </div>
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {selectedSpellObjects.length > 0 && (
+                                    <div className="mt-2 text-[10px] text-stone-400">
+                                        Tick spells above to include them in this unit’s quick-reference list.
+                                        They will print with the card for use at the table.
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Upgrade Selector */}
                         <div className="mt-3 no-print">
                             <select 
@@ -489,7 +640,7 @@
                                     <option
                                         key={u.name}
                                         value={u.name}
-                                        disabled={(unit.selectedUpgrades || []).some(sel => sel.name === u.name)}
+                                        disabled={(unit.selectedUpgrades || []).some(sel => sel.name === u.name) && !SPELL_UPGRADE_NAMES.includes(u.name)}
                                     >
                                         {u.name} ({u.cost > 0 ? '+' : ''}{u.cost})
                                     </option>
@@ -504,82 +655,27 @@
                         )}
 
                         {unit.isLeader && (
-                            <div className="mt-2 text-[11px] text-amber-300 uppercase tracking-wide no-print">
+                            <div className="mt-2 text-[11px] text-amber-300 uppercase tracking-wide">
                                 <Icon name="crown" size={12} className="inline mr-1" />
                                 Warband Leader
                             </div>
                         )}
 
-                        {/* Spellcasting section (if this unit has Spellcaster LvX) */}
-                        {hasSpellcaster && (
-                            <div className="mt-4 pt-3 border-t border-stone-700">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="text-xs font-semibold text-stone-300 uppercase tracking-wide flex items-center gap-1">
-                                        <Icon name="sparkle" size={14} />
-                                        Spellcasting
-                                    </span>
-                                    <span className="text-[10px] text-stone-400">
-                                        Level {maxSpellColours} – choose up to {maxSpellColours} colour{maxSpellColours > 1 ? "s" : ""}
-                                    </span>
+                        {/* Printed spell quick reference (chosen spells only) */}
+                        {selectedSpellObjects.length > 0 && (
+                            <div className="mt-3 text-[11px] border-t border-stone-700 pt-2">
+                                <div className="font-semibold mb-1">
+                                    <Icon name="book-open-text" size={12} className="inline mr-1" />
+                                    Spell Quick Reference
                                 </div>
-
-                                <div className="flex flex-wrap gap-2 mb-2 no-print">
-                                    {SPELL_COLOURS.map(col => {
-                                        const checked = selectedColours.includes(col.id);
-                                        const disabled = !checked && selectedColours.length >= maxSpellColours;
-                                        return (
-                                            <label
-                                                key={col.id}
-                                                className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded border cursor-pointer ${
-                                                    checked
-                                                        ? "border-amber-400 bg-stone-800 text-amber-200"
-                                                        : disabled
-                                                        ? "border-stone-700 bg-stone-900 text-stone-600 opacity-60 cursor-not-allowed"
-                                                        : "border-stone-700 bg-stone-900 text-stone-300 hover:border-amber-400"
-                                                }`}
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    className="accent-amber-400"
-                                                    checked={checked}
-                                                    disabled={disabled}
-                                                    onChange={() => toggleColour(col.id)}
-                                                />
-                                                <span>{col.label}</span>
-                                            </label>
-                                        );
-                                    })}
-                                </div>
-
-                                {selectedColours.length > 0 && (
-                                    <div className="bg-stone-950 border border-stone-800 rounded p-2 text-xs space-y-2">
-                                        {selectedColours.map(colId => {
-                                            const colourMeta = SPELL_COLOURS.find(c => c.id === colId);
-                                            const spells = SPELLS_BY_COLOUR[colId] || [];
-                                            if (!colourMeta || spells.length === 0) return null;
-                                            return (
-                                                <div key={colId}>
-                                                    <div className="font-semibold text-amber-300 mb-1">
-                                                        {colourMeta.label}
-                                                    </div>
-                                                    <ul className="ml-3 space-y-0.5">
-                                                        {spells.map(spell => (
-                                                            <li key={spell.name} className="flex justify-between gap-2">
-                                                                <span className="text-stone-100">{spell.name}</span>
-                                                                <span className="text-[10px] text-stone-500 whitespace-nowrap">
-                                                                    DR2e p.{spell.page}
-                                                                </span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            );
-                                        })}
-                                        <div className="text-[10px] text-stone-500 italic pt-1">
-                                            Spell effects: see Dragon Rampant 2e, Spellbook chapter.
-                                        </div>
-                                    </div>
-                                )}
+                                <ul className="space-y-0.5">
+                                    {selectedSpellObjects.map((sp, idx) => (
+                                        <li key={idx}>
+                                            <span className="font-semibold">{sp.name}</span>
+                                            <span className="text-stone-400"> ({sp.colour}) – {sp.summary}</span>
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
                         )}
                     </div>
@@ -591,7 +687,8 @@
             const [army, setArmy] = useState(() => {
                 try {
                     const saved = localStorage.getItem('dr_army_v1');
-                    return saved ? JSON.parse(saved) : [];
+                    const parsed = saved ? JSON.parse(saved) : [];
+                    return Array.isArray(parsed) ? parsed : [];
                 } catch {
                     return [];
                 }
@@ -621,7 +718,7 @@
                     customName: "",
                     selectedUpgrades: [],
                     isLeader: false,
-                    spellColours: []
+                    spellConfig: { colours: [], selectedSpells: [] }
                 };
                 setArmy(prev => [...prev, newUnit]);
             };
@@ -671,7 +768,7 @@
             }, 0);
 
             const isUnitUndead = (unit) => {
-                const baseIsUndead = (unit.rules || []).indexOf("Undead") !== -1;
+                const baseIsUndead = (unit.rules || []).includes("Undead");
                 const upgradeIsUndead = (unit.selectedUpgrades || []).some(u => u.name === "Undead");
                 return baseIsUndead || upgradeIsUndead;
             };
@@ -710,7 +807,7 @@
                         selectedUpgrades: unit.selectedUpgrades || [],
                         isLeader: !!unit.isLeader,
                         rules: unit.rules || [],
-                        spellColours: unit.spellColours || []
+                        spellConfig: normalizeSpellConfig(unit.spellConfig)
                     }));
 
                     setArmy(normalizedArmy);
