@@ -1,737 +1,829 @@
-<div id="dr-army-builder-root" class="dr-app-root">
-  <div style="color:white; padding:1rem; font-family:sans-serif;">
-    If you only see this message and nothing else, JavaScript or the CDNs have not loaded.
-    Try opening this page in a modern browser with an internet connection.
-  </div>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dragon Rampant Army Builder</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-<!-- Fonts & Scoped Styles -->
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&display=swap');
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #1a1a1a;
+            color: #e5e5e5;
+        }
+        
+        h1, h2, h3, .fantasy-font {
+            font-family: 'Cinzel', serif;
+        }
 
-  /* Scope everything inside the app so Weebly's theme can't break it */
-  .dr-app-root,
-  .dr-app-root * {
-      box-sizing: border-box;
-  }
+        .stat-box {
+            background-color: #262626;
+            border: 1px solid #404040;
+        }
 
-  .dr-app-root {
-      font-family: 'Lato', sans-serif;
-      background-color: #1a1a1a;
-      color: #e5e5e5;
-      line-height: 1.25;
-  }
-  
-  .dr-app-root h1,
-  .dr-app-root h2,
-  .dr-app-root h3,
-  .dr-app-root .fantasy-font {
-      font-family: 'Cinzel', serif;
-  }
+        .parchment {
+            background-color: #f3f0e6;
+            color: #1a1a1a;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4a4a4a; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #666; 
+        }
 
-  .dr-app-root .stat-box {
-      background-color: #262626;
-      border: 1px solid #404040;
-  }
+        @media print {
+            body {
+                background-color: white;
+                color: black;
+            }
+            .no-print {
+                display: none;
+            }
+            .card-print {
+                border: 1px solid #ccc;
+                break-inside: avoid;
+                margin-bottom: 1rem;
+                background-color: white;
+                color: black;
+            }
+            .text-amber-500,
+            .text-amber-400,
+            .text-amber-300 {
+                color: #000 !important;
+            }
+            .bg-stone-900,
+            .bg-stone-800,
+            .bg-stone-950 {
+                background-color: #fff !important;
+                border: 1px solid #000;
+            }
+            .text-stone-200,
+            .text-stone-300,
+            .text-stone-400,
+            .text-stone-500 {
+                color: #333 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div style="color:white; padding:1rem; font-family:sans-serif;">
+            If you only see this message and nothing else, JavaScript or the CDNs have not loaded.
+            Try opening this file in Chrome or another browser with an internet connection.
+        </div>
+    </div>
 
-  .dr-app-root .parchment {
-      background-color: #f3f0e6;
-      color: #1a1a1a;
-  }
-  
-  /* Custom Scrollbar (only affects inside app on supporting browsers) */
-  .dr-app-root ::-webkit-scrollbar {
-      width: 8px;
-  }
-  .dr-app-root ::-webkit-scrollbar-track {
-      background: #1a1a1a; 
-  }
-  .dr-app-root ::-webkit-scrollbar-thumb {
-      background: #4a4a4a; 
-      border-radius: 4px;
-  }
-  .dr-app-root ::-webkit-scrollbar-thumb:hover {
-      background: #666; 
-  }
+    <!-- Main app -->
+    <script type="text/babel" data-presets="react">
+        const { useState, useEffect } = React;
 
-  @media print {
-      .dr-app-root {
-          background-color: white;
-          color: black;
-      }
-      .dr-app-root .no-print {
-          display: none;
-      }
-      .dr-app-root .card-print {
-          border: 1px solid #ccc;
-          break-inside: avoid;
-          margin-bottom: 1rem;
-          background-color: white;
-          color: black;
-      }
-      .dr-app-root .text-amber-500,
-      .dr-app-root .text-amber-400,
-      .dr-app-root .text-amber-300 {
-          color: #000 !important;
-      }
-      .dr-app-root .bg-stone-900,
-      .dr-app-root .bg-stone-800 {
-          background-color: #fff !important;
-          border: 1px solid #000;
-      }
-      .dr-app-root .text-stone-300,
-      .dr-app-root .text-stone-400,
-      .dr-app-root .text-stone-500 {
-          color: #333 !important;
-      }
-  }
-</style>
+        // --- DATA: Unit Profiles ---
+        const UNIT_TEMPLATES = [
+            { name: "Elite Riders", sp: 6, cost: 6, attackOrder: "5+", attackVal: "3+", shootOrder: "-", shootVal: "-", moveOrder: "7+", moveDist: '10"', armor: 4, defense: "5+", courage: "3+", rules: ["Wild Charge", "Counter-Charge"] },
+            { name: "Heavy Riders", sp: 6, cost: 4, attackOrder: "5+", attackVal: "4+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '10"', armor: 3, defense: "5+", courage: "4+", rules: ["Counter-Charge"] },
+            { name: "Light Riders", sp: 6, cost: 4, attackOrder: "7+", attackVal: "5+", shootOrder: "6+", shootVal: "5+ / 12\"", moveOrder: "5+", moveDist: '12"', armor: 3, defense: "6+", courage: "5+", rules: ["Skirmish", "Evade"] },
+            { name: "Greater Warbeasts", sp: 6, cost: 6, attackOrder: "5+", attackVal: "3+", shootOrder: "-", shootVal: "-", moveOrder: "6+", moveDist: '10"', armor: 4, defense: "6+", courage: "3+", rules: ["Ranger", "Wild Charge", "Stomper"] },
+            { name: "Lesser Warbeasts", sp: 6, cost: 4, attackOrder: "5+", attackVal: "4+", shootOrder: "-", shootVal: "-", moveOrder: "6+", moveDist: '12"', armor: 3, defense: "6+", courage: "4+", rules: ["Ranger", "Wild Charge", "Fleet Footed"] },
+            { name: "Elite Foot", sp: 12, cost: 6, attackOrder: "5+", attackVal: "3+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '6"', armor: 4, defense: "5+", courage: "3+", rules: ["Wild Charge"] },
+            { name: "Heavy Foot", sp: 12, cost: 4, attackOrder: "6+", attackVal: "4+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '6"', armor: 3, defense: "5+", courage: "4+", rules: ["Wall of Spears"] },
+            { name: "Light Foot", sp: 12, cost: 3, attackOrder: "6+", attackVal: "5+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '8"', armor: 2, defense: "5+", courage: "4+", rules: ["Offensive", "Wall of Spears"] }, 
+            { name: "Bellicose Foot", sp: 12, cost: 4, attackOrder: "5+", attackVal: "4+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '6"', armor: 2, defense: "6+", courage: "3+", rules: ["Wild Charge", "Counter-Charge"] },
+            { name: "Heavy Missiles", sp: 12, cost: 4, attackOrder: "7+", attackVal: "5+", shootOrder: "6+", shootVal: "4+ / 18\"", moveOrder: "6+", moveDist: '6"', armor: 3, defense: "6+", courage: "4+", rules: [] },
+            { name: "Light Missiles", sp: 12, cost: 4, attackOrder: "7+", attackVal: "6+", shootOrder: "6+", shootVal: "5+ / 18\"", moveOrder: "5+", moveDist: '8"', armor: 2, defense: "6+", courage: "4+", rules: ["Skirmish", "Evade"] },
+            { name: "Scouts", sp: 6, cost: 2, attackOrder: "7+", attackVal: "6+", shootOrder: "6+", shootVal: "5+ / 12\"", moveOrder: "5+", moveDist: '8"', armor: 1, defense: "6+", courage: "5+", rules: ["Skirmish", "Evade"] },
+            { name: "Ravenous Hordes", sp: 12, cost: 1, attackOrder: "6+", attackVal: "6+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '6"', armor: 1, defense: "6+", courage: "5+", rules: ["Wild Charge"] },
+            { name: "Chariots", sp: 6, cost: 4, attackOrder: "5+", attackVal: "4+", shootOrder: "6+", shootVal: "5+ / 12\"", moveOrder: "5+", moveDist: '8"', armor: 3, defense: "6+", courage: "4+", rules: ["Linear"] },
+            { name: "Beserkers", sp: 6, cost: 4, attackOrder: "5+", attackVal: "3+", shootOrder: "-", shootVal: "-", moveOrder: "6+", moveDist: '8"', armor: 2, defense: "6+", courage: "3+", rules: ["Wild Charge", "Beserk"] }
+        ];
 
-<!-- React & ReactDOM -->
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+        // --- DATA: Fantastical Rules and Upgrades (including Leader traits) ---
+        const UPGRADES_LIST = [
+            // Leader traits (available as upgrades; cost applied to that unit)
+            {
+                name: "Brutal (L)",
+                cost: 1,
+                desc: "Leader trait: Units within 12\" of this Leader may automatically pass a failed Rally test by removing 1 Strength Point."
+            },
+            {
+                name: "Divine Leadership (L)",
+                cost: 2,
+                desc: "Leader trait: This Leader's command or Courage bonus extends to 18\" instead of 12\"."
+            },
+            {
+                name: "Insipid (L)",
+                cost: -1,
+                desc: "Leader trait: Units within 12\" gain no Courage bonus from this Leader. Reduces the unit cost by 1 point."
+            },
+            {
+                name: "Unstoppable March of the Dead (L)",
+                cost: 3,
+                desc: "Leader trait (Undead warbands only): Use only if all units in the warband are Undead."
+            },
+            {
+                name: "Wise Old Owl (L)",
+                cost: 1,
+                desc: "Leader trait: When rolling to decide attacker or defender, you may add or subtract 1 from your final total."
+            },
 
-<!-- Babel -->
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+            // Standard Fantastical Rules / upgrades
+            { name: "Amphibious", cost: 1, desc: "Treat water as open terrain." },
+            { name: "Armor-Piercing", cost: 1, desc: "-1 to Target Armor." },
+            { name: "Beserk", cost: 1, desc: "+2 Attacks on Charge." },
+            { name: "Blessed Blades*", cost: 4, desc: "Reroll failed hits." },
+            { name: "Brave", cost: 1, desc: "+1 Courage." },
+            { name: "Burrower", cost: 1, desc: "Start off board. Appear 3\" from enemy." },
+            { name: "Chariot", cost: 1, desc: "Upgrade for Heavy Riders. Gain Shoot 6+/5+." },
+            { name: "Cleric", cost: 1, desc: "Heal 1 SP on 5+." },
+            { name: "Cowardly", cost: -1, desc: "Retreat full distance. If flyer, full distance +1D6." },
+            { name: "Cunning", cost: 1, desc: "Reroll failed Move or Attack once per turn." },
+            { name: "Cursed", cost: -1, desc: "When this unit is hit, add 1 additional hit." },
+            { name: "Enchanted Weapons", cost: 1, desc: "+1 to Hit in Melee." },
+            { name: "Fear", cost: 1, desc: "Enemy suffers -1 Courage." },
+            { name: "Fearful", cost: -1, desc: "Courage tests -1. -2 if enemy is Fearsome. Cannot mix with Fearsome or Undead." },
+            { name: "Fleet Footed", cost: 1, desc: "Move +2\"." },
+            { name: "Flying", cost: 2, desc: "Ignore terrain and units when moving." },
+            { name: "Hatred", cost: 1, desc: "Reroll misses vs a specific enemy." },
+            { name: "Heavy Missiles", cost: 1, desc: "Range 18\"." },
+            { name: "Holy", cost: 1, desc: "Immune to Fear and Terror." },
+            { name: "Hunter", cost: 1, desc: "No terrain penalty when shooting." },
+            { name: "Invisibility", cost: 2, desc: "Cannot be shot at over 12\"." },
+            { name: "Magic Missiles", cost: 3, desc: "+2 dice when Shooting." },
+            { name: "Mystical Armor", cost: 2, desc: "Roll 6+ to ignore SP loss." },
+            { name: "Offensive", cost: 1, desc: "+2 Attack Dice." },
+            { name: "Pikes", cost: 1, desc: "No bonus for mounted charging this unit." },
+            { name: "Poison", cost: 2, desc: "Hits on 6s count as 2." },
+            { name: "Ponderous", cost: 1, desc: "Cannot run or charge." },
+            { name: "Ranger", cost: 1, desc: "Move through rough terrain without penalty." },
+            { name: "Regeneration", cost: 3, desc: "Instead of Move, heal 1 SP." },
+            { name: "Scary", cost: 1, desc: "-1 Courage to enemy in melee." },
+            { name: "Sharpshooter", cost: 2, desc: "+1 to Hit when Shooting." },
+            { name: "Shieldwall", cost: 1, desc: "+1 Armor vs Shooting." },
+            { name: "Short Range Missiles", cost: 1, desc: "Range 12\"." },
+            { name: "Single Entity", cost: 0, desc: "If SP is 12, reduce to 6 and gain +1 Armor." },
+            { name: "Skirmisher", cost: 1, desc: "+1 Armor vs Shooting and Casters." },
+            { name: "Slow", cost: -1, desc: "Movement -2\"." },
+            { name: "Spellcaster Lv1", cost: 1, desc: "Spellcaster Level 1: choose 1 colour of magic." },
+            { name: "Spellcaster Lv2", cost: 2, desc: "Spellcaster Level 2: choose 2 colours of magic." },
+            { name: "Spellcaster Lv3", cost: 3, desc: "Spellcaster Level 3: choose 3 colours of magic." },
+            { name: "Spellcaster Lv4", cost: 4, desc: "Spellcaster Level 4: choose 4 colours of magic." },
+            { name: "Spellcaster (Legacy)", cost: 0, desc: "Legacy placeholder – ignore or replace with Lv1–4." },
+            { name: "Spell Resistant", cost: 1, desc: "5+ to ignore any Spell that targets this unit." },
+            { name: "Stout", cost: 1, desc: "Ignore first hit each turn." },
+            { name: "Summoner", cost: 3, desc: "May Summon units mid-game (see DR2e rules)." },
+            { name: "Terrific", cost: 2, desc: "Enemy suffers -2 Courage." },
+            { name: "Undead", cost: 1, desc: "Never test Courage. Crumble instead." },
+            { name: "Venemous", cost: 3, desc: "Any Attack roll of 6 counts as two hits." },
+            { name: "Wall of Spears", cost: 1, desc: "Strike first when charged." },
+            { name: "Weak", cost: -1, desc: "Subtract 1 from total hits inflicted." },
+            { name: "Weighty Projectiles", cost: 1, desc: "-1 Armor to the target." },
+            { name: "Well Led", cost: 1, desc: "Leadership bubble +1." },
+            { name: "Were-Creature", cost: 2, desc: "Change stats mid game." },
+            { name: "Wild", cost: -1, desc: "Must test to Move. If failed, charge nearest unit." },
+            { name: "18/100 Strength*", cost: 4, desc: "Reroll 3 failed dice." }
+        ].sort((a, b) => a.name.localeCompare(b.name));
 
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com"></script>
+        // --- DATA: Spell colours and spell lists (name + page ref only) ---
 
-<!-- Phosphor Icons -->
-<script src="https://unpkg.com/@phosphor-icons/web"></script>
+        const SPELL_COLOURS = [
+            { id: "Amber", label: "Amber Magic" },
+            { id: "Crimson", label: "Crimson Magic" },
+            { id: "Emerald", label: "Emerald Magic" },
+            { id: "Indigo", label: "Indigo Magic" },
+            { id: "Jade", label: "Jade Magic" },
+            { id: "Magenta", label: "Magenta Magic" },
+            { id: "Saffron", label: "Saffron Magic" },
+            { id: "Turquoise", label: "Turquoise Magic" },
+            { id: "Violet", label: "Violet Magic" }
+        ];
 
-<!-- Main app -->
-<script type="text/babel" data-presets="react">
-  const { useState, useEffect } = React;
+        // From the Spellbook Table / Quick Reference in DR2e – spell names and pages only.
+        const SPELLS_BY_COLOUR = {
+            Amber: [
+                { name: "Almighty Prod!", page: 129 },
+                { name: "Be Brave!", page: 130 }
+            ],
+            Crimson: [
+                { name: "Take That You Rotter!", page: 130 },
+                { name: "Utter Chaos!", page: 130 }
+            ],
+            Emerald: [
+                { name: "Heal Thee!", page: 131 },
+                { name: "Sod-Off Spell!", page: 131 }
+            ],
+            Indigo: [
+                { name: "Superglue You!", page: 131 },
+                { name: "You Shall Not Pass!", page: 132 }
+            ],
+            Jade: [
+                { name: "Bog Thee!", page: 132 },
+                { name: "Spring Heeled!", page: 132 },
+                { name: "You Have Wings!", page: 133 }
+            ],
+            Magenta: [
+                { name: "Sharp Blades!", page: 133 },
+                { name: "Sharp Darts!", page: 133 },
+                { name: "Stronger Shields!", page: 133 }
+            ],
+            Saffron: [
+                { name: "Dragon's Breath!", page: 134 },
+                { name: "Go Wild!", page: 134 }
+            ],
+            Turquoise: [
+                { name: "Teleport Thee!", page: 134 },
+                { name: "Transpose Thee!", page: 135 }
+            ],
+            Violet: [
+                { name: "Befuddle Thee!", page: 135 },
+                { name: "Curse Thee!", page: 135 }
+            ]
+        };
 
-  // --- DATA: Unit Profiles ---
-  const UNIT_TEMPLATES = [
-      { name: "Elite Riders", sp: 6, cost: 6, attackOrder: "5+", attackVal: "3+", shootOrder: "-", shootVal: "-", moveOrder: "7+", moveDist: '10"', armor: 4, defense: "5+", courage: "3+", rules: ["Wild Charge", "Counter-Charge"] },
-      { name: "Heavy Riders", sp: 6, cost: 4, attackOrder: "5+", attackVal: "4+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '10"', armor: 3, defense: "5+", courage: "4+", rules: ["Counter-Charge"] },
-      { name: "Light Riders", sp: 6, cost: 4, attackOrder: "7+", attackVal: "5+", shootOrder: "6+", shootVal: "5+ / 12\"", moveOrder: "5+", moveDist: '12"', armor: 3, defense: "6+", courage: "5+", rules: ["Skirmish", "Evade"] },
-      { name: "Greater Warbeasts", sp: 6, cost: 6, attackOrder: "5+", attackVal: "3+", shootOrder: "-", shootVal: "-", moveOrder: "6+", moveDist: '10"', armor: 4, defense: "6+", courage: "3+", rules: ["Ranger", "Wild Charge", "Stomper"] },
-      { name: "Lesser Warbeasts", sp: 6, cost: 4, attackOrder: "5+", attackVal: "4+", shootOrder: "-", shootVal: "-", moveOrder: "6+", moveDist: '12"', armor: 3, defense: "6+", courage: "4+", rules: ["Ranger", "Wild Charge", "Fleet Footed"] },
-      { name: "Elite Foot", sp: 12, cost: 6, attackOrder: "5+", attackVal: "3+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '6"', armor: 4, defense: "5+", courage: "3+", rules: ["Wild Charge"] },
-      { name: "Heavy Foot", sp: 12, cost: 4, attackOrder: "6+", attackVal: "4+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '6"', armor: 3, defense: "5+", courage: "4+", rules: ["Wall of Spears"] },
-      { name: "Light Foot", sp: 12, cost: 3, attackOrder: "6+", attackVal: "5+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '8"', armor: 2, defense: "5+", courage: "4+", rules: ["Offensive", "Wall of Spears"] }, 
-      { name: "Bellicose Foot", sp: 12, cost: 4, attackOrder: "5+", attackVal: "4+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '6"', armor: 2, defense: "6+", courage: "3+", rules: ["Wild Charge", "Counter-Charge"] },
-      { name: "Heavy Missiles", sp: 12, cost: 4, attackOrder: "7+", attackVal: "5+", shootOrder: "6+", shootVal: "4+ / 18\"", moveOrder: "6+", moveDist: '6"', armor: 3, defense: "6+", courage: "4+", rules: [] },
-      { name: "Light Missiles", sp: 12, cost: 4, attackOrder: "7+", attackVal: "6+", shootOrder: "6+", shootVal: "5+ / 18\"", moveOrder: "5+", moveDist: '8"', armor: 2, defense: "6+", courage: "4+", rules: ["Skirmish", "Evade"] },
-      { name: "Scouts", sp: 6, cost: 2, attackOrder: "7+", attackVal: "6+", shootOrder: "6+", shootVal: "5+ / 12\"", moveOrder: "5+", moveDist: '8"', armor: 1, defense: "6+", courage: "5+", rules: ["Skirmish", "Evade"] },
-      { name: "Ravenous Hordes", sp: 12, cost: 1, attackOrder: "6+", attackVal: "6+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '6"', armor: 1, defense: "6+", courage: "5+", rules: ["Wild Charge"] },
-      { name: "Chariots", sp: 6, cost: 4, attackOrder: "5+", attackVal: "4+", shootOrder: "6+", shootVal: "5+ / 12\"", moveOrder: "5+", moveDist: '8"', armor: 3, defense: "6+", courage: "4+", rules: ["Linear"] },
-      { name: "Beserkers", sp: 6, cost: 4, attackOrder: "5+", attackVal: "3+", shootOrder: "-", shootVal: "-", moveOrder: "6+", moveDist: '8"', armor: 2, defense: "6+", courage: "3+", rules: ["Wild Charge", "Beserk"] }
-  ];
+        const LEADER_UPGRADE_SUFFIX = "(L)";
+        const UNSTOPPABLE_NAME = "Unstoppable March of the Dead (L)";
 
-  // --- DATA: Fantastical Rules and Upgrades (including Leader traits) ---
-  const UPGRADES_LIST = [
-      // Leader traits (available as upgrades; cost applied to that unit)
-      {
-          name: "Brutal (L)",
-          cost: 1,
-          desc: "Leader trait: Units within 12\" of this Leader may automatically pass a failed Rally test by removing 1 Strength Point."
-      },
-      {
-          name: "Divine Leadership (L)",
-          cost: 2,
-          desc: "Leader trait: This Leader's command or Courage bonus extends to 18\" instead of 12\"."
-      },
-      {
-          name: "Insipid (L)",
-          cost: -1,
-          desc: "Leader trait: Units within 12\" gain no Courage bonus from this Leader. Reduces the unit cost by 1 point."
-      },
-      {
-          name: "Unstoppable March of the Dead (L)",
-          cost: 3,
-          desc: "Leader trait (Undead warbands only): Use only if all units in the warband are Undead."
-      },
-      {
-          name: "Wise Old Owl (L)",
-          cost: 1,
-          desc: "Leader trait: When rolling to decide attacker or defender, you may add or subtract 1 from your final total."
-      },
+        // Icon wrapper
+        const Icon = ({ name, size = 20, className = "" }) => {
+            return <i className={`ph ph-${name} ${className}`} style={{ fontSize: size }}></i>;
+        };
 
-      // Standard Fantastical Rules / upgrades
-      { name: "Amphibious", cost: 1, desc: "Treat water as open terrain." },
-      { name: "Armor-Piercing", cost: 1, desc: "-1 to Target Armor." },
-      { name: "Beserk", cost: 1, desc: "+2 Attacks on Charge." },
-      { name: "Blessed Blades*", cost: 4, desc: "Reroll failed hits." },
-      { name: "Brave", cost: 1, desc: "+1 Courage." },
-      { name: "Burrower", cost: 1, desc: "Start off board. Appear 3\" from enemy." },
-      { name: "Chariot", cost: 1, desc: "Upgrade for Heavy Riders. Gain Shoot 6+/5+." },
-      { name: "Cleric", cost: 1, desc: "Heal 1 SP on 5+." },
-      { name: "Cowardly", cost: -1, desc: "Retreat full distance. If flyer, full distance +1D6." },
-      { name: "Cunning", cost: 1, desc: "Reroll failed Move or Attack once per turn." },
-      { name: "Cursed", cost: -1, desc: "When this unit is hit, add 1 additional hit." },
-      { name: "Enchanted Weapons", cost: 1, desc: "+1 to Hit in Melee." },
-      { name: "Fear", cost: 1, desc: "Enemy suffers -1 Courage." },
-      { name: "Fearful", cost: -1, desc: "Courage tests -1. -2 if enemy is Fearsome. Cannot mix with Fearsome or Undead." },
-      { name: "Fleet Footed", cost: 1, desc: "Move +2\"." },
-      { name: "Flying", cost: 2, desc: "Ignore terrain and units when moving." },
-      { name: "Hatred", cost: 1, desc: "Reroll misses vs a specific enemy." },
-      { name: "Heavy Missiles", cost: 1, desc: "Range 18\"." },
-      { name: "Holy", cost: 1, desc: "Immune to Fear and Terror." },
-      { name: "Hunter", cost: 1, desc: "No terrain penalty when shooting." },
-      { name: "Invisibility", cost: 2, desc: "Cannot be shot at over 12\"." },
-      { name: "Magic Missiles", cost: 3, desc: "+2 dice when Shooting." },
-      { name: "Mystical Armor", cost: 2, desc: "Roll 6+ to ignore SP loss." },
-      { name: "Offensive", cost: 1, desc: "+2 Attack Dice." },
-      { name: "Pikes", cost: 1, desc: "No bonus for mounted charging this unit." },
-      { name: "Poison", cost: 2, desc: "Hits on 6s count as 2." },
-      { name: "Ponderous", cost: 1, desc: "Cannot run or charge." },
-      { name: "Ranger", cost: 1, desc: "Move through rough terrain without penalty." },
-      { name: "Regeneration", cost: 3, desc: "Instead of Move, heal 1 SP." },
-      { name: "Scary", cost: 1, desc: "-1 Courage to enemy in melee." },
-      { name: "Sharpshooter", cost: 2, desc: "+1 to Hit when Shooting." },
-      { name: "Shieldwall", cost: 1, desc: "+1 Armor vs Shooting." },
-      { name: "Short Range Missiles", cost: 1, desc: "Range 12\"." },
-      { name: "Single Entity", cost: 0, desc: "If SP is 12, reduce to 6 and gain +1 Armor." },
-      { name: "Skirmisher", cost: 1, desc: "+1 Armor vs Shooting and Casters." },
-      { name: "Slow", cost: -1, desc: "Movement -2\"." },
-      { name: "Spellcaster Lv1", cost: 1, desc: "Spellcaster Level 1: one school." },
-      { name: "Spellcaster Lv2", cost: 2, desc: "Spellcaster Level 2: two schools." },
-      { name: "Spellcaster Lv3", cost: 3, desc: "Spellcaster Level 3: three schools." },
-      { name: "Stout", cost: 1, desc: "Ignore first hit each turn." },
-      { name: "Summoner", cost: 3, desc: "May summon units." },
-      { name: "Terrific", cost: 2, desc: "Enemy suffers -2 Courage." },
-      { name: "Undead", cost: 1, desc: "Never test Courage. Crumble instead." },
-      { name: "Venemous", cost: 3, desc: "Any Attack roll of 6 counts as two hits." },
-      { name: "Wall of Spears", cost: 1, desc: "Strike first when charged." },
-      { name: "Weak", cost: -1, desc: "Subtract 1 from total hits inflicted." },
-      { name: "Weighty Projectiles", cost: 1, desc: "-1 Armor to the target." },
-      { name: "Well Led", cost: 1, desc: "Leadership bubble +1." },
-      { name: "Were-Creature", cost: 2, desc: "Change stats mid game." },
-      { name: "Wild", cost: -1, desc: "Must test to Move. If failed, charge nearest unit." },
-      { name: "18/100 Strength*", cost: 4, desc: "Reroll 3 failed dice." }
-  ].sort((a, b) => a.name.localeCompare(b.name));
+        const UnitCard = ({ unit, onUpdate, onDelete, onDuplicate, onSetLeader }) => {
+            const handleNameChange = (e) => {
+                onUpdate(unit.id, { ...unit, customName: e.target.value });
+            };
 
-  const LEADER_UPGRADE_SUFFIX = "(L)";
-  const UNSTOPPABLE_NAME = "Unstoppable March of the Dead (L)";
+            const addUpgrade = (e) => {
+                const upgradeName = e.target.value;
+                if (!upgradeName) return;
+                
+                const upgradeObj = UPGRADES_LIST.find(u => u.name === upgradeName);
+                const currentUpgrades = unit.selectedUpgrades || [];
+                if (!currentUpgrades.some(u => u.name === upgradeName)) {
+                    onUpdate(unit.id, { 
+                        ...unit, 
+                        selectedUpgrades: [...currentUpgrades, upgradeObj] 
+                    });
+                }
+                e.target.value = "";
+            };
 
-  // Icon wrapper
-  const Icon = ({ name, size = 20, className = "" }) => {
-      return <i className={`ph ph-${name} ${className}`} style={{ fontSize: size }}></i>;
-  };
+            const removeUpgrade = (upgradeName) => {
+                onUpdate(unit.id, {
+                    ...unit,
+                    selectedUpgrades: (unit.selectedUpgrades || []).filter(u => u.name !== upgradeName)
+                });
+            };
 
-  const UnitCard = ({ unit, onUpdate, onDelete, onDuplicate, onSetLeader }) => {
-      const handleNameChange = (e) => {
-          onUpdate(unit.id, { ...unit, customName: e.target.value });
-      };
+            const totalCost = Math.max(
+                0,
+                unit.cost + (unit.selectedUpgrades || []).reduce((sum, u) => sum + u.cost, 0)
+            );
 
-      const addUpgrade = (e) => {
-          const upgradeName = e.target.value;
-          if (!upgradeName) return;
-          
-          const upgradeObj = UPGRADES_LIST.find(u => u.name === upgradeName);
-          const currentUpgrades = unit.selectedUpgrades || [];
-          if (!currentUpgrades.some(u => u.name === upgradeName)) {
-              onUpdate(unit.id, { 
-                  ...unit, 
-                  selectedUpgrades: [...currentUpgrades, upgradeObj] 
-              });
-          }
-          e.target.value = "";
-      };
+            const cardClasses =
+                "border rounded-lg p-4 mb-4 shadow-lg card-print relative " +
+                (unit.isLeader
+                    ? "bg-stone-900 border-amber-500 ring-1 ring-amber-500/60"
+                    : "bg-stone-900 border-stone-700");
 
-      const removeUpgrade = (upgradeName) => {
-          onUpdate(unit.id, {
-              ...unit,
-              selectedUpgrades: (unit.selectedUpgrades || []).filter(u => u.name !== upgradeName)
-          });
-      };
+            const hasLeaderUpgradeOnNonLeader =
+                !unit.isLeader &&
+                (unit.selectedUpgrades || []).some(up => up.name.indexOf(LEADER_UPGRADE_SUFFIX) !== -1);
 
-      const totalCost = Math.max(
-          0,
-          unit.cost + (unit.selectedUpgrades || []).reduce((sum, u) => sum + u.cost, 0)
-      );
+            // --- Spellcaster logic: determine max colours based on Spellcaster Lv upgrades ---
+            const spellUpgrades = (unit.selectedUpgrades || []).filter(u =>
+                u.name.startsWith("Spellcaster Lv")
+            );
+            let maxSpellColours = 0;
+            spellUpgrades.forEach(up => {
+                const m = up.name.match(/(\d+)/);
+                if (m) {
+                    const level = parseInt(m[1], 10);
+                    if (level > maxSpellColours) maxSpellColours = level;
+                }
+            });
 
-      const cardClasses =
-          "border rounded-lg p-4 mb-4 shadow-lg card-print relative " +
-          (unit.isLeader
-              ? "bg-stone-900 border-amber-500 ring-1 ring-amber-500/60"
-              : "bg-stone-900 border-stone-700");
+            const selectedColours = unit.spellColours || [];
 
-      const hasLeaderUpgradeOnNonLeader =
-          !unit.isLeader &&
-          (unit.selectedUpgrades || []).some(up => up.name.indexOf(LEADER_UPGRADE_SUFFIX) !== -1);
+            const toggleColour = (colourId) => {
+                const current = unit.spellColours || [];
+                const isSelected = current.includes(colourId);
+                if (isSelected) {
+                    const next = current.filter(c => c !== colourId);
+                    onUpdate(unit.id, { ...unit, spellColours: next });
+                } else {
+                    if (current.length >= maxSpellColours) {
+                        // hard cap – ignore extra clicks
+                        return;
+                    }
+                    const next = [...current, colourId];
+                    onUpdate(unit.id, { ...unit, spellColours: next });
+                }
+            };
 
-      return (
-          <div className={cardClasses}>
-              <div className="flex justify-between items-start mb-3">
-                  <div className="w-full mr-4">
-                      <div className="flex items-center gap-2 mb-1">
-                          <input 
-                              type="text" 
-                              placeholder="Unit Name"
-                              value={unit.customName}
-                              onChange={handleNameChange}
-                              className="w-full bg-transparent text-xl font-bold text-amber-500 border-b border-stone-700 focus:border-amber-500 outline-none pb-1 placeholder-stone-600 fantasy-font"
-                          />
-                      </div>
-                      <div className="text-stone-400 text-sm mt-1 flex items-center gap-2">
-                          <span className="font-semibold text-stone-300">{unit.name}</span>
-                          <span className="text-xs bg-stone-800 px-2 py-0.5 rounded text-stone-500">SP: {unit.sp}</span>
-                      </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                      <div className="flex items-center gap-2 no-print">
-                          <label className="flex items-center gap-1 text-xs text-amber-300 cursor-pointer select-none">
-                              <input
-                                  type="checkbox"
-                                  checked={!!unit.isLeader}
-                                  onChange={() => onSetLeader(unit.id)}
-                                  className="accent-amber-400"
-                              />
-                              <Icon name="crown" size={16} />
-                              <span>Leader</span>
-                          </label>
-                      </div>
-                      <div className="text-2xl font-bold text-amber-400 fantasy-font whitespace-nowrap">
-                          {totalCost} pts
-                      </div>
-                      <div className="flex gap-1 mt-1 no-print">
-                          <button onClick={() => onDuplicate(unit)} className="p-1.5 text-stone-400 hover:text-blue-400 transition-colors" title="Duplicate">
-                              <Icon name="copy" />
-                          </button>
-                          <button onClick={() => onDelete(unit.id)} className="p-1.5 text-stone-400 hover:text-red-500 transition-colors" title="Delete">
-                              <Icon name="trash" />
-                          </button>
-                      </div>
-                  </div>
-              </div>
+            const hasSpellcaster = maxSpellColours > 0;
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-6 gap-1 mb-4 text-center text-sm">
-                  <div className="stat-box p-1 rounded">
-                      <div className="text-xs text-stone-500 uppercase">Att</div>
-                      <div className="font-bold text-stone-200">{unit.attackOrder}/{unit.attackVal}</div>
-                  </div>
-                  <div className="stat-box p-1 rounded">
-                      <div className="text-xs text-stone-500 uppercase">Sht</div>
-                      <div className="font-bold text-stone-200">{unit.shootOrder}/{unit.shootVal}</div>
-                  </div>
-                  <div className="stat-box p-1 rounded">
-                      <div className="text-xs text-stone-500 uppercase">Mov</div>
-                      <div className="font-bold text-stone-200">{unit.moveOrder}/{unit.moveDist}</div>
-                  </div>
-                  <div className="stat-box p-1 rounded">
-                      <div className="text-xs text-stone-500 uppercase">Arm</div>
-                      <div className="font-bold text-stone-200">{unit.armor}</div>
-                  </div>
-                  <div className="stat-box p-1 rounded">
-                      <div className="text-xs text-stone-500 uppercase">Def</div>
-                      <div className="font-bold text-stone-200">{unit.defense}</div>
-                  </div>
-                  <div className="stat-box p-1 rounded">
-                      <div className="text-xs text-stone-500 uppercase">Cour</div>
-                      <div className="font-bold text-stone-200">{unit.courage}</div>
-                  </div>
-              </div>
+            return (
+                <div className={cardClasses}>
+                    <div className="flex justify-between items-start mb-3">
+                        <div className="w-full mr-4">
+                            <div className="flex items-center gap-2 mb-1">
+                                <input 
+                                    type="text" 
+                                    placeholder="Unit Name"
+                                    value={unit.customName}
+                                    onChange={handleNameChange}
+                                    className="w-full bg-transparent text-xl font-bold text-amber-500 border-b border-stone-700 focus:border-amber-500 outline-none pb-1 placeholder-stone-600 fantasy-font"
+                                />
+                            </div>
+                            <div className="text-stone-400 text-sm mt-1 flex items-center gap-2">
+                                <span className="font-semibold text-stone-300">{unit.name}</span>
+                                <span className="text-xs bg-stone-800 px-2 py-0.5 rounded text-stone-500">SP: {unit.sp}</span>
+                            </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                            <div className="flex items-center gap-2 no-print">
+                                <label className="flex items-center gap-1 text-xs text-amber-300 cursor-pointer select-none">
+                                    <input
+                                        type="checkbox"
+                                        checked={!!unit.isLeader}
+                                        onChange={() => onSetLeader(unit.id)}
+                                        className="accent-amber-400"
+                                    />
+                                    <Icon name="crown" size={16} />
+                                    <span>Leader</span>
+                                </label>
+                            </div>
+                            <div className="text-2xl font-bold text-amber-400 fantasy-font whitespace-nowrap">
+                                {totalCost} pts
+                            </div>
+                            <div className="flex gap-1 mt-1 no-print">
+                                <button onClick={() => onDuplicate(unit)} className="p-1.5 text-stone-400 hover:text-blue-400 transition-colors" title="Duplicate">
+                                    <Icon name="copy" />
+                                </button>
+                                <button onClick={() => onDelete(unit.id)} className="p-1.5 text-stone-400 hover:text-red-500 transition-colors" title="Delete">
+                                    <Icon name="trash" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-              {/* Rules & Upgrades */}
-              <div className="space-y-2">
-                  {/* Default Rules */}
-                  {unit.rules.length > 0 && (
-                      <div className="text-sm text-stone-400">
-                          <span className="font-semibold text-stone-500">Traits: </span>
-                          {unit.rules.join(", ")}
-                      </div>
-                  )}
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-6 gap-1 mb-4 text-center text-sm">
+                        <div className="stat-box p-1 rounded">
+                            <div className="text-xs text-stone-500 uppercase">Att</div>
+                            <div className="font-bold text-stone-200">{unit.attackOrder}/{unit.attackVal}</div>
+                        </div>
+                        <div className="stat-box p-1 rounded">
+                            <div className="text-xs text-stone-500 uppercase">Sht</div>
+                            <div className="font-bold text-stone-200">{unit.shootOrder}/{unit.shootVal}</div>
+                        </div>
+                        <div className="stat-box p-1 rounded">
+                            <div className="text-xs text-stone-500 uppercase">Mov</div>
+                            <div className="font-bold text-stone-200">{unit.moveOrder}/{unit.moveDist}</div>
+                        </div>
+                        <div className="stat-box p-1 rounded">
+                            <div className="text-xs text-stone-500 uppercase">Arm</div>
+                            <div className="font-bold text-stone-200">{unit.armor}</div>
+                        </div>
+                        <div className="stat-box p-1 rounded">
+                            <div className="text-xs text-stone-500 uppercase">Def</div>
+                            <div className="font-bold text-stone-200">{unit.defense}</div>
+                        </div>
+                        <div className="stat-box p-1 rounded">
+                            <div className="text-xs text-stone-500 uppercase">Cour</div>
+                            <div className="font-bold text-stone-200">{unit.courage}</div>
+                        </div>
+                    </div>
 
-                  {/* Selected Upgrades */}
-                  <div className="space-y-1">
-                      {(unit.selectedUpgrades || []).map((upgrade, idx) => {
-                          const isLeaderUpgrade = upgrade.name.indexOf(LEADER_UPGRADE_SUFFIX) !== -1;
-                          const leaderStyle =
-                              isLeaderUpgrade && unit.isLeader
-                                  ? "border-amber-500/70 bg-amber-950/40"
-                                  : isLeaderUpgrade && !unit.isLeader
-                                  ? "border-red-700/70 bg-red-950/30"
-                                  : "border-stone-700 bg-stone-800";
+                    {/* Rules & Upgrades */}
+                    <div className="space-y-2">
+                        {/* Default Rules */}
+                        {unit.rules.length > 0 && (
+                            <div className="text-sm text-stone-400">
+                                <span className="font-semibold text-stone-500">Traits: </span>
+                                {unit.rules.join(", ")}
+                            </div>
+                        )}
 
-                          return (
-                              <div
-                                  key={idx}
-                                  className={`flex justify-between items-start text-sm p-2 rounded border ${leaderStyle}`}
-                              >
-                                  <div>
-                                      <span className="font-semibold">
-                                          <span className={isLeaderUpgrade ? (unit.isLeader ? "text-amber-300" : "text-red-300") : "text-amber-500"}>
-                                              {upgrade.name}
-                                          </span>
-                                      </span>
-                                      <span className="text-stone-500 text-xs ml-1">
-                                          ({upgrade.cost > 0 ? "+" : ""}{upgrade.cost} pts)
-                                      </span>
-                                      <div className="text-xs text-stone-300 italic mt-0.5">
-                                          {upgrade.desc}
-                                      </div>
-                                      {isLeaderUpgrade && !unit.isLeader && (
-                                          <div className="text-[10px] text-red-300 mt-0.5">
-                                              Leader trait is on a non-Leader unit.
-                                          </div>
-                                      )}
-                                  </div>
-                                  <button 
-                                      onClick={() => removeUpgrade(upgrade.name)}
-                                      className="text-stone-500 hover:text-red-400 ml-2 no-print"
-                                  >
-                                      <Icon name="x" size={14} />
-                                  </button>
-                              </div>
-                          );
-                      })}
-                  </div>
+                        {/* Selected Upgrades */}
+                        <div className="space-y-1">
+                            {(unit.selectedUpgrades || []).map((upgrade, idx) => {
+                                const isLeaderUpgrade = upgrade.name.indexOf(LEADER_UPGRADE_SUFFIX) !== -1;
+                                const leaderStyle =
+                                    isLeaderUpgrade && unit.isLeader
+                                        ? "border-amber-500/70 bg-amber-950/40"
+                                        : isLeaderUpgrade && !unit.isLeader
+                                        ? "border-red-700/70 bg-red-950/30"
+                                        : "border-stone-700 bg-stone-800";
 
-                  {/* Upgrade Selector */}
-                  <div className="mt-3 no-print">
-                      <select 
-                          className="w-full bg-stone-800 text-stone-300 text-sm border border-stone-600 rounded p-2 focus:border-amber-500 outline-none"
-                          onChange={addUpgrade}
-                          defaultValue=""
-                      >
-                          <option value="" disabled>+ Add Fantastical Rule / Upgrade</option>
-                          {UPGRADES_LIST.map(u => (
-                              <option
-                                  key={u.name}
-                                  value={u.name}
-                                  disabled={(unit.selectedUpgrades || []).some(sel => sel.name === u.name)}
-                              >
-                                  {u.name} ({u.cost > 0 ? '+' : ''}{u.cost})
-                              </option>
-                          ))}
-                      </select>
-                  </div>
+                                return (
+                                    <div
+                                        key={idx}
+                                        className={`flex justify-between items-start text-sm p-2 rounded border ${leaderStyle}`}
+                                    >
+                                        <div>
+                                            <span className="font-semibold">
+                                                <span className={isLeaderUpgrade ? (unit.isLeader ? "text-amber-300" : "text-red-300") : "text-amber-500"}>
+                                                    {upgrade.name}
+                                                </span>
+                                            </span>
+                                            <span className="text-stone-500 text-xs ml-1">
+                                                ({upgrade.cost > 0 ? "+" : ""}{upgrade.cost} pts)
+                                            </span>
+                                            <div className="text-xs text-stone-300 italic mt-0.5">
+                                                {upgrade.desc}
+                                            </div>
+                                            {isLeaderUpgrade && !unit.isLeader && (
+                                                <div className="text-[10px] text-red-300 mt-0.5">
+                                                    Leader trait is on a non-Leader unit.
+                                                </div>
+                                            )}
+                                        </div>
+                                        <button 
+                                            onClick={() => removeUpgrade(upgrade.name)}
+                                            className="text-stone-500 hover:text-red-400 ml-2 no-print"
+                                        >
+                                            <Icon name="x" size={14} />
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
 
-                  {hasLeaderUpgradeOnNonLeader && (
-                      <div className="mt-2 text-[11px] text-red-300 no-print">
-                          This unit has Leader traits but is not marked as the warband Leader.
-                      </div>
-                  )}
+                        {/* Upgrade Selector */}
+                        <div className="mt-3 no-print">
+                            <select 
+                                className="w-full bg-stone-800 text-stone-300 text-sm border border-stone-600 rounded p-2 focus:border-amber-500 outline-none"
+                                onChange={addUpgrade}
+                                defaultValue=""
+                            >
+                                <option value="" disabled>+ Add Fantastical Rule / Upgrade</option>
+                                {UPGRADES_LIST.map(u => (
+                                    <option
+                                        key={u.name}
+                                        value={u.name}
+                                        disabled={(unit.selectedUpgrades || []).some(sel => sel.name === u.name)}
+                                    >
+                                        {u.name} ({u.cost > 0 ? '+' : ''}{u.cost})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                  {unit.isLeader && (
-                      <div className="mt-2 text-[11px] text-amber-300 uppercase tracking-wide no-print">
-                          <Icon name="crown" size={12} className="inline mr-1" />
-                          Warband Leader
-                      </div>
-                  )}
-              </div>
-          </div>
-      );
-  };
+                        {hasLeaderUpgradeOnNonLeader && (
+                            <div className="mt-2 text-[11px] text-red-300 no-print">
+                                This unit has Leader traits but is not marked as the warband Leader.
+                            </div>
+                        )}
 
-  const App = () => {
-      const [army, setArmy] = useState(() => {
-          try {
-              const saved = localStorage.getItem('dr_army_v1');
-              return saved ? JSON.parse(saved) : [];
-          } catch {
-              return [];
-          }
-      });
+                        {unit.isLeader && (
+                            <div className="mt-2 text-[11px] text-amber-300 uppercase tracking-wide no-print">
+                                <Icon name="crown" size={12} className="inline mr-1" />
+                                Warband Leader
+                            </div>
+                        )}
 
-      const [armyName, setArmyName] = useState(() => {
-          return localStorage.getItem('dr_army_name') || "My Warband";
-      });
+                        {/* Spellcasting section (if this unit has Spellcaster LvX) */}
+                        {hasSpellcaster && (
+                            <div className="mt-4 pt-3 border-t border-stone-700">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-xs font-semibold text-stone-300 uppercase tracking-wide flex items-center gap-1">
+                                        <Icon name="sparkle" size={14} />
+                                        Spellcasting
+                                    </span>
+                                    <span className="text-[10px] text-stone-400">
+                                        Level {maxSpellColours} – choose up to {maxSpellColours} colour{maxSpellColours > 1 ? "s" : ""}
+                                    </span>
+                                </div>
 
-      const [jsonText, setJsonText] = useState("");
+                                <div className="flex flex-wrap gap-2 mb-2 no-print">
+                                    {SPELL_COLOURS.map(col => {
+                                        const checked = selectedColours.includes(col.id);
+                                        const disabled = !checked && selectedColours.length >= maxSpellColours;
+                                        return (
+                                            <label
+                                                key={col.id}
+                                                className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded border cursor-pointer ${
+                                                    checked
+                                                        ? "border-amber-400 bg-stone-800 text-amber-200"
+                                                        : disabled
+                                                        ? "border-stone-700 bg-stone-900 text-stone-600 opacity-60 cursor-not-allowed"
+                                                        : "border-stone-700 bg-stone-900 text-stone-300 hover:border-amber-400"
+                                                }`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    className="accent-amber-400"
+                                                    checked={checked}
+                                                    disabled={disabled}
+                                                    onChange={() => toggleColour(col.id)}
+                                                />
+                                                <span>{col.label}</span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
 
-      useEffect(() => {
-          localStorage.setItem('dr_army_v1', JSON.stringify(army));
-      }, [army]);
+                                {selectedColours.length > 0 && (
+                                    <div className="bg-stone-950 border border-stone-800 rounded p-2 text-xs space-y-2">
+                                        {selectedColours.map(colId => {
+                                            const colourMeta = SPELL_COLOURS.find(c => c.id === colId);
+                                            const spells = SPELLS_BY_COLOUR[colId] || [];
+                                            if (!colourMeta || spells.length === 0) return null;
+                                            return (
+                                                <div key={colId}>
+                                                    <div className="font-semibold text-amber-300 mb-1">
+                                                        {colourMeta.label}
+                                                    </div>
+                                                    <ul className="ml-3 space-y-0.5">
+                                                        {spells.map(spell => (
+                                                            <li key={spell.name} className="flex justify-between gap-2">
+                                                                <span className="text-stone-100">{spell.name}</span>
+                                                                <span className="text-[10px] text-stone-500 whitespace-nowrap">
+                                                                    DR2e p.{spell.page}
+                                                                </span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            );
+                                        })}
+                                        <div className="text-[10px] text-stone-500 italic pt-1">
+                                            Spell effects: see Dragon Rampant 2e, Spellbook chapter.
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
 
-      useEffect(() => {
-          localStorage.setItem('dr_army_name', armyName);
-      }, [armyName]);
+        const App = () => {
+            const [army, setArmy] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('dr_army_v1');
+                    return saved ? JSON.parse(saved) : [];
+                } catch {
+                    return [];
+                }
+            });
 
-      const addUnit = (templateName) => {
-          const template = UNIT_TEMPLATES.find(t => t.name === templateName);
-          if (!template) return;
+            const [armyName, setArmyName] = useState(() => {
+                return localStorage.getItem('dr_army_name') || "My Warband";
+            });
 
-          const newUnit = {
-              ...template,
-              id: Date.now() + Math.random(),
-              customName: "",
-              selectedUpgrades: [],
-              isLeader: false
-          };
-          setArmy(prev => [...prev, newUnit]);
-      };
+            const [jsonText, setJsonText] = useState("");
 
-      const updateUnit = (id, updatedUnit) => {
-          setArmy(prev => prev.map(u => (u.id === id ? updatedUnit : u)));
-      };
+            useEffect(() => {
+                localStorage.setItem('dr_army_v1', JSON.stringify(army));
+            }, [army]);
 
-      const deleteUnit = (id) => {
-          setArmy(prev => prev.filter(u => u.id !== id));
-      };
+            useEffect(() => {
+                localStorage.setItem('dr_army_name', armyName);
+            }, [armyName]);
 
-      const duplicateUnit = (unit) => {
-          const cloned = {
-              ...unit,
-              id: Date.now() + Math.random(),
-              customName: unit.customName ? `${unit.customName} (copy)` : "",
-              isLeader: false
-          };
-          setArmy(prev => [...prev, cloned]);
-      };
+            const addUnit = (templateName) => {
+                const template = UNIT_TEMPLATES.find(t => t.name === templateName);
+                if (!template) return;
 
-      const clearArmy = () => {
-          if (army.length === 0) return;
-          if (window.confirm("Clear all units from this warband?")) {
-              setArmy([]);
-          }
-      };
+                const newUnit = {
+                    ...template,
+                    id: Date.now() + Math.random(),
+                    customName: "",
+                    selectedUpgrades: [],
+                    isLeader: false,
+                    spellColours: []
+                };
+                setArmy(prev => [...prev, newUnit]);
+            };
 
-      const setLeader = (id) => {
-          setArmy(prev => {
-              const clicked = prev.find(u => u.id === id);
-              const willBeLeader = clicked ? !clicked.isLeader : true;
-              return prev.map(u => ({
-                  ...u,
-                  isLeader: willBeLeader ? u.id === id : false
-              }));
-          });
-      };
+            const updateUnit = (id, updatedUnit) => {
+                setArmy(prev => prev.map(u => (u.id === id ? updatedUnit : u)));
+            };
 
-      const totalPoints = army.reduce((sum, unit) => {
-          const unitCost = Math.max(
-              0,
-              unit.cost + (unit.selectedUpgrades || []).reduce((s, u) => s + u.cost, 0)
-          );
-          return sum + unitCost;
-      }, 0);
+            const deleteUnit = (id) => {
+                setArmy(prev => prev.filter(u => u.id !== id));
+            };
 
-      const isUnitUndead = (unit) => {
-          const baseIsUndead = (unit.rules || []).indexOf("Undead") !== -1;
-          const upgradeIsUndead = (unit.selectedUpgrades || []).some(u => u.name === "Undead");
-          return baseIsUndead || upgradeIsUndead;
-      };
+            const duplicateUnit = (unit) => {
+                const cloned = {
+                    ...unit,
+                    id: Date.now() + Math.random(),
+                    customName: unit.customName ? `${unit.customName} (copy)` : "",
+                    isLeader: false
+                };
+                setArmy(prev => [...prev, cloned]);
+            };
 
-      const hasUnstoppable = army.some(
-          unit => (unit.selectedUpgrades || []).some(up => up.name === UNSTOPPABLE_NAME)
-      );
-      const allUndead = army.length > 0 && army.every(isUnitUndead);
+            const clearArmy = () => {
+                if (army.length === 0) return;
+                if (window.confirm("Clear all units from this warband?")) {
+                    setArmy([]);
+                }
+            };
 
-      const anyLeaderTraitsOnNonLeader = army.some(
-          unit =>
-              !unit.isLeader &&
-              (unit.selectedUpgrades || []).some(up => up.name.indexOf(LEADER_UPGRADE_SUFFIX) !== -1)
-      );
+            const setLeader = (id) => {
+                setArmy(prev => {
+                    const clicked = prev.find(u => u.id === id);
+                    const willBeLeader = clicked ? !clicked.isLeader : true;
+                    return prev.map(u => ({
+                        ...u,
+                        isLeader: willBeLeader ? u.id === id : false
+                    }));
+                });
+            };
 
-      const handleExportJson = () => {
-          const data = {
-              armyName,
-              army,
-              version: 1,
-              exportedAt: new Date().toISOString()
-          };
-          const pretty = JSON.stringify(data, null, 2);
-          setJsonText(pretty);
-      };
+            const totalPoints = army.reduce((sum, unit) => {
+                const unitCost = Math.max(
+                    0,
+                    unit.cost + (unit.selectedUpgrades || []).reduce((s, u) => s + u.cost, 0)
+                );
+                return sum + unitCost;
+            }, 0);
 
-      const handleImportJson = () => {
-          try {
-              const parsed = JSON.parse(jsonText);
-              const importedArmyRaw = parsed.army || [];
-              const importedName = parsed.armyName || "Imported Warband";
+            const isUnitUndead = (unit) => {
+                const baseIsUndead = (unit.rules || []).indexOf("Undead") !== -1;
+                const upgradeIsUndead = (unit.selectedUpgrades || []).some(u => u.name === "Undead");
+                return baseIsUndead || upgradeIsUndead;
+            };
 
-              const normalizedArmy = importedArmyRaw.map((unit, idx) => ({
-                  ...unit,
-                  id: unit.id || (Date.now() + Math.random() + idx),
-                  selectedUpgrades: unit.selectedUpgrades || [],
-                  isLeader: !!unit.isLeader,
-                  rules: unit.rules || []
-              }));
+            const hasUnstoppable = army.some(
+                unit => (unit.selectedUpgrades || []).some(up => up.name === UNSTOPPABLE_NAME)
+            );
+            const allUndead = army.length > 0 && army.every(isUnitUndead);
 
-              setArmy(normalizedArmy);
-              setArmyName(importedName);
-              window.alert("Army imported successfully.");
-          } catch (err) {
-              console.error(err);
-              window.alert("Import failed. Please check the JSON is valid and try again.");
-          }
-      };
+            const anyLeaderTraitsOnNonLeader = army.some(
+                unit =>
+                    !unit.isLeader &&
+                    (unit.selectedUpgrades || []).some(up => up.name.indexOf(LEADER_UPGRADE_SUFFIX) !== -1)
+            );
 
-      return (
-          <div className="min-h-screen bg-neutral-900 text-stone-100">
-              <header className="no-print border-b border-stone-800 bg-black/80 backdrop-blur sticky top-0 z-20">
-                  <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                      <div className="flex items-center gap-3">
-                          <Icon name="sword" size={28} className="text-amber-400" />
-                          <div>
-                              <h1 className="text-xl md:text-2xl font-bold fantasy-font tracking-wide">
-                                  Dragon Rampant Army Builder
-                              </h1>
-                              <p className="text-xs text-stone-400">
-                                  Lists are saved locally in this browser (and you can export/import JSON below).
-                              </p>
-                          </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                          <input
-                              type="text"
-                              value={armyName}
-                              onChange={(e) => setArmyName(e.target.value)}
-                              className="bg-stone-900 border border-stone-700 rounded px-3 py-1 text-sm focus:outline-none focus:border-amber-500 w-full md:w-64"
-                              placeholder="Warband name"
-                          />
-                          <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-stone-300">
-                              <span>
-                                  <Icon name="users" size={16} className="inline mr-1" />
-                                  {army.length} units
-                              </span>
-                              <span>
-                                  <Icon name="coins" size={16} className="inline mr-1 text-amber-300" />
-                                  {totalPoints} pts
-                              </span>
-                              <button
-                                  onClick={() => window.print()}
-                                  className="inline-flex items-center gap-1 px-3 py-1 rounded bg-stone-800 hover:bg-stone-700 text-xs font-semibold"
-                              >
-                                  <Icon name="printer" size={14} />
-                                  Print
-                              </button>
-                              {army.length > 0 && (
-                                  <button
-                                      onClick={clearArmy}
-                                      className="inline-flex items-center gap-1 px-3 py-1 rounded border border-red-700 text-red-400 hover:bg-red-900/30 text-xs"
-                                  >
-                                      <Icon name="trash" size={14} />
-                                      Clear
-                                  </button>
-                              )}
-                          </div>
-                      </div>
-                  </div>
+            const handleExportJson = () => {
+                const data = {
+                    armyName,
+                    army,
+                    version: 2,
+                    exportedAt: new Date().toISOString()
+                };
+                const pretty = JSON.stringify(data, null, 2);
+                setJsonText(pretty);
+            };
 
-                  {/* Global warnings */}
-                  {(hasUnstoppable && !allUndead) || anyLeaderTraitsOnNonLeader ? (
-                      <div className="max-w-6xl mx-auto px-4 pb-3 space-y-1 text-xs no-print">
-                          {hasUnstoppable && !allUndead && (
-                              <div className="flex items-start gap-2 text-red-300">
-                                  <Icon name="warning-circle" size={14} className="mt-0.5" />
-                                  <span>
-                                      <strong>Unstoppable March of the Dead (L):</strong> Rules require all units in the
-                                      warband to be Undead. At least one unit is not marked as Undead.
-                                  </span>
-                              </div>
-                          )}
-                          {anyLeaderTraitsOnNonLeader && (
-                              <div className="flex items-start gap-2 text-amber-300">
-                                  <Icon name="warning" size={14} className="mt-0.5" />
-                                  <span>
-                                      Some Leader traits are on units that are not marked as the warband Leader. Only the actual Leader
-                                      should benefit from Leader traits in the game.
-                                  </span>
-                              </div>
-                          )}
-                      </div>
-                  ) : null}
-              </header>
+            const handleImportJson = () => {
+                try {
+                    const parsed = JSON.parse(jsonText);
+                    const importedArmyRaw = parsed.army || [];
+                    const importedName = parsed.armyName || "Imported Warband";
 
-              <main className="max-w-6xl mx-auto px-4 py-4">
-                  <div className="grid gap-4 md:grid-cols-[minmax(0,260px),minmax(0,1fr)]">
-                      {/* Left panel: add units + JSON tools */}
-                      <aside className="no-print">
-                          <div className="bg-stone-900 border border-stone-700 rounded-lg p-4 shadow">
-                              <h2 className="text-lg font-semibold fantasy-font mb-3">Add unit</h2>
-                              <p className="text-xs text-stone-400 mb-2">
-                                  Choose a template and it will appear on the right.
-                              </p>
-                              <select
-                                  className="w-full bg-stone-800 text-stone-100 border border-stone-600 rounded px-2 py-2 text-sm mb-3 focus:outline-none focus:border-amber-500"
-                                  onChange={(e) => {
-                                      if (e.target.value) {
-                                          addUnit(e.target.value);
-                                          e.target.value = "";
-                                      }
-                                  }}
-                                  defaultValue=""
-                              >
-                                  <option value="" disabled>
-                                      Pick a unit type
-                                  </option>
-                                  {UNIT_TEMPLATES.map((t) => (
-                                      <option key={t.name} value={t.name}>
-                                          {t.name} ({t.cost} pts)
-                                      </option>
-                                  ))}
-                              </select>
-                              <p className="text-xs text-stone-500">
-                                  Tip: tick <strong>Leader</strong> on the unit that carries your Leader traits.
-                              </p>
-                          </div>
+                    const normalizedArmy = importedArmyRaw.map((unit, idx) => ({
+                        ...unit,
+                        id: unit.id || (Date.now() + Math.random() + idx),
+                        selectedUpgrades: unit.selectedUpgrades || [],
+                        isLeader: !!unit.isLeader,
+                        rules: unit.rules || [],
+                        spellColours: unit.spellColours || []
+                    }));
 
-                          {/* JSON export/import */}
-                          <div className="bg-stone-900 border border-stone-700 rounded-lg p-4 shadow mt-4">
-                              <h2 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                                  <Icon name="file-json" size={16} className="text-amber-300" />
-                                  Export / Import JSON
-                              </h2>
-                              <p className="text-[11px] text-stone-400 mb-2">
-                                  Click <strong>Export</strong> to generate JSON for this warband, then copy and save it somewhere.
-                                  Paste JSON back in and click <strong>Import</strong> to load it on another device.
-                              </p>
-                              <textarea
-                                  rows="6"
-                                  className="w-full bg-stone-950 border border-stone-700 rounded p-2 text-xs text-stone-100 mb-2 font-mono"
-                                  placeholder='Click "Export" to generate JSON here, or paste JSON then click "Import".'
-                                  value={jsonText}
-                                  onChange={(e) => setJsonText(e.target.value)}
-                              ></textarea>
-                              <div className="flex gap-2 justify-end">
-                                  <button
-                                      type="button"
-                                      onClick={handleExportJson}
-                                      className="px-3 py-1 rounded bg-stone-800 hover:bg-stone-700 text-xs flex items-center gap-1"
-                                  >
-                                      <Icon name="export" size={14} />
-                                      Export
-                                  </button>
-                                  <button
-                                      type="button"
-                                      onClick={handleImportJson}
-                                      className="px-3 py-1 rounded bg-emerald-800 hover:bg-emerald-700 text-xs flex items-center gap-1"
-                                  >
-                                      <Icon name="import" size={14} />
-                                      Import
-                                  </button>
-                              </div>
-                          </div>
-                      </aside>
+                    setArmy(normalizedArmy);
+                    setArmyName(importedName);
+                    window.alert("Army imported successfully.");
+                } catch (err) {
+                    console.error(err);
+                    window.alert("Import failed. Please check the JSON is valid and try again.");
+                }
+            };
 
-                      {/* Right panel: army list */}
-                      <section>
-                          <h2 className="sr-only">Army list</h2>
-                          {army.length === 0 ? (
-                              <div className="border border-dashed border-stone-700 rounded-lg p-8 text-center text-stone-400">
-                                  <p className="mb-2 text-sm">No units in this warband yet.</p>
-                                  <p className="text-xs">
-                                      Use the panel on the left to add your first unit.
-                                  </p>
-                              </div>
-                          ) : (
-                              <div className="space-y-4">
-                                  {army.map((unit) => (
-                                      <UnitCard
-                                          key={unit.id}
-                                          unit={unit}
-                                          onUpdate={updateUnit}
-                                          onDelete={deleteUnit}
-                                          onDuplicate={duplicateUnit}
-                                          onSetLeader={setLeader}
-                                      />
-                                  ))}
-                              </div>
-                          )}
-                      </section>
-                  </div>
-              </main>
-          </div>
-      );
-  };
+            return (
+                <div className="min-h-screen bg-neutral-900 text-stone-100">
+                    <header className="no-print border-b border-stone-800 bg-black/80 backdrop-blur sticky top-0 z-20">
+                        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                            <div className="flex items-center gap-3">
+                                <Icon name="sword" size={28} className="text-amber-400" />
+                                <div>
+                                    <h1 className="text-xl md:text-2xl font-bold fantasy-font tracking-wide">
+                                        Dragon Rampant Army Builder
+                                    </h1>
+                                    <p className="text-xs text-stone-400">
+                                        Lists are saved locally in this browser (and you can export/import JSON below).
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                                <input
+                                    type="text"
+                                    value={armyName}
+                                    onChange={(e) => setArmyName(e.target.value)}
+                                    className="bg-stone-900 border border-stone-700 rounded px-3 py-1 text-sm focus:outline-none focus:border-amber-500 w-full md:w-64"
+                                    placeholder="Warband name"
+                                />
+                                <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-stone-300">
+                                    <span>
+                                        <Icon name="users" size={16} className="inline mr-1" />
+                                        {army.length} units
+                                    </span>
+                                    <span>
+                                        <Icon name="coins" size={16} className="inline mr-1 text-amber-300" />
+                                        {totalPoints} pts
+                                    </span>
+                                    <button
+                                        onClick={() => window.print()}
+                                        className="inline-flex items-center gap-1 px-3 py-1 rounded bg-stone-800 hover:bg-stone-700 text-xs font-semibold"
+                                    >
+                                        <Icon name="printer" size={14} />
+                                        Print
+                                    </button>
+                                    {army.length > 0 && (
+                                        <button
+                                            onClick={clearArmy}
+                                            className="inline-flex items-center gap-1 px-3 py-1 rounded border border-red-700 text-red-400 hover:bg-red-900/30 text-xs"
+                                        >
+                                            <Icon name="trash" size={14} />
+                                            Clear
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
 
-  ReactDOM.createRoot(document.getElementById('dr-army-builder-root')).render(<App />);
-</script>
+                        {/* Global warnings */}
+                        {(hasUnstoppable && !allUndead) || anyLeaderTraitsOnNonLeader ? (
+                            <div className="max-w-6xl mx-auto px-4 pb-3 space-y-1 text-xs no-print">
+                                {hasUnstoppable && !allUndead && (
+                                    <div className="flex items-start gap-2 text-red-300">
+                                        <Icon name="warning-circle" size={14} className="mt-0.5" />
+                                        <span>
+                                            <strong>Unstoppable March of the Dead (L):</strong> Rules require all units in the
+                                            warband to be Undead. At least one unit is not marked as Undead.
+                                        </span>
+                                    </div>
+                                )}
+                                {anyLeaderTraitsOnNonLeader && (
+                                    <div className="flex items-start gap-2 text-amber-300">
+                                        <Icon name="warning" size={14} className="mt-0.5" />
+                                        <span>
+                                            Some Leader traits are on units that are not marked as the warband Leader. Only the actual Leader
+                                            should benefit from Leader traits in the game.
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        ) : null}
+                    </header>
+
+                    <main className="max-w-6xl mx-auto px-4 py-4">
+                        <div className="grid gap-4 md:grid-cols-[minmax(0,260px),minmax(0,1fr)]">
+                            {/* Left panel: add units + JSON tools */}
+                            <aside className="no-print">
+                                <div className="bg-stone-900 border border-stone-700 rounded-lg p-4 shadow">
+                                    <h2 className="text-lg font-semibold fantasy-font mb-3">Add unit</h2>
+                                    <p className="text-xs text-stone-400 mb-2">
+                                        Choose a template and it will appear on the right.
+                                    </p>
+                                    <select
+                                        className="w-full bg-stone-800 text-stone-100 border border-stone-600 rounded px-2 py-2 text-sm mb-3 focus:outline-none focus:border-amber-500"
+                                        onChange={(e) => {
+                                            if (e.target.value) {
+                                                addUnit(e.target.value);
+                                                e.target.value = "";
+                                            }
+                                        }}
+                                        defaultValue=""
+                                    >
+                                        <option value="" disabled>
+                                            Pick a unit type
+                                        </option>
+                                        {UNIT_TEMPLATES.map((t) => (
+                                            <option key={t.name} value={t.name}>
+                                                {t.name} ({t.cost} pts)
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <p className="text-xs text-stone-500">
+                                        Tip: tick <strong>Leader</strong> on the unit that carries your Leader tr
