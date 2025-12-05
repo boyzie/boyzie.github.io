@@ -123,9 +123,9 @@
             { name: "Beserkers", sp: 6, cost: 4, attackOrder: "5+", attackVal: "3+", shootOrder: "-", shootVal: "-", moveOrder: "6+", moveDist: '8"', armor: 2, defense: "6+", courage: "3+", rules: ["Wild Charge", "Beserk"] }
         ];
 
-        // --- DATA: Fantastical Rules & Upgrades (now matching your full list) ---
+        // --- DATA: Fantastical Rules & Upgrades (full list + Flame/Spore) ---
         const UPGRADES_LIST = [
-            // Leader-only traits (we tag with (L) for detection)
+            // Leader-only traits
             {
                 name: "Brutal (L)",
                 cost: 1,
@@ -211,7 +211,7 @@
             {
                 name: "Cleric",
                 cost: 2,
-                desc: "Counts as Courageous. Against Undead also counts as Champion and Repellent. Cost is 2–4 depending on how many Undead the opponent has; builder uses 2 as a base – adjust manually if needed."
+                desc: "Counts as Courageous. Against Undead also counts as Champion and Repellent. Cost is 2–4 depending on Undead; builder uses 2 as a base – adjust manually if needed."
             },
             {
                 name: "Concealment",
@@ -275,6 +275,13 @@
                 cost: 2,
                 desc: "Enemies Attacking this unit suffer -1 to their Courage tests."
             },
+
+            {
+                name: "Flame or Spore Attack",
+                cost: 2,
+                desc: "Greater/Lesser Warbeasts only. Gains Shoot 6+ / 5+ (range 12\"), and loses the Wild Charge special rule. Can represent biological or mechanical missile attacks."
+            },
+
             {
                 name: "Flyer",
                 cost: 2,
@@ -345,7 +352,7 @@
                 desc: "Unit may make one free Move action before the game begins."
             },
 
-            // Spellcaster levels – we expose as Lv1–Lv4 for clarity
+            // Spellcaster levels
             {
                 name: "Spellcaster Lv1",
                 cost: 1,
@@ -412,7 +419,7 @@
         const LEADER_UPGRADE_SUFFIX = "(L)";
         const UNSTOPPABLE_NAME = "Unstoppable March of the Dead (L)";
 
-        // --- DATA: Spellbook (colours & spells) with your summaries ---
+        // --- SPELLBOOK with your summaries & difficulties ---
         const SPELLBOOK = {
             Amber: [
                 {
@@ -556,7 +563,7 @@
 
         const SPELL_COLOURS = Object.keys(SPELLBOOK);
 
-        // --- Helpers for Spellcaster handling ---
+        // Spellcaster upgrade name aliases
         const SPELL_UPGRADE_NAMES = [
             "Spellcaster Lv1",
             "Spellcaster Lv2",
@@ -592,12 +599,33 @@
             return { colours, selectedSpells };
         }
 
+        // --- Derived profile adjustments from upgrades ---
+        const applyDerivedUpgrades = (unit) => {
+            let view = {
+                ...unit,
+                rules: [...(unit.rules || [])]
+            };
+            const upgrades = unit.selectedUpgrades || [];
+
+            // Flame or Spore Attack: modifies Greater/Lesser Warbeasts profile for display
+            const hasFlameSpore = upgrades.some(u => u.name === "Flame or Spore Attack");
+            if (hasFlameSpore && (unit.name === "Greater Warbeasts" || unit.name === "Lesser Warbeasts")) {
+                view.shootOrder = "6+";
+                view.shootVal = '5+ / 12"';
+                view.rules = view.rules.filter(r => r !== "Wild Charge");
+            }
+
+            return view;
+        };
+
         // Icon wrapper
         const Icon = ({ name, size = 20, className = "" }) => {
             return <i className={`ph ph-${name} ${className}`} style={{ fontSize: size }}></i>;
         };
 
         const UnitCard = ({ unit, onUpdate, onDelete, onDuplicate, onSetLeader }) => {
+            const viewUnit = applyDerivedUpgrades(unit);
+
             const handleNameChange = (e) => {
                 onUpdate(unit.id, { ...unit, customName: e.target.value });
             };
@@ -726,7 +754,7 @@
                             </div>
                             <div className="text-stone-400 text-sm mt-1 flex items-center gap-2">
                                 <span className="font-semibold text-stone-300">{unit.name}</span>
-                                <span className="text-xs bg-stone-800 px-2 py-0.5 rounded text-stone-500">SP: {unit.sp}</span>
+                                <span className="text-xs bg-stone-800 px-2 py-0.5 rounded text-stone-500">SP: {viewUnit.sp}</span>
                             </div>
                         </div>
                         <div className="flex flex-col items-end gap-1">
@@ -760,37 +788,37 @@
                     <div className="grid grid-cols-6 gap-1 mb-4 text-center text-sm">
                         <div className="stat-box p-1 rounded">
                             <div className="text-xs text-stone-500 uppercase">Att</div>
-                            <div className="font-bold text-stone-200">{unit.attackOrder}/{unit.attackVal}</div>
+                            <div className="font-bold text-stone-200">{viewUnit.attackOrder}/{viewUnit.attackVal}</div>
                         </div>
                         <div className="stat-box p-1 rounded">
                             <div className="text-xs text-stone-500 uppercase">Sht</div>
-                            <div className="font-bold text-stone-200">{unit.shootOrder}/{unit.shootVal}</div>
+                            <div className="font-bold text-stone-200">{viewUnit.shootOrder}/{viewUnit.shootVal}</div>
                         </div>
                         <div className="stat-box p-1 rounded">
                             <div className="text-xs text-stone-500 uppercase">Mov</div>
-                            <div className="font-bold text-stone-200">{unit.moveOrder}/{unit.moveDist}</div>
+                            <div className="font-bold text-stone-200">{viewUnit.moveOrder}/{viewUnit.moveDist}</div>
                         </div>
                         <div className="stat-box p-1 rounded">
                             <div className="text-xs text-stone-500 uppercase">Arm</div>
-                            <div className="font-bold text-stone-200">{unit.armor}</div>
+                            <div className="font-bold text-stone-200">{viewUnit.armor}</div>
                         </div>
                         <div className="stat-box p-1 rounded">
                             <div className="text-xs text-stone-500 uppercase">Def</div>
-                            <div className="font-bold text-stone-200">{unit.defense}</div>
+                            <div className="font-bold text-stone-200">{viewUnit.defense}</div>
                         </div>
                         <div className="stat-box p-1 rounded">
                             <div className="text-xs text-stone-500 uppercase">Cour</div>
-                            <div className="font-bold text-stone-200">{unit.courage}</div>
+                            <div className="font-bold text-stone-200">{viewUnit.courage}</div>
                         </div>
                     </div>
 
                     {/* Rules & Upgrades */}
                     <div className="space-y-2">
                         {/* Default Rules */}
-                        {unit.rules.length > 0 && (
+                        {(viewUnit.rules || []).length > 0 && (
                             <div className="text-sm text-stone-400">
                                 <span className="font-semibold text-stone-500">Traits: </span>
-                                {unit.rules.join(", ")}
+                                {viewUnit.rules.join(", ")}
                             </div>
                         )}
 
@@ -877,7 +905,7 @@
                                     </div>
                                 </div>
 
-                                {/* Spell list & quick reference (config + prints) */}
+                                {/* Spell list & quick reference */}
                                 {spellConfig.colours.length > 0 && (
                                     <div className="space-y-1">
                                         {spellConfig.colours.map(colour => (
@@ -961,7 +989,7 @@
                             </div>
                         )}
 
-                        {/* Printed spell quick reference (chosen spells only) */}
+                        {/* Printed spell quick reference */}
                         {selectedSpellObjects.length > 0 && (
                             <div className="mt-3 text-[11px] border-t border-stone-700 pt-2">
                                 <div className="font-semibold mb-1">
@@ -1098,7 +1126,7 @@
                 const data = {
                     armyName,
                     army,
-                    version: 4,
+                    version: 5,
                     exportedAt: new Date().toISOString()
                 };
                 const pretty = JSON.stringify(data, null, 2);
