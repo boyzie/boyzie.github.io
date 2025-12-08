@@ -1598,4 +1598,99 @@
                                         Choose a template and it will appear on the right.
                                     </p>
                                     <select
-                                        className="w-full bg-stone-800 text-stone-100 border border-stone-600 rounded px-2 py-2 text-sm mb-3 focus:outline-none focus:bor
+                                        className="w-full bg-stone-800 text-stone-100 border border-stone-600 rounded px-2 py-2 text-sm mb-3 focus:outline-none focus:border-amber-500"
+                                        onChange={(e) => {
+                                            if (e.target.value) {
+                                                addUnit(e.target.value);
+                                                e.target.value = "";
+                                            }
+                                        }}
+                                        defaultValue=""
+                                    >
+                                        <option value="" disabled>
+                                            Pick a unit type
+                                        </option>
+                                        {UNIT_TEMPLATES.map((t) => (
+                                            <option key={t.name} value={t.name}>
+                                                {t.name} ({t.cost} pts)
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <p className="text-xs text-stone-500">
+                                        Tip: tick <strong>Leader</strong> on the unit that carries your Leader traits.
+                                    </p>
+                                </div>
+
+                                {/* JSON export/import */}
+                                <div className="bg-stone-900 border border-stone-700 rounded-lg p-4 shadow mt-4">
+                                    <h2 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                                        <Icon name="file-json" size={16} className="text-amber-300" />
+                                        Export / Import JSON
+                                    </h2>
+                                    <p className="text-[11px] text-stone-400 mb-2">
+                                        Click <strong>Export</strong> to generate JSON for this warband, then copy and save it somewhere.
+                                        Paste JSON back in and click <strong>Import</strong> to load it on another device.
+                                    </p>
+                                    <textarea
+                                        rows="6"
+                                        className="w-full bg-stone-950 border border-stone-700 rounded p-2 text-xs text-stone-100 mb-2 font-mono"
+                                        placeholder='Click "Export" to generate JSON here, or paste JSON then click "Import".'
+                                        value={jsonText}
+                                        onChange={(e) => setJsonText(e.target.value)}
+                                    ></textarea>
+                                    <div className="flex gap-2 justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={handleExportJson}
+                                            className="px-3 py-1 rounded bg-stone-800 hover:bg-stone-700 text-xs flex items-center gap-1"
+                                        >
+                                            <Icon name="export" size={14} />
+                                            Export
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleImportJson}
+                                            className="px-3 py-1 rounded bg-emerald-800 hover:bg-emerald-700 text-xs flex items-center gap-1"
+                                        >
+                                            <Icon name="import" size={14} />
+                                            Import
+                                        </button>
+                                    </div>
+                                </div>
+                            </aside>
+
+                            {/* Right panel: army list */}
+                            <section>
+                                <h2 className="sr-only">Army list</h2>
+                                {army.length === 0 ? (
+                                    <div className="border border-dashed border-stone-700 rounded-lg p-8 text-center text-stone-400">
+                                        <p className="mb-2 text-sm">No units in this warband yet.</p>
+                                        <p className="text-xs">
+                                            Use the panel on the left to add your first unit.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {army.map((unit) => (
+                                            <UnitCard
+                                                key={unit.id}
+                                                unit={unit}
+                                                onUpdate={updateUnit}
+                                                onDelete={deleteUnit}
+                                                onDuplicate={duplicateUnit}
+                                                onSetLeader={setLeader}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </section>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
