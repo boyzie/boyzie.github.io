@@ -113,7 +113,8 @@
             { name: "Lesser Warbeasts", sp: 6, cost: 4, attackOrder: "5+", attackVal: "4+", shootOrder: "-", shootVal: "-", moveOrder: "6+", moveDist: '12"', armor: 3, defense: "6+", courage: "4+", rules: ["Ranger", "Wild Charge", "Fleet Footed"] },
             { name: "Elite Foot", sp: 12, cost: 6, attackOrder: "5+", attackVal: "3+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '6"', armor: 4, defense: "5+", courage: "3+", rules: ["Wild Charge"] },
             { name: "Heavy Foot", sp: 12, cost: 4, attackOrder: "6+", attackVal: "4+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '6"', armor: 3, defense: "5+", courage: "4+", rules: ["Wall of Spears"] },
-            { name: "Light Foot", sp: 12, cost: 3, attackOrder: "6+", attackVal: "5+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '8"', armor: 2, defense: "5+", courage: "4+", rules: ["Offensive", "Wall of Spears"] }, 
+            // IMPORTANT: Light Foot no longer has Offensive baked in – it’s now an upgrade.
+            { name: "Light Foot", sp: 12, cost: 3, attackOrder: "6+", attackVal: "5+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '8"', armor: 2, defense: "5+", courage: "4+", rules: ["Wall of Spears"] }, 
             { name: "Bellicose Foot", sp: 12, cost: 4, attackOrder: "5+", attackVal: "4+", shootOrder: "-", shootVal: "-", moveOrder: "5+", moveDist: '6"', armor: 2, defense: "6+", courage: "3+", rules: ["Wild Charge", "Counter-Charge"] },
             { name: "Heavy Missiles", sp: 12, cost: 4, attackOrder: "7+", attackVal: "5+", shootOrder: "6+", shootVal: "4+ / 18\"", moveOrder: "6+", moveDist: '6"', armor: 3, defense: "6+", courage: "4+", rules: [] },
             { name: "Light Missiles", sp: 12, cost: 4, attackOrder: "7+", attackVal: "6+", shootOrder: "6+", shootVal: "5+ / 18\"", moveOrder: "5+", moveDist: '8"', armor: 2, defense: "6+", courage: "4+", rules: ["Skirmish", "Evade"] },
@@ -123,33 +124,39 @@
             { name: "Beserkers", sp: 6, cost: 4, attackOrder: "5+", attackVal: "3+", shootOrder: "-", shootVal: "-", moveOrder: "6+", moveDist: '8"', armor: 2, defense: "6+", courage: "3+", rules: ["Wild Charge", "Beserk"] }
         ];
 
-        // --- DATA: Fantastical Rules & Upgrades (full list + Flame/Spore) ---
+        // --- FANTASTICAL UPGRADES & UNIT OPTIONS ---
+        // Includes leader-only traits, global Fantastical rules, and unit-specific options.
         const UPGRADES_LIST = [
             // Leader-only traits
             {
                 name: "Brutal (L)",
                 cost: 1,
-                desc: "Leader only. Friendly units within 12\" may sacrifice 1 Strength Point to automatically pass a Rally test."
+                desc: "Leader only. Friendly units within 12\" may sacrifice 1 Strength Point to automatically pass a Rally test.",
+                leaderOnly: true
             },
             {
                 name: "Divine Leadership (L)",
                 cost: 2,
-                desc: "Leader only. Grants Spell Resistant to all friendly units within 12\" of this Leader."
+                desc: "Leader only. Non-Spellcasters only. Grants Spell Resistant to all friendly units within 12\" of this Leader.",
+                leaderOnly: true
             },
             {
                 name: "Insipid (L)",
                 cost: -1,
-                desc: "Leader only. This Leader provides no Courage bonus to nearby units."
+                desc: "Leader only. This Leader provides no Courage bonus to nearby units.",
+                leaderOnly: true
             },
             {
                 name: "Unstoppable March of the Dead (L)",
                 cost: 3,
-                desc: "Undead Leader only. Warband ignores most Courage test triggers (e.g. Leader death) except for taking casualties."
+                desc: "Undead Leader only. Warband ignores most Courage test triggers (e.g. Leader death) except for taking casualties.",
+                leaderOnly: true
             },
             {
                 name: "Wise Old Owl (L)",
                 cost: 1,
-                desc: "Leader only. Add or subtract 1 from the die roll when determining Attacker/Defender."
+                desc: "Leader only. Add or subtract 1 from the die roll when determining Attacker/Defender.",
+                leaderOnly: true
             },
 
             // A–C
@@ -162,6 +169,12 @@
                 name: "Amphibious",
                 cost: 1,
                 desc: "Counts as Fast, Ranger, and Fleet Footed while in water-based terrain."
+            },
+            {
+                name: "Armoured",
+                cost: 2,
+                desc: "Bellicose Foot only. Armour increases to 3.",
+                allowedUnits: ["Bellicose Foot"]
             },
             {
                 name: "Berserk",
@@ -186,7 +199,8 @@
             {
                 name: "Burrower",
                 cost: 2,
-                desc: "Unit is held in reserve and dices from turn 3 onwards to appear anywhere on the table away from enemies."
+                desc: "Unit is held in reserve and dices from turn 3 onwards to appear anywhere on the table away from enemies.",
+                excludeOnLeader: true
             },
             {
                 name: "Cannibalistic",
@@ -196,12 +210,14 @@
             {
                 name: "Champion (Hewing)",
                 cost: 1,
-                desc: "Melee Champion. Reroll one failed hit die in melee. Combine with Champion (Eagle-Eyed) for the full 2-point Champion."
+                desc: "Melee Champion. Reroll one failed hit die in melee. Combine with Champion (Eagle-Eyed) for the full 2-point Champion.",
+                excludedUnits: ["Greater Warbeasts", "Lesser Warbeasts"]
             },
             {
                 name: "Champion (Eagle-Eyed)",
                 cost: 1,
-                desc: "Shooting Champion. Reroll one failed hit die when Shooting. Combine with Champion (Hewing) for the full 2-point Champion."
+                desc: "Shooting Champion. Reroll one failed hit die when Shooting. Combine with Champion (Hewing) for the full 2-point Champion.",
+                excludedUnits: ["Greater Warbeasts", "Lesser Warbeasts"]
             },
             {
                 name: "Chaotic",
@@ -211,12 +227,30 @@
             {
                 name: "Cleric",
                 cost: 2,
-                desc: "Counts as Courageous. Against Undead also counts as Champion and Repellent. Cost is 2–4 depending on Undead; builder uses 2 as a base – adjust manually if needed."
+                desc: "Counts as Courageous. Against Undead also counts as Champion and Repellent. Official cost varies with enemy Undead – treat this as a baseline and adjust manually if needed.",
+                excludedUnits: [
+                    "Light Riders",
+                    "Greater Warbeasts",
+                    "Lesser Warbeasts",
+                    "Bellicose Foot",
+                    "Scouts",
+                    "Ravenous Hordes"
+                ],
+                excludeIfUndead: true
             },
             {
                 name: "Concealment",
                 cost: 3,
-                desc: "Unit cannot be Shot at, Attacked, or Wild Charged if the enemy starts more than 6\" away."
+                desc: "Unit cannot be Shot at, Attacked, or Wild Charged if the enemy starts more than 6\" away.",
+                excludedUnits: [
+                    "Elite Riders",
+                    "Heavy Riders",
+                    "Greater Warbeasts",
+                    "Elite Foot",
+                    "Heavy Foot"
+                ],
+                excludeOnLeader: true,
+                excludeIfFlyer: true
             },
             {
                 name: "Courageous",
@@ -229,16 +263,24 @@
                 desc: "When Retreating, the unit must fall back its full movement distance instead of half."
             },
             {
-                name: "Cursed",
-                cost: -1,
-                desc: "If the unit takes at least 1 hit, it takes 1 additional hit."
+                name: "Cunning",
+                cost: 2,
+                desc: "Greater/Lesser Warbeasts only. Defence becomes 5+.",
+                allowedUnits: ["Greater Warbeasts", "Lesser Warbeasts"]
             },
 
             // D–H
             {
+                name: "Drilled",
+                cost: 1,
+                desc: "Elite Riders only. Removes Wild Charge to make the unit more controllable.",
+                allowedUnits: ["Elite Riders"]
+            },
+            {
                 name: "Drums and Flags",
                 cost: 2,
-                desc: "Improves the unit’s Courage by 1 point."
+                desc: "Improves the unit’s Courage by 1 point.",
+                excludedUnits: ["Greater Warbeasts", "Lesser Warbeasts", "Scouts", "Ravenous Hordes"]
             },
             {
                 name: "Enchanted Blades",
@@ -248,7 +290,9 @@
             {
                 name: "Exploder",
                 cost: 2,
-                desc: "Unit can be ordered to explode, causing a Strength 3+ hit on every unit (friend and foe) within 6\"."
+                desc: "Unit can be ordered to explode, causing a Strength 3+ hit on every unit (friend and foe) within 6\".",
+                excludedUnits: ["Scouts", "Ravenous Hordes"],
+                excludeOnLeader: true
             },
             {
                 name: "Fanatical",
@@ -279,13 +323,20 @@
             {
                 name: "Flame or Spore Attack",
                 cost: 2,
-                desc: "Greater/Lesser Warbeasts only. Gains Shoot 6+ / 5+ (range 12\"), and loses the Wild Charge special rule. Can represent biological or mechanical missile attacks."
+                desc: "Greater/Lesser Warbeasts only. Gains Shoot 6+ / 5+ (range 12\"), and loses the Wild Charge special rule. Can represent biological or mechanical missile attacks.",
+                allowedUnits: ["Greater Warbeasts", "Lesser Warbeasts"]
             },
 
             {
                 name: "Flyer",
                 cost: 2,
                 desc: "Moves over other units and terrain; ignores terrain and cover effects during movement and Attacks."
+            },
+            {
+                name: "Good Shooters",
+                cost: 2,
+                desc: "Light Riders and Scouts only. No penalty when Skirmishing.",
+                allowedUnits: ["Light Riders", "Scouts"]
             },
             {
                 name: "Hatred",
@@ -297,7 +348,7 @@
             {
                 name: "Large",
                 cost: 1,
-                desc: "Adds +2 to the unit's starting Strength Points. Cost is 1–3 depending on Armour; builder uses 1 as a base – check the rules and adjust manually."
+                desc: "Adds +2 to the unit's starting Strength Points. Official cost varies with Armour; treat this as a baseline and adjust manually."
             },
             {
                 name: "Longer Range",
@@ -315,9 +366,39 @@
                 desc: "Roll 2 additional dice when Shooting."
             },
             {
+                name: "Missiles",
+                cost: 2,
+                desc: "Elite Foot only. Adds a Shoot profile (treated as 6+ / 5+ / 18\") for convenience.",
+                allowedUnits: ["Elite Foot"]
+            },
+            {
+                name: "Mixed Weapons",
+                cost: 2,
+                desc: "Light Foot only. Adds Shoot 6+ / 12\"; cannot form Wall of Spears.",
+                allowedUnits: ["Light Foot"]
+            },
+            {
+                name: "Motivated",
+                cost: 1,
+                desc: "Elite Riders only. Move activation becomes 6+.",
+                allowedUnits: ["Elite Riders"]
+            },
+            {
                 name: "Mystical Armour",
                 cost: 2,
                 desc: "Each time the unit loses a Strength Point, roll a die; on a 6, the damage is ignored."
+            },
+            {
+                name: "Pikes",
+                cost: 1,
+                desc: "Heavy or Light Foot only. Defensive upgrade; Defence 3+ vs Mounted in melee, cannot combine with Offensive/Mixed as noted in the rules.",
+                allowedUnits: ["Heavy Foot", "Light Foot"]
+            },
+            {
+                name: "Ponderous",
+                cost: 1,
+                desc: "Greater Warbeasts only. Removes Wild Charge and represents a slower, heavier style of advance.",
+                allowedUnits: ["Greater Warbeasts"]
             },
             {
                 name: "Regeneration",
@@ -337,9 +418,39 @@
 
             // S–Z
             {
+                name: "Sharpshooters",
+                cost: 2,
+                desc: "Light Missiles only. Shoot value becomes 4+.",
+                allowedUnits: ["Light Missiles"]
+            },
+            {
+                name: "Shielded",
+                cost: 2,
+                desc: "Heavy Missiles only. +2 Armour vs Shooting, +1 Armour when Defending in melee (note this in play).",
+                allowedUnits: ["Heavy Missiles"]
+            },
+            {
+                name: "Shieldwall",
+                cost: 1,
+                desc: "Heavy or Light Foot only. +1 Armour; replaces Wall of Spears (optional rule).",
+                allowedUnits: ["Heavy Foot", "Light Foot"]
+            },
+            {
+                name: "Short Range Missiles",
+                cost: 1,
+                costByUnit: {
+                    "Light Riders": -1 // Light Riders get this as a -1 cost option
+                },
+                desc: "On foot: adds or modifies Shooting to a shorter range (typically 6\"). On Light Riders: range reduced to 6\" for their missiles.",
+                // availability controlled per unit type:
+                allowedUnits: ["Light Riders", "Heavy Foot", "Light Foot"]
+            },
+            {
                 name: "Slayer",
                 cost: 2,
-                desc: "Functions like Cleric but aimed at a specific enemy type (e.g. Goblin Slayer, Beast Slayer). Cost can vary by opponent; builder uses 2 as a base – adjust manually if needed."
+                desc: "Functions like Cleric but aimed at a specific enemy type (e.g. Goblin Slayer, Beast Slayer). Official cost can vary; treat as 2 and adjust manually.",
+                excludeIfUndead: true,
+                excludedUnits: ["Ravenous Hordes"]
             },
             {
                 name: "Slow",
@@ -349,7 +460,8 @@
             {
                 name: "Sneakers",
                 cost: 1,
-                desc: "Unit may make one free Move action before the game begins."
+                desc: "Make a free Move action before the game begins.",
+                // specific call-outs list: Lesser Warbeasts, Light Foot, Bellicose Foot, Scouts, Ravenous Hordes
             },
 
             // Spellcaster levels
@@ -387,7 +499,15 @@
             {
                 name: "Summoner",
                 cost: 3,
-                desc: "May attempt to summon allies (up to 50% of your warband’s points) onto the table during the game."
+                desc: "May attempt to summon allies (up to 50% of your warband’s points) onto the table during the game.",
+                excludedUnits: [
+                    "Light Riders",
+                    "Greater Warbeasts",
+                    "Lesser Warbeasts",
+                    "Bellicose Foot",
+                    "Scouts",
+                    "Ravenous Hordes"
+                ]
             },
             {
                 name: "Undead",
@@ -400,6 +520,12 @@
                 desc: "Attack dice that roll a 6 cause 2 hits."
             },
             {
+                name: "Weighty Projectiles",
+                cost: -1,
+                desc: "Heavy Missiles only. Range reduced to 12\".",
+                allowedUnits: ["Heavy Missiles"]
+            },
+            {
                 name: "Weak",
                 cost: -1,
                 desc: "Unit rolls 1 fewer die when Attacking or Shooting."
@@ -407,12 +533,44 @@
             {
                 name: "Well Led",
                 cost: 1,
-                desc: "May reroll a single test or activation once per game."
+                desc: "May reroll a single test or activation once per game.",
+                excludedUnits: ["Greater Warbeasts", "Lesser Warbeasts", "Ravenous Hordes"],
+                excludeOnLeader: true
             },
             {
                 name: "Were-Creature",
                 cost: 2,
-                desc: "Unit starts in human form but transforms into a Lesser Warbeast-style unit after taking damage. Cost is 2 plus any additional profile cost; builder shows the base 2 – adjust manually."
+                desc: "Unit starts in human form but transforms into a Lesser Warbeast-style unit after taking damage. Official cost is 2 plus the cost of the Warbeast profile; treat 2 as the upgrade cost and account for the rest manually.",
+                excludeOnLeader: true
+            },
+
+            // Unit options that re-use existing names, plus Mounted Missiles & Chariots (upgrade)
+            {
+                name: "Offensive",
+                cost: 2,
+                desc: "Heavy or Light Foot only. Attack value becomes 4+; cannot form Wall of Spears while this option is in effect.",
+                allowedUnits: ["Heavy Foot", "Light Foot"]
+            },
+            {
+                name: "Fleet Footed",
+                cost: 1,
+                desc: "Light Missiles only (in this context). No movement penalty in rough terrain.",
+                allowedUnits: ["Light Missiles"]
+            },
+            {
+                name: "Mounted Missiles",
+                cost: 2,
+                costByUnit: {
+                    "Heavy Riders": 1
+                },
+                desc: "Elite/Heavy Riders only. Gains a short-ranged missile attack (treated as Shoot 6+ / 5+ / 12\"). Elite Riders lose Wild Charge and Counter-Charge; Heavy Riders simply gain the shot.",
+                allowedUnits: ["Elite Riders", "Heavy Riders"]
+            },
+            {
+                name: "Chariots (upgrade)",
+                cost: 2,
+                desc: "Heavy Riders only. Convert into a chariot-style unit: Armour increases to 4 and gains the Linear trait. Apply terrain penalties as per the rules.",
+                allowedUnits: ["Heavy Riders"]
             }
         ].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -563,7 +721,6 @@
 
         const SPELL_COLOURS = Object.keys(SPELLBOOK);
 
-        // Spellcaster upgrade name aliases
         const SPELL_UPGRADE_NAMES = [
             "Spellcaster Lv1",
             "Spellcaster Lv2",
@@ -599,20 +756,203 @@
             return { colours, selectedSpells };
         }
 
+        function isUnitUndead(unit) {
+            const baseRules = unit.rules || [];
+            const hasUndeadRule = baseRules.includes("Undead");
+            const hasUndeadUpgrade = (unit.selectedUpgrades || []).some(u => u.name === "Undead");
+            return hasUndeadRule || hasUndeadUpgrade;
+        }
+
+        function getUpgradeCostForUnit(upgrade, unit) {
+            if (!upgrade) return 0;
+            if (upgrade.costByUnit && unit && Object.prototype.hasOwnProperty.call(upgrade.costByUnit, unit.name)) {
+                return upgrade.costByUnit[unit.name];
+            }
+            return typeof upgrade.cost === "number" ? upgrade.cost : 0;
+        }
+
+        function isUpgradeAllowedForUnit(upgrade, unit) {
+            if (!upgrade || !unit) return true;
+
+            // Leader-only logic
+            if (upgrade.leaderOnly && !unit.isLeader) return false;
+            if (upgrade.excludeOnLeader && unit.isLeader) return false;
+
+            // Unit-specific allow/deny
+            if (upgrade.allowedUnits && !upgrade.allowedUnits.includes(unit.name)) {
+                return false;
+            }
+            if (upgrade.excludedUnits && upgrade.excludedUnits.includes(unit.name)) {
+                return false;
+            }
+
+            // Trait-based restrictions
+            if (upgrade.excludeIfFlyer) {
+                const hasFlyerRule =
+                    (unit.rules || []).includes("Flyer") ||
+                    (unit.selectedUpgrades || []).some(u => u.name === "Flyer");
+                if (hasFlyerRule) return false;
+            }
+
+            if (upgrade.excludeIfUndead && isUnitUndead(unit)) {
+                return false;
+            }
+
+            return true;
+        }
+
         // --- Derived profile adjustments from upgrades ---
         const applyDerivedUpgrades = (unit) => {
             let view = {
                 ...unit,
-                rules: [...(unit.rules || [])]
+                rules: [...(unit.rules || [])],
+                shootOrder: unit.shootOrder,
+                shootVal: unit.shootVal,
+                attackOrder: unit.attackOrder,
+                armor: unit.armor,
+                defense: unit.defense,
+                moveOrder: unit.moveOrder
             };
             const upgrades = unit.selectedUpgrades || [];
 
-            // Flame or Spore Attack: modifies Greater/Lesser Warbeasts profile for display
+            // Flame or Spore Attack (Warbeasts)
             const hasFlameSpore = upgrades.some(u => u.name === "Flame or Spore Attack");
             if (hasFlameSpore && (unit.name === "Greater Warbeasts" || unit.name === "Lesser Warbeasts")) {
                 view.shootOrder = "6+";
                 view.shootVal = '5+ / 12"';
                 view.rules = view.rules.filter(r => r !== "Wild Charge");
+            }
+
+            // Cunning (Warbeasts) – Defence becomes 5+
+            const hasCunning = upgrades.some(u => u.name === "Cunning");
+            if (hasCunning && (unit.name === "Greater Warbeasts" || unit.name === "Lesser Warbeasts")) {
+                view.defense = "5+";
+            }
+
+            // Ponderous (Greater Warbeasts) – removes Wild Charge
+            const hasPonderous = upgrades.some(u => u.name === "Ponderous");
+            if (hasPonderous && unit.name === "Greater Warbeasts") {
+                view.rules = view.rules.filter(r => r !== "Wild Charge");
+            }
+
+            // Elite Riders unit options
+            if (unit.name === "Elite Riders") {
+                const hasMounted = upgrades.some(u => u.name === "Mounted Missiles");
+                const hasDrilled = upgrades.some(u => u.name === "Drilled");
+                const hasMotivated = upgrades.some(u => u.name === "Motivated");
+
+                if (hasMounted) {
+                    view.shootOrder = "6+";
+                    view.shootVal = '5+ / 12"';
+                    view.rules = view.rules.filter(r => r !== "Wild Charge" && r !== "Counter-Charge");
+                } else if (hasDrilled) {
+                    view.rules = view.rules.filter(r => r !== "Wild Charge");
+                }
+
+                if (hasMotivated) {
+                    view.moveOrder = "6+";
+                }
+            }
+
+            // Heavy Riders unit options
+            if (unit.name === "Heavy Riders") {
+                const hasMounted = upgrades.some(u => u.name === "Mounted Missiles");
+                const hasChariots = upgrades.some(u => u.name === "Chariots (upgrade)");
+
+                if (hasMounted) {
+                    view.shootOrder = "6+";
+                    view.shootVal = '5+ / 12"';
+                }
+                if (hasChariots) {
+                    view.armor = 4;
+                    if (!view.rules.includes("Linear")) {
+                        view.rules.push("Linear");
+                    }
+                }
+            }
+
+            // Light Riders Short Range Missiles
+            if (unit.name === "Light Riders") {
+                const hasShortRange = upgrades.some(u => u.name === "Short Range Missiles");
+                if (hasShortRange) {
+                    view.shootVal = '5+ / 6"';
+                }
+            }
+
+            // Elite Foot Missiles
+            if (unit.name === "Elite Foot") {
+                const hasMissiles = upgrades.some(u => u.name === "Missiles");
+                if (hasMissiles) {
+                    view.shootOrder = "6+";
+                    view.shootVal = '5+ / 18"';
+                }
+            }
+
+            // Heavy Foot options
+            if (unit.name === "Heavy Foot") {
+                const hasOff = upgrades.some(u => u.name === "Offensive");
+                const hasShortRange = upgrades.some(u => u.name === "Short Range Missiles");
+                const hasShieldwall = upgrades.some(u => u.name === "Shieldwall");
+
+                if (hasOff) {
+                    view.attackOrder = "4+";
+                }
+                if (hasShortRange) {
+                    view.shootOrder = "6+";
+                    view.shootVal = '6+ / 6"';
+                }
+                if (hasShieldwall) {
+                    view.armor = (view.armor || 3) + 1;
+                    view.rules = view.rules.filter(r => r !== "Wall of Spears");
+                }
+            }
+
+            // Light Foot options
+            if (unit.name === "Light Foot") {
+                const hasOff = upgrades.some(u => u.name === "Offensive");
+                const hasShortRange = upgrades.some(u => u.name === "Short Range Missiles");
+                const hasMixed = upgrades.some(u => u.name === "Mixed Weapons");
+                const hasShieldwall = upgrades.some(u => u.name === "Shieldwall");
+
+                if (hasOff) {
+                    view.attackOrder = "4+";
+                }
+                if (hasMixed) {
+                    view.shootOrder = "6+";
+                    view.shootVal = '6+ / 12"';
+                    view.rules = view.rules.filter(r => r !== "Wall of Spears");
+                } else if (hasShortRange) {
+                    view.shootOrder = "6+";
+                    view.shootVal = '6+ / 6"';
+                }
+                if (hasShieldwall) {
+                    view.armor = (view.armor || 2) + 1;
+                    view.rules = view.rules.filter(r => r !== "Wall of Spears");
+                }
+            }
+
+            // Bellicose Foot – Armoured option
+            if (unit.name === "Bellicose Foot") {
+                const hasArmoured = upgrades.some(u => u.name === "Armoured");
+                if (hasArmoured) {
+                    view.armor = 3;
+                }
+            }
+
+            // Heavy Missiles – Weighty Projectiles
+            if (unit.name === "Heavy Missiles") {
+                const hasWeighty = upgrades.some(u => u.name === "Weighty Projectiles");
+                if (hasWeighty) {
+                    view.shootVal = '4+ / 12"';
+                }
+            }
+
+            // Light Missiles – Sharpshooters
+            if (unit.name === "Light Missiles") {
+                const hasSharpshooters = upgrades.some(u => u.name === "Sharpshooters");
+                if (hasSharpshooters) {
+                    view.shootVal = '4+ / 18"';
+                }
             }
 
             return view;
@@ -637,17 +977,22 @@
                 const upgradeObj = UPGRADES_LIST.find(u => u.name === upgradeName);
                 const currentUpgrades = unit.selectedUpgrades || [];
 
+                if (!upgradeObj) {
+                    e.target.value = "";
+                    return;
+                }
+
                 // Prevent stacking multiple Spellcaster levels accidentally
                 const isSpellUpgrade = SPELL_UPGRADE_NAMES.includes(upgradeName);
                 let newUpgrades = currentUpgrades.slice();
 
                 if (isSpellUpgrade) {
                     newUpgrades = currentUpgrades.filter(u => !SPELL_UPGRADE_NAMES.includes(u.name));
-                    if (!newUpgrades.some(u => u.name === upgradeName) && upgradeObj) {
+                    if (!newUpgrades.some(u => u.name === upgradeName)) {
                         newUpgrades.push(upgradeObj);
                     }
                 } else {
-                    if (!currentUpgrades.some(u => u.name === upgradeName) && upgradeObj) {
+                    if (!currentUpgrades.some(u => u.name === upgradeName)) {
                         newUpgrades = [...currentUpgrades, upgradeObj];
                     }
                 }
@@ -669,7 +1014,10 @@
 
             const totalCost = Math.max(
                 0,
-                unit.cost + (unit.selectedUpgrades || []).reduce((sum, u) => sum + u.cost, 0)
+                unit.cost + (unit.selectedUpgrades || []).reduce(
+                    (sum, u) => sum + getUpgradeCostForUnit(u, unit),
+                    0
+                )
             );
 
             const cardClasses =
@@ -833,6 +1181,8 @@
                                         ? "border-red-700/70 bg-red-950/30"
                                         : "border-stone-700 bg-stone-800";
 
+                                const effCost = getUpgradeCostForUnit(upgrade, unit);
+
                                 return (
                                     <div
                                         key={idx}
@@ -845,7 +1195,7 @@
                                                 </span>
                                             </span>
                                             <span className="text-stone-500 text-xs ml-1">
-                                                ({upgrade.cost > 0 ? "+" : ""}{upgrade.cost} pts)
+                                                ({effCost > 0 ? "+" : ""}{effCost} pts)
                                             </span>
                                             <div className="text-xs text-stone-300 italic mt-0.5">
                                                 {upgrade.desc}
@@ -964,15 +1314,22 @@
                                 defaultValue=""
                             >
                                 <option value="" disabled>+ Add Fantastical Rule / Upgrade</option>
-                                {UPGRADES_LIST.map(u => (
-                                    <option
-                                        key={u.name}
-                                        value={u.name}
-                                        disabled={(unit.selectedUpgrades || []).some(sel => sel.name === u.name) && !SPELL_UPGRADE_NAMES.includes(u.name)}
-                                    >
-                                        {u.name} ({u.cost > 0 ? '+' : ''}{u.cost})
-                                    </option>
-                                ))}
+                                {UPGRADES_LIST
+                                    .filter(u => isUpgradeAllowedForUnit(u, unit))
+                                    .map(u => {
+                                        const effCost = getUpgradeCostForUnit(u, unit);
+                                        const already = (unit.selectedUpgrades || []).some(sel => sel.name === u.name);
+                                        // Leader-only handled in isUpgradeAllowedForUnit
+                                        return (
+                                            <option
+                                                key={u.name}
+                                                value={u.name}
+                                                disabled={already && !SPELL_UPGRADE_NAMES.includes(u.name)}
+                                            >
+                                                {u.name} ({effCost > 0 ? '+' : ''}{effCost})
+                                            </option>
+                                        );
+                                    })}
                             </select>
                         </div>
 
@@ -1100,16 +1457,13 @@
             const totalPoints = army.reduce((sum, unit) => {
                 const unitCost = Math.max(
                     0,
-                    unit.cost + (unit.selectedUpgrades || []).reduce((s, u) => s + u.cost, 0)
+                    unit.cost + (unit.selectedUpgrades || []).reduce(
+                        (s, u) => s + getUpgradeCostForUnit(u, unit),
+                        0
+                    )
                 );
                 return sum + unitCost;
             }, 0);
-
-            const isUnitUndead = (unit) => {
-                const baseIsUndead = (unit.rules || []).includes("Undead");
-                const upgradeIsUndead = (unit.selectedUpgrades || []).some(u => u.name === "Undead");
-                return baseIsUndead || upgradeIsUndead;
-            };
 
             const hasUnstoppable = army.some(
                 unit => (unit.selectedUpgrades || []).some(up => up.name === UNSTOPPABLE_NAME)
@@ -1126,7 +1480,7 @@
                 const data = {
                     armyName,
                     army,
-                    version: 5,
+                    version: 6,
                     exportedAt: new Date().toISOString()
                 };
                 const pretty = JSON.stringify(data, null, 2);
@@ -1244,99 +1598,4 @@
                                         Choose a template and it will appear on the right.
                                     </p>
                                     <select
-                                        className="w-full bg-stone-800 text-stone-100 border border-stone-600 rounded px-2 py-2 text-sm mb-3 focus:outline-none focus:border-amber-500"
-                                        onChange={(e) => {
-                                            if (e.target.value) {
-                                                addUnit(e.target.value);
-                                                e.target.value = "";
-                                            }
-                                        }}
-                                        defaultValue=""
-                                    >
-                                        <option value="" disabled>
-                                            Pick a unit type
-                                        </option>
-                                        {UNIT_TEMPLATES.map((t) => (
-                                            <option key={t.name} value={t.name}>
-                                                {t.name} ({t.cost} pts)
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <p className="text-xs text-stone-500">
-                                        Tip: tick <strong>Leader</strong> on the unit that carries your Leader traits.
-                                    </p>
-                                </div>
-
-                                {/* JSON export/import */}
-                                <div className="bg-stone-900 border border-stone-700 rounded-lg p-4 shadow mt-4">
-                                    <h2 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                                        <Icon name="file-json" size={16} className="text-amber-300" />
-                                        Export / Import JSON
-                                    </h2>
-                                    <p className="text-[11px] text-stone-400 mb-2">
-                                        Click <strong>Export</strong> to generate JSON for this warband, then copy and save it somewhere.
-                                        Paste JSON back in and click <strong>Import</strong> to load it on another device.
-                                    </p>
-                                    <textarea
-                                        rows="6"
-                                        className="w-full bg-stone-950 border border-stone-700 rounded p-2 text-xs text-stone-100 mb-2 font-mono"
-                                        placeholder='Click "Export" to generate JSON here, or paste JSON then click "Import".'
-                                        value={jsonText}
-                                        onChange={(e) => setJsonText(e.target.value)}
-                                    ></textarea>
-                                    <div className="flex gap-2 justify-end">
-                                        <button
-                                            type="button"
-                                            onClick={handleExportJson}
-                                            className="px-3 py-1 rounded bg-stone-800 hover:bg-stone-700 text-xs flex items-center gap-1"
-                                        >
-                                            <Icon name="export" size={14} />
-                                            Export
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={handleImportJson}
-                                            className="px-3 py-1 rounded bg-emerald-800 hover:bg-emerald-700 text-xs flex items-center gap-1"
-                                        >
-                                            <Icon name="import" size={14} />
-                                            Import
-                                        </button>
-                                    </div>
-                                </div>
-                            </aside>
-
-                            {/* Right panel: army list */}
-                            <section>
-                                <h2 className="sr-only">Army list</h2>
-                                {army.length === 0 ? (
-                                    <div className="border border-dashed border-stone-700 rounded-lg p-8 text-center text-stone-400">
-                                        <p className="mb-2 text-sm">No units in this warband yet.</p>
-                                        <p className="text-xs">
-                                            Use the panel on the left to add your first unit.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {army.map((unit) => (
-                                            <UnitCard
-                                                key={unit.id}
-                                                unit={unit}
-                                                onUpdate={updateUnit}
-                                                onDelete={deleteUnit}
-                                                onDuplicate={duplicateUnit}
-                                                onSetLeader={setLeader}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </section>
-                        </div>
-                    </main>
-                </div>
-            );
-        };
-
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-    </script>
-</body>
-</html>
+                                        className="w-full bg-stone-800 text-stone-100 border border-stone-600 rounded px-2 py-2 text-sm mb-3 focus:outline-none focus:bor
