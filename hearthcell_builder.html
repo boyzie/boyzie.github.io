@@ -402,8 +402,18 @@ function totalPoints() {
 
 function kitCost(model) {
   const items = [...(model.fixedKit||[]), ...(model.chosenKit||[])];
-  return items.reduce((sum, item) => sum + (BATTLEKIT_COSTS[item] || 0), 0);
+
+  return items.reduce((sum, item) => {
+    // Special rule: Sapper’s Mate Satchel Charges cost 10 👑
+    if (item === "Satchel Charge" && model.unitKey === "sapperMate") {
+      return sum + 10;
+    }
+
+    // Default cost
+    return sum + (BATTLEKIT_COSTS[item] || 0);
+  }, 0);
 }
+
 
 function modelCountText() {
   const n = roster.length;
