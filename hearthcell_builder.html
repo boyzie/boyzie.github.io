@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Hearthcell Resistance — Campaign Roster (v1.1)</title>
+<title>Hearthcell Resistance — Campaign Roster (v1.2)</title>
 <style>
   :root{ --bg:#f4f4f4; --card:#fff; --ink:#111; --muted:#555; --line:#ccc; --line2:#888; --accent:#7b0f16; }
   *, *::before, *::after { box-sizing: border-box; }
@@ -231,11 +231,18 @@ const SCALING = {
   9: {pts:1500, max:18}, 10: {pts:1600, max:19}, 11: {pts:1700, max:20}, 12: {pts:1800, max:22}
 };
 
+/* Expanded Price List (New Antioch Standard) */
 const BATTLEKIT_COSTS = {
   "Pistol":6, "Shotgun":10, "Bolt-Action Rifle":10, "Trench Knife":1, "Trench Club":3,
   "Sword/Axe":4, "Frag Grenades":7, "Standard Armour":15, "Combat Helmet":5,
   "Gas Mask":5, "Medi-kit":5, "Binoculars":10, "Satchel Charge":15,
-  "Great Hammer/Maul":10, "Great Sword/Axe":12
+  "Great Hammer/Maul":10, "Great Sword/Axe":12,
+  
+  // Elite Items (Standard New Antioch pricing)
+  "Machine Gun": 30, "Sniper Rifle": 25, "Flamethrower": 15, "Grenade Launcher": 25,
+  "Reinforced Armour": 30, "Machine Armour": 50, "Engineer Body Armour": 20,
+  "Bayonet": 5, "Semi-Automatic Rifle": 15, "Submachine Gun": 20,
+  "Automatic Rifle": 25, "Automatic Pistol": 12, "Automatic Shotgun": 15
 };
 
 const ITEM_PROFILES = {
@@ -453,8 +460,33 @@ function switchTab(id) {
 function uid(){ return Math.random().toString(36).substr(2,9); }
 
 /* ================= ROSTER LOGIC ================= */
+function checkLimits(unitKey, isDupe = false) {
+  const u = UNITS[unitKey];
+  // 1. Individual Limit (Exclude dead)
+  const currentCount = roster.filter(m => m.key === unitKey && m.status !== 'dead').length;
+  // If verifying for a new add, we must strictly be less than limit
+  if (currentCount >= u.limit) {
+    return `${u.name} limit reached (${u.limit}).`;
+  }
+  
+  // 2. Elite Limit (Max 6)
+  if (u.role === 'Elite') {
+    const eliteCount = roster.filter(m => UNITS[m.key].role === 'Elite' && m.status !== 'dead').length;
+    if (eliteCount >= 6) {
+      return `Maximum 6 Elites allowed in the Warband.`;
+    }
+  }
+  return null;
+}
+
 function addUnit(){
   const key = document.getElementById("unitPicker").value;
+  const error = checkLimits(key);
+  if (error) {
+    alert(error);
+    return;
+  }
+  
   const u = UNITS[key];
   const newModel = {
     id: uid(),
@@ -472,6 +504,25 @@ function addUnit(){
   selectedId = newModel.id;
   detailMode = 'model';
   renderAll();
+}
+
+function dupeModel(id){
+  const m = roster.find(x=>x.id===id);
+  if(m){
+    const error = checkLimits(m.key, true);
+    if (error) {
+      alert(error);
+      return;
+    }
+    const clone = JSON.parse(JSON.stringify(m));
+    clone.id = uid();
+    clone.name += " (Copy)";
+    clone.status = 'bench';
+    roster.push(clone);
+    selectedId = clone.id;
+    detailMode = 'model';
+    renderAll();
+  }
 }
 
 function updateGameLimits(){
@@ -503,11 +554,15 @@ function renderAll(){
   list.innerHTML = "";
   let totalPts = 0;
   let fielded = 0;
+  let eliteCount = 0;
   
   roster.forEach(m => {
     const u = UNITS[m.key];
     const cost = getCost(m);
-    if(m.status!=='dead') totalPts += cost;
+    if(m.status!=='dead') {
+      totalPts += cost;
+      if (u.role === 'Elite') eliteCount++;
+    }
     if(m.status==='active') fielded++;
 
     const div = document.createElement("div");
@@ -534,6 +589,8 @@ function renderAll(){
   const limit = SCALING[gameNum];
   const ptsOk = totalPts <= limit.pts;
   const numOk = fielded <= limit.max;
+  const elitesOk = eliteCount <= 6;
+  
   document.getElementById("statusLine").innerHTML = `
     Threshold: <span style="color:${ptsOk?'black':'red'}">${totalPts}</span> / ${limit.pts}👑 &nbsp;|&nbsp; 
     Field Strength: <span style="color:${numOk?'black':'red'}">${fielded}</span> / ${limit.max} Models
@@ -541,6 +598,7 @@ function renderAll(){
   const warns = [];
   if(!ptsOk) warns.push("Over Points Limit");
   if(!numOk) warns.push("Over Model Limit");
+  if(!elitesOk) warns.push(`Too many Elites (${eliteCount}/6)`);
   roster.filter(m=>m.scars>=3 && m.status!=='dead').forEach(m=>warns.push(`${m.name} has 3 Scars (Remove?)`));
   document.getElementById("warnings").innerHTML = warns.length ? warns.map(w=>`<span class="pill danger">${w}</span>`).join(" ") : "";
 
@@ -595,16 +653,14 @@ function renderDetail(){
   const allowed = KIT_LISTS[u.kit.allowed || "NONE"];
 
   const fm = parseInt(u.stats.m) + (m.stats.m||0);
-  // Need to parse range string carefully or just display raw
-  const fr = u.stats.r; // Ranged stats are often special strings like "12"/Melee", keeping simple concat for now
-  const fmel = u.stats.mel; // usually "+1"
-  const farm = u.stats.arm; // usually "0"
-
   const kitHTML = allowed.map(k => {
     const isChecked = m.kit.includes(k);
     const cost = (m.key==='sapperMate' && k==='Satchel Charge') ? 10 : (BATTLEKIT_COSTS[k]||0);
+    // Visual indicator for missing cost
+    const costText = (BATTLEKIT_COSTS[k] !== undefined || (m.key==='sapperMate' && k==='Satchel Charge')) ? `${cost}👑` : `<span style="color:red">?</span>`;
+    
     return `<label style="display:block; margin-bottom:4px; font-weight:400;">
-      <input type="checkbox" onchange="toggleKit('${m.id}','${k}')" ${isChecked?'checked':''}> ${k} (${cost}👑)
+      <input type="checkbox" onchange="toggleKit('${m.id}','${k}')" ${isChecked?'checked':''}> ${k} (${costText})
     </label>`;
   }).join("");
 
@@ -709,19 +765,6 @@ function toggleKit(id, item){
   else m.kit.push(item);
   renderAll();
 }
-function dupeModel(id){
-  const m = roster.find(x=>x.id===id);
-  if(m){
-    const clone = JSON.parse(JSON.stringify(m));
-    clone.id = uid();
-    clone.name += " (Copy)";
-    clone.status = 'bench';
-    roster.push(clone);
-    selectedId = clone.id;
-    detailMode = 'model';
-    renderAll();
-  }
-}
 function delModel(id){
   if(confirm("Delete model?")){
     roster = roster.filter(x=>x.id!==id);
@@ -751,7 +794,7 @@ function renderLog(){
 }
 
 function exportJSON(){
-  const data = { version: "1.1", gameNum, warband, roster, battleLog };
+  const data = { version: "1.2", gameNum, warband, roster, battleLog };
   document.getElementById("ioBox").value = JSON.stringify(data, null, 2);
 }
 function importJSON(){
