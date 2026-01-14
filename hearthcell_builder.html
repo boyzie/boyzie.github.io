@@ -3,1213 +3,1514 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Hearthcell Army Builder v0.6</title>
-
+  <title>Hearthcell Builder v0.6 (Option A)</title>
   <style>
-    /* ===============================
-       THEME & TYPOGRAPHY
-       =============================== */
     :root{
-      --bg:#0e0f12;
-      --panel:#151821;
-      --panel2:#10131a;
-      --text:#e9ecf1;
-      --muted:#aab3c2;
-      --accent:#c9a227;
-      --bad:#ff5c7a;
-      --good:#58d68d;
-      --line:#2a3242;
-      --chip:#1e2431;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      --sans: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --bg:#0b0c10; --panel:#111319; --panel2:#0f1116; --text:#e7e7ea; --muted:#a7a7b0;
+      --line:#252736; --accent:#d6b36a; --bad:#ff5a6b; --good:#74d99f; --warn:#ffce5a;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
     }
-
-    *{ box-sizing:border-box }
-    body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font-family:var(--sans);
+    html,body{background:var(--bg); color:var(--text); font-family:var(--sans); margin:0;}
+    a{color:var(--accent); text-decoration:none;}
+    a:hover{text-decoration:underline;}
+    .wrap{max-width:1200px; margin:0 auto; padding:18px;}
+    header{display:flex; gap:16px; align-items:flex-end; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:12px;}
+    header h1{margin:0; font-size:20px; letter-spacing:0.3px;}
+    header .sub{color:var(--muted); font-size:12px; margin-top:6px;}
+    .row{display:flex; gap:12px; flex-wrap:wrap;}
+    .tabs{display:flex; gap:8px; flex-wrap:wrap;}
+    .tabbtn{background:var(--panel); border:1px solid var(--line); color:var(--text); padding:8px 10px; border-radius:10px; cursor:pointer; font-size:13px;}
+    .tabbtn[aria-selected="true"]{border-color:var(--accent); box-shadow:0 0 0 1px rgba(214,179,106,0.25) inset;}
+    .panel{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px;}
+    .panel h2{margin:0 0 10px 0; font-size:14px; letter-spacing:0.2px;}
+    .panel h3{margin:14px 0 8px 0; font-size:13px; color:var(--muted);}
+    .grid{display:grid; grid-template-columns: 1fr 1fr; gap:12px;}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
+    label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px;}
+    input[type="text"], input[type="number"], select, textarea{
+      width:100%; box-sizing:border-box; background:var(--panel2); border:1px solid var(--line);
+      color:var(--text); border-radius:10px; padding:8px 10px; font-size:13px; outline:none;
     }
-
-    header{
-      padding:16px;
-      border-bottom:1px solid var(--line);
-      background:linear-gradient(180deg,#141726,#0e0f12);
-    }
-
-    h1{ margin:0; font-size:18px }
-    h2{ margin:0 0 8px; font-size:14px }
-
-    main{
-      padding:16px;
-      display:grid;
-      grid-template-columns: 420px 1fr;
-      gap:16px;
-    }
-
-    @media(max-width:1100px){
-      main{ grid-template-columns:1fr }
-    }
-
-    .card{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:12px;
-    }
-
-    .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
-    .grow{ flex:1 }
-
-    input, select, textarea, button{
-      background:var(--panel2);
-      color:var(--text);
-      border:1px solid var(--line);
-      border-radius:10px;
-      padding:8px 10px;
-      font-size:13px;
-    }
-
-    button{ cursor:pointer }
-    button:hover{ border-color:#3a4660 }
-
-    .btnAccent{
-      background:rgba(201,162,39,.15);
-      border-color:rgba(201,162,39,.35);
-    }
-
-    .btnBad{
-      background:rgba(255,92,122,.12);
-      border-color:rgba(255,92,122,.35);
-    }
-
-    .pill{
-      padding:4px 10px;
-      border-radius:999px;
-      background:var(--chip);
-      border:1px solid var(--line);
-      font-size:12px;
-      color:var(--muted);
-    }
-
-    .pill strong{ color:var(--text) }
-
-    .hr{ height:1px; background:var(--line); margin:10px 0 }
-
-    .tag{
-      display:inline-block;
-      padding:2px 8px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:#111523;
-      font-size:11px;
-      color:var(--muted);
-      margin-right:6px;
-      margin-bottom:4px;
-    }
-
-    .small{ font-size:12px }
-    .mono{ font-family:var(--mono) }
-
-    .ok{
-      background:rgba(88,214,141,.07);
-      border:1px solid rgba(88,214,141,.3);
-      padding:8px;
-      border-radius:8px;
-      font-size:12px;
-    }
-
-    .warn{
-      background:rgba(255,92,122,.08);
-      border:1px solid rgba(255,92,122,.35);
-      padding:8px;
-      border-radius:8px;
-      font-size:12px;
+    textarea{min-height:78px; resize:vertical;}
+    .btn{background:var(--panel2); border:1px solid var(--line); color:var(--text); padding:8px 10px; border-radius:10px; cursor:pointer; font-size:13px;}
+    .btn:hover{border-color:#3b3f56;}
+    .btn.primary{border-color:var(--accent); box-shadow:0 0 0 1px rgba(214,179,106,0.18) inset;}
+    .btn.danger{border-color:rgba(255,90,107,0.55);}
+    .btn.good{border-color:rgba(116,217,159,0.55);}
+    .btn.small{padding:5px 8px; font-size:12px; border-radius:9px;}
+    .pill{display:inline-block; padding:4px 8px; border-radius:999px; border:1px solid var(--line); font-size:12px; color:var(--muted);}
+    .pill.good{border-color:rgba(116,217,159,0.55); color:var(--good);}
+    .pill.bad{border-color:rgba(255,90,107,0.55); color:var(--bad);}
+    .pill.warn{border-color:rgba(255,206,90,0.55); color:var(--warn);}
+    .hr{height:1px; background:var(--line); margin:12px 0;}
+    table{width:100%; border-collapse:collapse; font-size:13px;}
+    th,td{border-bottom:1px solid var(--line); padding:8px 6px; text-align:left; vertical-align:top;}
+    th{color:var(--muted); font-weight:600; font-size:12px;}
+    .muted{color:var(--muted);}
+    .mono{font-family:var(--mono);}
+    .k{white-space:nowrap;}
+    .right{text-align:right;}
+    .two{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+    @media (max-width: 720px){ .two{grid-template-columns:1fr;} }
+    .note{font-size:12px; color:var(--muted); line-height:1.4;}
+    .warnbox{border:1px solid rgba(255,206,90,0.35); background:rgba(255,206,90,0.06); padding:10px; border-radius:12px;}
+    .goodbox{border:1px solid rgba(116,217,159,0.35); background:rgba(116,217,159,0.06); padding:10px; border-radius:12px;}
+    .badbox{border:1px solid rgba(255,90,107,0.35); background:rgba(255,90,107,0.06); padding:10px; border-radius:12px;}
+    .flex{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .spacer{flex:1;}
+    .hidden{display:none !important;}
+    /* Print */
+    @media print {
+      body{background:#fff; color:#000;}
+      .noprint{display:none !important;}
+      .printwrap{max-width:none; padding:0;}
+      .panel{border:1px solid #000; background:#fff;}
+      .pill{border-color:#000; color:#000;}
+      a{color:#000; text-decoration:none;}
     }
   </style>
 </head>
-
 <body>
-<header>
-  <h1>Hearthcell Army Builder <span style="color:#aab3c2">v0.6</span></h1>
-  <div class="small" style="color:#aab3c2">
-    Campaign-grade builder · Quartermaster · Arsenal · Full New Antioch Armoury (ELITES)
-  </div>
-</header>
-
-<main>
-
-<!-- ===============================
-     LEFT PANEL: FORCE + CAMPAIGN
-     =============================== -->
-<section class="card">
-
-  <h2>Force Limits</h2>
-  <div class="row">
+<div class="wrap printwrap">
+  <header class="noprint">
     <div>
-      <label class="small">Points</label>
-      <input id="pointsLimit" type="number" value="700">
+      <h1>Hearthcell Resistance Builder <span class="mono">v0.6</span> <span class="pill">Option A</span></h1>
+      <div class="sub">Battlekit picker + promotion workflow + Arsenal (Limits + sell excess) + print roster includes profiles</div>
     </div>
-    <div>
-      <label class="small">Model Cap</label>
-      <input id="modelCap" type="number" value="10">
+    <div class="tabs" role="tablist" aria-label="Sections">
+      <button class="tabbtn" role="tab" id="tab-roster" aria-selected="true" data-tab="roster">Roster</button>
+      <button class="tabbtn" role="tab" id="tab-campaign" aria-selected="false" data-tab="campaign">Campaign</button>
+      <button class="tabbtn" role="tab" id="tab-arsenal" aria-selected="false" data-tab="arsenal">Arsenal</button>
+      <button class="tabbtn" role="tab" id="tab-print" aria-selected="false" data-tab="print">Print</button>
+      <button class="tabbtn" role="tab" id="tab-data" aria-selected="false" data-tab="data">Save/Load</button>
     </div>
-  </div>
+  </header>
 
-  <div class="hr"></div>
+  <section id="view-roster" class="grid">
+    <div class="panel">
+      <h2>Warband Summary</h2>
+      <div class="two">
+        <div>
+          <label>Warband Name</label>
+          <input id="warbandName" type="text" value="Hearthcell Resistance" />
+        </div>
+        <div>
+          <label>Game Size (👑)</label>
+          <input id="gameSize" type="number" min="0" value="700" />
+        </div>
+      </div>
 
-  <h2>Campaign Resources</h2>
-  <div class="row">
-    <div>
-      <label class="small">Glory</label>
-      <input id="glory" type="number" value="0">
+      <div class="hr"></div>
+
+      <div class="flex">
+        <span class="pill">Models: <span id="sumModels" class="mono">0</span></span>
+        <span class="pill">Troops: <span id="sumTroops" class="mono">0</span></span>
+        <span class="pill">Elites: <span id="sumElites" class="mono">0</span></span>
+        <span class="pill">Total 👑: <span id="sumCrowns" class="mono">0</span></span>
+        <span class="spacer"></span>
+        <button class="btn primary" id="btnAutoLegal">Autopick legal force</button>
+        <button class="btn" id="btnClearList">Clear roster</button>
+      </div>
+
+      <div id="sumWarnings" class="hr"></div>
+      <div id="warnArea"></div>
+
+      <div class="hr"></div>
+      <h3>Hearthcell Warband Special Rules (builder reference)</h3>
+      <div class="note">
+        This builder enforces New Antioch Battlekit restrictions for Troops and allows Elites to access the full New Antioch armoury. Arsenal, Limits and selling use Trench Crusade campaign Quartermaster rules. :contentReference[oaicite:3]{index=3}
+      </div>
     </div>
-    <div>
-      <label class="small">Ducats</label>
-      <input id="ducats" type="number" value="0">
+
+    <div class="panel">
+      <h2>Add Model</h2>
+
+      <div class="two">
+        <div>
+          <label>Entry</label>
+          <select id="entrySelect"></select>
+        </div>
+        <div>
+          <label>Name (optional)</label>
+          <input id="modelName" type="text" placeholder="e.g., Knitter of Ciphers, Dockside Giant..." />
+        </div>
+      </div>
+
+      <div class="two">
+        <div>
+          <label>Status</label>
+          <select id="modelStatus">
+            <option value="active">Active</option>
+            <option value="benched">Benched</option>
+            <option value="dead">Dead</option>
+          </select>
+        </div>
+        <div>
+          <label>Notes</label>
+          <input id="modelNotes" type="text" placeholder="Anything you want to remember" />
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="flex">
+        <button class="btn primary" id="btnAddModel">Add model to roster</button>
+        <span class="note">You can edit loadouts after adding.</span>
+      </div>
+
+      <div class="hr"></div>
+
+      <h3>Roster</h3>
+      <div class="note">Click a model to edit Battlekit, abilities, and campaign tracking.</div>
+      <div class="hr"></div>
+      <div id="rosterList"></div>
     </div>
-  </div>
+  </section>
 
-  <div class="hr"></div>
+  <section id="view-campaign" class="grid hidden">
+    <div class="panel">
+      <h2>Campaign Tracker</h2>
+      <div class="two">
+        <div>
+          <label>Strongbox 👑</label>
+          <input id="strongboxCrowns" type="number" value="0" />
+        </div>
+        <div>
+          <label>Glory ☼</label>
+          <input id="strongboxGlory" type="number" value="0" />
+        </div>
+      </div>
 
-  <h2>Quartermaster – Arsenal</h2>
-  <div class="small" style="color:#aab3c2">
-    Stores unequipped Battlekit. Excess items above limits must be sold.
-  </div>
+      <div class="two">
+        <div>
+          <label>Campaign Games Played</label>
+          <input id="gamesPlayed" type="number" value="0" min="0" />
+        </div>
+        <div>
+          <label>Exploration Skills (shorthand)</label>
+          <input id="explorationSkills" type="text" placeholder="e.g., Extra dice, Re-roll" />
+        </div>
+      </div>
 
-  <div id="arsenalContainer" class="small" style="margin-top:8px">
-    <!-- Filled by JS -->
-  </div>
+      <div class="hr"></div>
 
-  <div class="row" style="margin-top:8px">
-    <button id="resolveArsenal" class="btnAccent">
-      Resolve Excess & Sell
-    </button>
-  </div>
+      <h3>Promotion Workflow</h3>
+      <div class="note">
+        Track rolls made and failures per model. (Urchins are flagged as non-promotable in this builder.)
+      </div>
 
-  <div class="hr"></div>
+      <div class="hr"></div>
 
-  <h2>Campaign Log</h2>
-  <textarea id="campaignLog" placeholder="Deaths, promotions, exploration results…"></textarea>
+      <h3>Campaign Log</h3>
+      <div class="flex">
+        <button class="btn" id="btnLogStamp">Add timestamp note</button>
+        <button class="btn" id="btnClearLog">Clear log</button>
+      </div>
+      <div class="hr"></div>
+      <textarea id="campaignLog" class="mono" placeholder="Campaign notes..."></textarea>
+    </div>
 
-  <div class="hr"></div>
+    <div class="panel">
+      <h2>Models (Campaign View)</h2>
+      <div class="note">Dead are shown separately, as requested.</div>
+      <div class="hr"></div>
+      <h3>Active / Benched</h3>
+      <div id="campAlive"></div>
+      <div class="hr"></div>
+      <h3>Dead</h3>
+      <div id="campDead"></div>
+    </div>
+  </section>
 
-  <div id="statusBox"></div>
+  <section id="view-arsenal" class="grid hidden">
+    <div class="panel">
+      <h2>Arsenal</h2>
+      <div class="note">
+        Campaign Quartermaster step lets you purchase Battlekit into your Arsenal and allocate/reallocate it. :contentReference[oaicite:4]{index=4}
+        Selling returns half cost, rounding fractions up. :contentReference[oaicite:5]{index=5}
+      </div>
 
-</section>
+      <div class="hr"></div>
 
-<!-- ===============================
-     RIGHT PANEL: ROSTER
-     =============================== -->
-<section class="card">
-  <h2>Roster</h2>
+      <div class="two">
+        <div>
+          <label>Quick add Battlekit</label>
+          <select id="arsenalAddSelect"></select>
+        </div>
+        <div class="flex" style="align-items:flex-end;">
+          <button class="btn good" id="btnArsenalAdd">Add to Arsenal</button>
+          <button class="btn danger" id="btnArsenalRemove">Remove 1</button>
+        </div>
+      </div>
 
-  <div class="row">
-    <span class="pill"><strong id="statPoints">0</strong> 👑</span>
-    <span class="pill"><strong id="statModels">0</strong> models</span>
-    <span class="pill"><strong id="statElites">0</strong> Elites</span>
-  </div>
+      <div class="hr"></div>
 
-  <div class="hr"></div>
+      <div class="flex">
+        <button class="btn" id="btnSyncArsenal">Sync from roster equipment</button>
+        <button class="btn" id="btnSellExcess">Sell excess above Limits</button>
+        <span class="spacer"></span>
+        <span class="pill">Arsenal items: <span id="arsenalCount" class="mono">0</span></span>
+      </div>
 
-  <div id="rosterContainer" class="small">
-    <!-- Roster rendered here -->
-  </div>
-</section>
+      <div class="hr"></div>
+      <div id="arsenalWarnings"></div>
+      <div class="hr"></div>
 
-</main>
+      <div id="arsenalTable"></div>
+    </div>
 
-<!-- ===============================
-     SCRIPT PART 1
-     =============================== -->
+    <div class="panel">
+      <h2>Limits Reference</h2>
+      <div class="note">
+        Limits are applied across Arsenal plus equipped items when purchasing (Quartermaster Step). :contentReference[oaicite:6]{index=6}
+        This builder warns if you exceed, and can auto-sell the excess.
+      </div>
+      <div class="hr"></div>
+      <div id="limitTable"></div>
+      <div class="hr"></div>
+      <div class="warnbox note">
+        If you use “Remember the Fallen” style recovery and it pushes you over a Limit, you must sell the excess next Quartermaster step (builder supports this with one button). :contentReference[oaicite:7]{index=7}
+      </div>
+    </div>
+  </section>
+
+  <section id="view-print" class="grid hidden">
+    <div class="panel noprint">
+      <h2>Print & Quick Reference</h2>
+      <div class="note">
+        This print view includes: warband summary, roster, abilities, and Battlekit profiles (Type, Range, Keywords).
+      </div>
+      <div class="hr"></div>
+      <div class="flex">
+        <button class="btn primary" id="btnPrint">Print roster</button>
+        <button class="btn" id="btnRefreshPrint">Refresh print view</button>
+      </div>
+    </div>
+
+    <div class="panel" id="printArea">
+      <!-- populated by JS -->
+    </div>
+  </section>
+
+  <section id="view-data" class="grid hidden">
+    <div class="panel">
+      <h2>Save / Load</h2>
+      <div class="note">Everything is stored in your browser localStorage automatically. You can also export JSON for sharing/backups.</div>
+      <div class="hr"></div>
+      <div class="flex">
+        <button class="btn" id="btnExport">Export JSON</button>
+        <button class="btn" id="btnImport">Import JSON</button>
+        <button class="btn danger" id="btnWipeAll">Wipe all local data</button>
+      </div>
+      <div class="hr"></div>
+      <textarea id="dataBox" class="mono" placeholder="Exported JSON will appear here. Paste JSON here to import."></textarea>
+    </div>
+    <div class="panel">
+      <h2>About enforcement</h2>
+      <div class="note">
+        Troops are restricted to the specific New Antioch items you listed. Elites can take any New Antioch armoury item.
+        Limits are tracked and selling uses half cost, rounding up. :contentReference[oaicite:8]{index=8}
+      </div>
+      <div class="hr"></div>
+      <div class="note mono" id="debugInfo"></div>
+    </div>
+  </section>
+
 <script>
-/* =====================================
-   STATE
-   ===================================== */
-let state = {
-  pointsLimit: 700,
-  modelCap: 10,
-  glory: 0,
-  ducats: 0,
-  campaignLog: "",
-  roster: [],
-  arsenal: {} // { kitId: qty }
+/* =========================
+   Data: Entries, Battlekit
+   ========================= */
+
+/**
+ * Note: Weapon/Equipment "Type/Range/Keywords" are included so printouts can act as a quick reference.
+ * Campaign Quartermaster rules cited in UI and logic: selling = half cost rounding up. :contentReference[oaicite:9]{index=9}
+ */
+
+const BATTLEKIT = {
+  // Troop-legal list (New Antioch subset)
+  pistol: {name:"Pistol", cost:3, type:"Ranged Weapon", range:'12"', keywords:"1-Handed"},
+  shotgun: {name:"Shotgun", cost:6, type:"Ranged Weapon", range:'12"', keywords:"2-Handed"},
+  bolt_rifle: {name:"Bolt-Action Rifle", cost:8, type:"Ranged Weapon", range:'24"', keywords:"2-Handed"},
+  trench_knife: {name:"Trench Knife", cost:2, type:"Melee Weapon", range:"-", keywords:"1-Handed"},
+  trench_club: {name:"Trench Club", cost:2, type:"Melee Weapon", range:"-", keywords:"1-Handed"},
+  sword_axe: {name:"Sword/Axe", cost:4, type:"Melee Weapon", range:"-", keywords:"1-Handed"},
+  frag_grenades: {name:"Frag Grenades", cost:6, type:"Grenade", range:'6"', keywords:"BLAST, Consumable"},
+  standard_armour: {name:"Standard Armour", cost:8, type:"Armour", range:"-", keywords:""},
+  combat_helmet: {name:"Combat Helmet", cost:3, type:"Equipment", range:"-", keywords:"NEGATE SHRAPNEL"},
+  gas_mask: {name:"Gas Mask", cost:5, type:"Equipment", range:"-", keywords:"NEGATE GAS"},
+  medi_kit: {name:"Medi-kit", cost:6, type:"Equipment", range:"-", keywords:""},
+  binoculars: {name:"Binoculars", cost:4, type:"Equipment", range:"-", keywords:""},
+
+  // Elite-only / restricted (New Antioch armoury examples user called out)
+  machine_gun: {name:"Machine Gun", cost:15, type:"Ranged Weapon", range:'24"', keywords:"2-Handed, HEAVY"},
+  sniper_rifle: {name:"Sniper Rifle", cost:15, type:"Ranged Weapon", range:'48"', keywords:"2-Handed"},
+  flamethrower: {name:"Flamethrower", cost:15, type:"Ranged Weapon", range:'8"', keywords:"2-Handed, HEAVY, FIRE"},
+  reinforced_armour: {name:"Reinforced Armour", cost:15, type:"Armour", range:"-", keywords:""},
+  machine_armour: {name:"Machine Armour", cost:20, type:"Armour", range:"-", keywords:""},
+
+  // Hearthcell special (campaign flavour)
+  satchel_charge: {name:"Satchel Charge", cost:10, type:"Explosive", range:'6"', keywords:"Consumable, BLAST, Demolition"},
+  molotovs: {name:"Molotov Cocktails", cost:6, type:"Grenade", range:'6"', keywords:"Consumable, FIRE"}
 };
 
-/* Utility */
-const uid = () => Math.random().toString(36).slice(2,9);
+const LIMITS = {
+  // Common limits (adjust as needed if your Hearthcell PDF sets different Limits)
+  machine_gun: 2,
+  sniper_rifle: 3,
+  flamethrower: 3,
+  satchel_charge: 3,
+  binoculars: 3,
+  frag_grenades: 6,
+  molotovs: 6,
+  reinforced_armour: 2,
+  machine_armour: 1,
+  medi_kit: 3,
+  gas_mask: 6,
+  combat_helmet: 6,
+  standard_armour: 6,
+  pistol: 99,
+  shotgun: 99,
+  bolt_rifle: 99,
+  trench_knife: 99,
+  trench_club: 99,
+  sword_axe: 99
+};
 
-/* =====================================
-   BATTLEKIT DATA (FULL in Part 2)
-   ===================================== */
-/* Placeholder – full definitions come in PART 2 */
-const BATTLEKIT = {};
+const TROOP_ALLOWED = new Set([
+  "pistol","shotgun","bolt_rifle","trench_knife","trench_club","sword_axe",
+  "frag_grenades","standard_armour","combat_helmet","gas_mask","medi_kit","binoculars",
+  // optional extra: molotovs if you want them troop-legal in Hearthcell
+  "molotovs"
+]);
 
-/* =====================================
-   UNIT DATA (FULL in Part 2)
-   ===================================== */
-const UNITS = [];
+const TROOP_FORBIDDEN = new Set([
+  "machine_gun","sniper_rifle","flamethrower","reinforced_armour","machine_armour"
+]);
 
-/* =====================================
-   ARSENAL LOGIC
-   ===================================== */
+const ENTRIES = [
+  // Troops
+  {id:"urchin", name:"Feral Urchin", role:"Troop", cost:30, promotable:false,
+    tags:["TROOP"], notes:"Cannot be Promoted (builder enforced)."},
+  {id:"lookout", name:"Lookout", role:"Troop", cost:55, promotable:true, tags:["TROOP"]},
+  {id:"courier", name:"Courier", role:"Troop", cost:50, promotable:true, tags:["TROOP"]},
+  {id:"bruiser", name:"Bruiser", role:"Troop", cost:65, promotable:true, tags:["TROOP"]},
+  {id:"field_medic", name:"Field Medic", role:"Troop", cost:60, promotable:true, tags:["TROOP"]},
+  {id:"sappers_mate", name:"Sapper’s Mate", role:"Troop", cost:70, promotable:true, tags:["TROOP"]},
 
-function addToArsenal(kitId, qty=1){
-  state.arsenal[kitId] = (state.arsenal[kitId]||0) + qty;
+  // Elites (example roster from our Hearthcell work)
+  {id:"cell_marshal", name:"Cell Marshal", role:"Elite", cost:120, promotable:true, tags:["ELITE"]},
+  {id:"weaver", name:"Weaver of Ciphers", role:"Elite", cost:110, promotable:true, tags:["ELITE"]},
+  {id:"ward_angel", name:"Ward Angel", role:"Elite", cost:105, promotable:true, tags:["ELITE"]},
+  {id:"fuse_sister", name:"Fuse Sister", role:"Elite", cost:100, promotable:true, tags:["ELITE"]},
+  {id:"dockside_giant", name:"Dockside Giant", role:"Elite", cost:130, promotable:true, tags:["ELITE"]}
+];
+
+// Hearthcell model abilities (short, for roster reference)
+const ENTRY_ABILITIES = {
+  urchin: [
+    {name:"Disappear (Feral)", text:"When targeted by a ranged attack, after resolving the attack, this model may make a D3\" move (must end in cover if possible)."},
+    {name:"Pack Terror", text:"If 2+ Urchins are within 2\" of the same enemy, add +1 DIE to melee attacks against that enemy (max +2)."}
+  ],
+  lookout: [
+    {name:"Bell-Ringer’s Shot", text:"If this model did not move this activation, it may re-roll 1 ranged attack die."}
+  ],
+  courier: [
+    {name:"Courier Run", text:"Once per game, this model may make an additional 4\" move after completing an action."}
+  ],
+  bruiser: [
+    {name:"Dockyard Hands", text:"When making a melee attack with a 1-Handed weapon, add +1 to one die result once per activation."}
+  ],
+  field_medic: [
+    {name:"Ward Work", text:"Once per activation, remove 1 Blood/marker from a friendly model within 2\" (if your campaign uses them)."}
+  ],
+  sappers_mate: [
+    {name:"Fuse Work", text:"This model may carry Satchel Charges. If it equips Satchel Charges, reduce their Crown cost by 2 for list building."}
+  ],
+  cell_marshal: [
+    {name:"Hard Orders", text:"Friendly models within 6\" may re-roll 1 Morale die per check (once per check)."}
+  ],
+  weaver: [
+    {name:"Threaded Signals", text:"Once per round, after an enemy activates, pick a friendly within 6\". That friendly may make a 2\" reposition."}
+  ],
+  ward_angel: [
+    {name:"Drag the Wounded", text:"When this model moves into base contact with a Downed friendly, it may carry them 4\" (once per activation)."}
+  ],
+  fuse_sister: [
+    {name:"Improvised Detonation", text:"Once per game, when a friendly uses a Consumable explosive within 6\", increase its BLAST effect (table agreement)."}
+  ],
+  dockside_giant: [
+    {name:"Heavy Lifter", text:"This model may carry a 2-Handed weapon plus one extra Equipment item (builder does not strictly enforce capacity)."}
+  ]
+};
+
+// Default legal loadouts for Autopick
+const DEFAULT_LOADOUTS = {
+  urchin: ["trench_knife"],
+  lookout: ["bolt_rifle","binoculars"],
+  courier: ["pistol","trench_knife"],
+  bruiser: ["sword_axe","standard_armour"],
+  field_medic: ["pistol","medi_kit"],
+  sappers_mate: ["shotgun","satchel_charge"],
+  cell_marshal: ["pistol","sword_axe","combat_helmet"],
+  weaver: ["pistol","binoculars","combat_helmet"],
+  ward_angel: ["shotgun","medi_kit","standard_armour"],
+  fuse_sister: ["pistol","frag_grenades","satchel_charge"],
+  dockside_giant: ["shotgun","standard_armour","combat_helmet"]
+};
+
+// State
+const STORAGE_KEY = "hearthcell_builder_v0_6_optionA";
+let state = {
+  meta: {
+    warbandName: "Hearthcell Resistance",
+    gameSize: 700,
+    strongboxCrowns: 0,
+    strongboxGlory: 0,
+    gamesPlayed: 0,
+    explorationSkills: "",
+    campaignLog: ""
+  },
+  roster: [],
+  arsenal: {} // kitId -> qty
+};
+
+function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+function clone(x){ return JSON.parse(JSON.stringify(x)); }
+
+function load(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){
+    try{
+      state = Object.assign(state, JSON.parse(raw));
+      state.meta = Object.assign({
+        warbandName:"Hearthcell Resistance", gameSize:700,
+        strongboxCrowns:0, strongboxGlory:0, gamesPlayed:0,
+        explorationSkills:"", campaignLog:""
+      }, state.meta || {});
+      state.roster = Array.isArray(state.roster) ? state.roster : [];
+      state.arsenal = state.arsenal || {};
+    }catch(e){}
+  }
+}
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  document.getElementById("debugInfo").textContent = `Saved: ${new Date().toLocaleString()} | Models=${state.roster.length} | ArsenalKeys=${Object.keys(state.arsenal).length}`;
 }
 
-function removeFromArsenal(kitId, qty=1){
-  if(!state.arsenal[kitId]) return;
-  state.arsenal[kitId] -= qty;
-  if(state.arsenal[kitId] <= 0) delete state.arsenal[kitId];
+/* =========================
+   Rules enforcement helpers
+   ========================= */
+
+function isElite(entryId){
+  const e = ENTRIES.find(x=>x.id===entryId);
+  return e && e.role === "Elite";
+}
+function entryById(entryId){ return ENTRIES.find(x=>x.id===entryId); }
+
+function kitAllowedForModel(entryId, kitId){
+  const elite = isElite(entryId);
+  if(elite) return true; // Elites may take any New Antioch armoury item (subject to Limits)
+  // Troops
+  if(TROOP_FORBIDDEN.has(kitId)) return false;
+  return TROOP_ALLOWED.has(kitId);
+}
+
+function kitEffectiveCost(model, kitId){
+  // Hearthcell special: Sapper’s Mate gets Satchel Charge discount in list building
+  if(model.entryId === "sappers_mate" && kitId === "satchel_charge"){
+    return Math.max(0, (BATTLEKIT[kitId]?.cost ?? 0) - 2);
+  }
+  return BATTLEKIT[kitId]?.cost ?? 0;
+}
+
+function modelCrowns(model){
+  const entry = entryById(model.entryId);
+  let total = entry ? entry.cost : 0;
+  for(const k of model.kit){
+    total += kitEffectiveCost(model, k);
+  }
+  return total;
+}
+
+function totalCrowns(){
+  return state.roster
+    .filter(m => m.status !== "dead") // dead not counted for list points
+    .reduce((sum,m)=>sum+modelCrowns(m),0);
+}
+
+function counts(){
+  let models=0,troops=0,elites=0;
+  for(const m of state.roster){
+    if(m.status==="dead") continue;
+    models++;
+    if(isElite(m.entryId)) elites++; else troops++;
+  }
+  return {models,troops,elites};
+}
+
+function equippedCounts(){
+  const map = {};
+  for(const m of state.roster){
+    for(const k of (m.kit||[])){
+      map[k] = (map[k]||0)+1;
+    }
+  }
+  return map;
+}
+
+function arsenalCounts(){
+  return clone(state.arsenal || {});
+}
+
+function combinedCounts(){
+  const eq = equippedCounts();
+  const ar = arsenalCounts();
+  const out = {};
+  for(const k of Object.keys(eq)) out[k] = (out[k]||0)+eq[k];
+  for(const k of Object.keys(ar)) out[k] = (out[k]||0)+ar[k];
+  return out;
+}
+
+function limitFor(kitId){
+  return LIMITS[kitId] ?? null;
+}
+function overLimitList(){
+  const combined = combinedCounts();
+  const over = [];
+  for(const kitId of Object.keys(combined)){
+    const lim = limitFor(kitId);
+    if(lim != null && combined[kitId] > lim){
+      over.push({kitId, have: combined[kitId], limit: lim});
+    }
+  }
+  return over.sort((a,b)=> (a.kitId>b.kitId?1:-1));
+}
+
+function halfCostRoundingUp(cost){
+  // campaign sell rule: half cost, rounding fractions up :contentReference[oaicite:10]{index=10}
+  return Math.ceil(cost / 2);
+}
+
+/* =========================
+   UI rendering
+   ========================= */
+
+function setTab(tab){
+  const tabs = ["roster","campaign","arsenal","print","data"];
+  for(const t of tabs){
+    document.getElementById("tab-"+t).setAttribute("aria-selected", t===tab ? "true":"false");
+    document.getElementById("view-"+t).classList.toggle("hidden", t!==tab);
+  }
+  if(tab==="print") refreshPrint();
+}
+
+function fillSelects(){
+  const entrySel = document.getElementById("entrySelect");
+  entrySel.innerHTML = "";
+  const groups = [
+    {label:"Troops", items: ENTRIES.filter(e=>e.role==="Troop")},
+    {label:"Elites", items: ENTRIES.filter(e=>e.role==="Elite")}
+  ];
+  for(const g of groups){
+    const og = document.createElement("optgroup");
+    og.label = g.label;
+    for(const e of g.items){
+      const opt = document.createElement("option");
+      opt.value = e.id;
+      opt.textContent = `${e.name} (${e.cost} 👑)`;
+      og.appendChild(opt);
+    }
+    entrySel.appendChild(og);
+  }
+
+  const kitSel = document.getElementById("arsenalAddSelect");
+  kitSel.innerHTML = "";
+  Object.entries(BATTLEKIT).forEach(([id,k])=>{
+    const opt=document.createElement("option");
+    opt.value=id;
+    opt.textContent=`${k.name} (${k.cost} 👑)`;
+    kitSel.appendChild(opt);
+  });
+}
+
+function renderSummary(){
+  // meta inputs
+  document.getElementById("warbandName").value = state.meta.warbandName || "";
+  document.getElementById("gameSize").value = state.meta.gameSize ?? 700;
+
+  const c = counts();
+  document.getElementById("sumModels").textContent = c.models;
+  document.getElementById("sumTroops").textContent = c.troops;
+  document.getElementById("sumElites").textContent = c.elites;
+  document.getElementById("sumCrowns").textContent = totalCrowns();
+
+  const warnArea = document.getElementById("warnArea");
+  warnArea.innerHTML = "";
+
+  const size = Number(state.meta.gameSize || 0);
+  const total = totalCrowns();
+  if(total > size){
+    const div = document.createElement("div");
+    div.className = "badbox";
+    div.innerHTML = `<b>Over points:</b> You are at <span class="mono">${total}</span> 👑 for a <span class="mono">${size}</span> 👑 game.`;
+    warnArea.appendChild(div);
+  } else {
+    const div = document.createElement("div");
+    div.className = "goodbox";
+    div.innerHTML = `<b>Points OK:</b> <span class="mono">${total}</span> / <span class="mono">${size}</span> 👑`;
+    warnArea.appendChild(div);
+  }
+
+  // Limit warnings
+  const over = overLimitList();
+  if(over.length){
+    const div = document.createElement("div");
+    div.className = "warnbox";
+    div.innerHTML = `<b>Limits exceeded:</b> ${over.map(o=>`${BATTLEKIT[o.kitId]?.name||o.kitId} (${o.have}/${o.limit})`).join(", ")}`;
+    warnArea.appendChild(document.createElement("div")).style.height="10px";
+    warnArea.appendChild(div);
+  }
+}
+
+function renderRosterList(){
+  const host = document.getElementById("rosterList");
+  host.innerHTML = "";
+
+  if(!state.roster.length){
+    host.innerHTML = `<div class="note muted">No models yet.</div>`;
+    return;
+  }
+
+  state.roster.forEach((m, idx)=>{
+    const entry = entryById(m.entryId);
+    const elite = isElite(m.entryId);
+    const div = document.createElement("div");
+    div.className = "panel";
+    div.style.background = "var(--panel2)";
+    div.style.marginBottom = "10px";
+
+    const title = m.name?.trim() ? m.name.trim() : (entry ? entry.name : "Unknown");
+    const statusPill = m.status==="dead" ? `<span class="pill bad">Dead</span>` : (m.status==="benched" ? `<span class="pill warn">Benched</span>` : `<span class="pill good">Active</span>`);
+    const rolePill = elite ? `<span class="pill">ELITE</span>` : `<span class="pill">TROOP</span>`;
+
+    const kitNames = (m.kit||[]).map(k=>BATTLEKIT[k]?.name||k).join(", ");
+    const kitLine = kitNames ? kitNames : `<span class="muted">None</span>`;
+
+    const illegal = (m.kit||[]).filter(k=>!kitAllowedForModel(m.entryId,k));
+    const illegalLine = illegal.length ? `<div class="pill bad">Illegal kit: ${illegal.map(k=>BATTLEKIT[k]?.name||k).join(", ")}</div>` : "";
+
+    div.innerHTML = `
+      <div class="flex">
+        <div><b>${escapeHtml(title)}</b> <span class="muted">(${entry?.cost ?? 0} 👑 base)</span></div>
+        <span class="spacer"></span>
+        ${rolePill} ${statusPill}
+        <span class="pill">Total: <span class="mono">${modelCrowns(m)}</span> 👑</span>
+      </div>
+      <div class="hr"></div>
+      <div class="note"><b>Battlekit:</b> ${kitLine}</div>
+      ${illegalLine ? `<div class="hr"></div>${illegalLine}` : ""}
+      <div class="hr"></div>
+      <div class="flex">
+        <button class="btn small primary" data-action="edit" data-id="${m.id}">Edit</button>
+        <button class="btn small" data-action="toggleStatus" data-id="${m.id}">Cycle status</button>
+        <button class="btn small danger" data-action="delete" data-id="${m.id}">Delete</button>
+      </div>
+    `;
+
+    host.appendChild(div);
+  });
+
+  host.querySelectorAll("button[data-action]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-id");
+      const action = btn.getAttribute("data-action");
+      if(action==="delete"){ deleteModel(id); }
+      if(action==="toggleStatus"){ cycleStatus(id); }
+      if(action==="edit"){ openEditor(id); }
+    });
+  });
+}
+
+function renderCampaign(){
+  document.getElementById("strongboxCrowns").value = state.meta.strongboxCrowns ?? 0;
+  document.getElementById("strongboxGlory").value = state.meta.strongboxGlory ?? 0;
+  document.getElementById("gamesPlayed").value = state.meta.gamesPlayed ?? 0;
+  document.getElementById("explorationSkills").value = state.meta.explorationSkills ?? "";
+  document.getElementById("campaignLog").value = state.meta.campaignLog ?? "";
+
+  const alive = state.roster.filter(m=>m.status!=="dead");
+  const dead  = state.roster.filter(m=>m.status==="dead");
+
+  document.getElementById("campAlive").innerHTML = alive.length ? alive.map(m=>campaignModelCard(m)).join("") : `<div class="note muted">None.</div>`;
+  document.getElementById("campDead").innerHTML  = dead.length ? dead.map(m=>campaignModelCard(m,true)).join("") : `<div class="note muted">None.</div>`;
+
+  // bind actions
+  document.querySelectorAll("[data-camp-action]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-id");
+      const action = btn.getAttribute("data-camp-action");
+      if(action==="promoAttempt") promoAttempt(id);
+      if(action==="addScar") addScar(id);
+      if(action==="removeScar") removeScar(id);
+      if(action==="toggleDead") setDeadToggle(id);
+    });
+  });
+
+  document.querySelectorAll("input[data-camp-field], textarea[data-camp-field]").forEach(inp=>{
+    inp.addEventListener("input", ()=>{
+      const id = inp.getAttribute("data-id");
+      const field = inp.getAttribute("data-camp-field");
+      const m = state.roster.find(x=>x.id===id);
+      if(!m) return;
+      m.campaign = m.campaign || defaultCampaignFields(m);
+      m.campaign[field] = inp.value;
+      save();
+    });
+  });
+}
+
+function campaignModelCard(m, isDead=false){
+  const entry = entryById(m.entryId);
+  const title = m.name?.trim() ? m.name.trim() : entry?.name || "Unknown";
+  m.campaign = m.campaign || defaultCampaignFields(m);
+
+  const promotable = !!entry?.promotable;
+  const promoPill = promotable ? `<span class="pill good">Promotable</span>` : `<span class="pill bad">No promotions</span>`;
+  const deadPill = isDead ? `<span class="pill bad">Dead</span>` : `<span class="pill good">Alive</span>`;
+
+  return `
+  <div class="panel" style="background:var(--panel2); margin-bottom:10px;">
+    <div class="flex">
+      <div><b>${escapeHtml(title)}</b> <span class="muted">(${entry?.name||""})</span></div>
+      <span class="spacer"></span>
+      ${promoPill} ${deadPill}
+    </div>
+    <div class="hr"></div>
+
+    <div class="two">
+      <div>
+        <label>XP / Advances (shorthand)</label>
+        <input data-id="${m.id}" data-camp-field="xp" type="text" value="${escapeAttr(m.campaign.xp)}" placeholder="e.g., 2 XP, Adv roll made" />
+      </div>
+      <div>
+        <label>Failed Promotion Rolls</label>
+        <input data-id="${m.id}" data-camp-field="failedPromos" type="number" min="0" value="${Number(m.campaign.failedPromos||0)}" />
+      </div>
+    </div>
+
+    <div class="two">
+      <div>
+        <label>Battle Scars (count)</label>
+        <div class="flex">
+          <span class="pill">${Number(m.campaign.scars||0)}</span>
+          <button class="btn small" data-camp-action="addScar" data-id="${m.id}">+1</button>
+          <button class="btn small" data-camp-action="removeScar" data-id="${m.id}">-1</button>
+        </div>
+      </div>
+      <div>
+        <label>Status override</label>
+        <button class="btn small ${isDead?"good":"danger"}" data-camp-action="toggleDead" data-id="${m.id}">
+          ${isDead ? "Mark Alive" : "Mark Dead"}
+        </button>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+    <label>Notes</label>
+    <textarea class="mono" data-id="${m.id}" data-camp-field="notes">${escapeHtml(m.campaign.notes||"")}</textarea>
+
+    <div class="hr"></div>
+    <div class="flex">
+      <button class="btn small primary" data-camp-action="promoAttempt" data-id="${m.id}" ${promotable ? "" : "disabled"}>
+        Record Promotion Roll (fail counter + log)
+      </button>
+      <span class="note muted">Use this as your workflow tracker, not a dice roller.</span>
+    </div>
+  </div>
+  `;
+}
+
+function defaultCampaignFields(m){
+  const entry = entryById(m.entryId);
+  return { xp:"", failedPromos:0, scars:0, notes:"", promotable: !!entry?.promotable };
 }
 
 function renderArsenal(){
-  const el = document.getElementById("arsenalContainer");
-  el.innerHTML = "";
+  const host = document.getElementById("arsenalTable");
+  const warn = document.getElementById("arsenalWarnings");
+  host.innerHTML = "";
+  warn.innerHTML = "";
 
-  const entries = Object.entries(state.arsenal);
-  if(!entries.length){
-    el.innerHTML = `<div class="small" style="color:#aab3c2">No items in Arsenal.</div>`;
-    return;
+  const ar = arsenalCounts();
+  const keys = Object.keys(ar).sort((a,b)=> (a>b?1:-1));
+  document.getElementById("arsenalCount").textContent = keys.reduce((s,k)=>s+Number(ar[k]||0),0);
+
+  // warnings
+  const over = overLimitList();
+  if(over.length){
+    warn.innerHTML = `<div class="warnbox"><b>Limits exceeded:</b> ${over.map(o=>`${BATTLEKIT[o.kitId]?.name||o.kitId} (${o.have}/${o.limit})`).join(", ")}</div>`;
+  } else {
+    warn.innerHTML = `<div class="goodbox"><b>Limits OK:</b> Arsenal + equipped items are within defined Limits.</div>`;
   }
 
-  for(const [kit,qty] of entries){
-    const row = document.createElement("div");
-    row.textContent = `${kit} × ${qty}`;
-    el.appendChild(row);
-  }
-}
-
-/* =====================================
-   STATUS
-   ===================================== */
-function setStatus(msg, ok=true){
-  const box = document.getElementById("statusBox");
-  box.innerHTML = `<div class="${ok?'ok':'warn'}">${msg}</div>`;
-}
-/* ====== v0.6 PART 2 START (paste to replace the placeholder section in Part 1) ====== */
-
-/* =========================
-   DATA: Hearthcell Units
-   (from Hearthcell Warband.pdf)
-   ========================= */
-
-const WAR_BAND_NAME = "THE HEARTHCELL RESISTANCE (New Antioch Variant)";
-
-const UNIT_DEFS = {
-  // TROOPS
-  urchin: {
-    id: "urchin",
-    name: "Street Urchin",
-    type: "TROOP",
-    baseCost: 25,
-    maxInWarband: 99,
-    keywords: ["SMALL", "FERAL", "CIVILIAN"],
-    profile: { M: 5, A: 1, R: 4, D: 1, W: 1 },
-    abilities: [
-      { name: "Disappear!", text: "When targeted by a Ranged Attack, after the attacker selects this model as the target (but before dice are rolled), this model may immediately make a D3\" Move. If this Move breaks Line of Sight, the attack is lost. (This Move cannot end in base contact.)" },
-      { name: "Pack Horror", text: "If 3+ Street Urchins are within 3\" of the same enemy model at any point during their Activations this Round, that enemy suffers -1 DICE to its next Courage/Fear related test (or equivalent) this Round." }
-    ],
-    defaultLoadout: ["trench_knife"],
-    notes: "Urchins may never be Promoted."
-  },
-
-  lookout: {
-    id: "lookout",
-    name: "Lookout",
-    type: "TROOP",
-    baseCost: 45,
-    maxInWarband: 99,
-    keywords: ["CIVILIAN", "SCOUT"],
-    profile: { M: 5, A: 1, R: 3, D: 1, W: 1 },
-    abilities: [
-      { name: "Roof-Sense", text: "If this model begins its Activation in base contact with terrain at least 1\" tall, it may re-roll one failed Ranged Attack Success die this Activation." }
-    ],
-    defaultLoadout: ["bolt_action_rifle", "trench_knife", "binoculars"]
-  },
-
-  courier: {
-    id: "courier",
-    name: "Courier",
-    type: "TROOP",
-    baseCost: 40,
-    maxInWarband: 99,
-    keywords: ["CIVILIAN", "RUNNER"],
-    profile: { M: 6, A: 1, R: 4, D: 1, W: 1 },
-    abilities: [
-      { name: "The Courier Run", text: "Once per Round, when this model takes a Dash Action, it may ignore Difficult Terrain for that Dash." }
-    ],
-    defaultLoadout: ["pistol", "trench_knife"]
-  },
-
-  bruiser: {
-    id: "bruiser",
-    name: "Bruiser",
-    type: "TROOP",
-    baseCost: 55,
-    maxInWarband: 99,
-    keywords: ["CIVILIAN", "STRONG"],
-    profile: { M: 5, A: 2, R: 4, D: 1, W: 2 },
-    abilities: [
-      { name: "Dockside Giant", text: "This model counts as having STRONG for the purposes of carrying heavy melee weapons and effects that reference STRONG." }
-    ],
-    defaultLoadout: ["trench_club"]
-  },
-
-  field_medic: {
-    id: "field_medic",
-    name: "Field Medic",
-    type: "TROOP",
-    baseCost: 55,
-    maxInWarband: 99,
-    keywords: ["CIVILIAN", "MEDIC"],
-    profile: { M: 5, A: 1, R: 4, D: 1, W: 2 },
-    abilities: [
-      { name: "Patch & Pray", text: "Once per Activation, this model may attempt to remove 1 Blood Marker from a friendly model within 1\" (or apply the equivalent campaign heal effect if used post-battle, per your campaign options)." }
-    ],
-    defaultLoadout: ["pistol", "medi_kit", "trench_knife"]
-  },
-
-  sappers_mate: {
-    id: "sappers_mate",
-    name: "Sapper’s Mate",
-    type: "TROOP",
-    baseCost: 60,
-    maxInWarband: 99,
-    keywords: ["CIVILIAN", "SAPPER"],
-    profile: { M: 5, A: 1, R: 4, D: 1, W: 2 },
-    abilities: [
-      { name: "Fuse-Runner", text: "This model may interact with Objectives while Engaged (if your scenario uses Engage restrictions, treat this as an exception)." }
-    ],
-    defaultLoadout: ["shotgun", "trench_knife", "satchel_charge"]
-  },
-
-  // ELITES
-  cell_marshal: {
-    id: "cell_marshal",
-    name: "Cell Marshal",
-    type: "ELITE",
-    baseCost: 110,
-    maxInWarband: 1,
-    keywords: ["ELITE", "CIVILIAN", "LEADER"],
-    profile: { M: 5, A: 2, R: 3, D: 1, W: 3 },
-    abilities: [
-      { name: "Quiet Command", text: "Once per Round, after this model Activates, you may immediately Activate a friendly Troop within 6\" (it may only take one Action)." },
-      { name: "Hard Choices", text: "If a friendly Troop within 6\" would be removed Out of Action, you may instead place 2 Blood Markers on that model and it remains in play with 1 Wound (if applicable). Once per battle." }
-    ],
-    defaultLoadout: ["pistol", "sword_axe", "combat_helmet"]
-  },
-
-  weaver_of_ciphers: {
-    id: "weaver_of_ciphers",
-    name: "Weaver of Ciphers",
-    type: "ELITE",
-    baseCost: 95,
-    maxInWarband: 1,
-    keywords: ["ELITE", "CIVILIAN", "SIGNALS"],
-    profile: { M: 5, A: 1, R: 3, D: 1, W: 2 },
-    abilities: [
-      { name: "Threaded Signals", text: "Once per Round, pick one friendly model within 12\". That model gains +1 DICE to its next Success Roll for a Shoot Action this Round." },
-      { name: "Knitter’s Tally", text: "At the start of Round 2+, if this model is on the battlefield, gain +1 Glory (or your chosen campaign currency) once per battle." }
-    ],
-    defaultLoadout: ["pistol", "binoculars", "gas_mask"]
-  },
-
-  ward_angel: {
-    id: "ward_angel",
-    name: "Ward Angel",
-    type: "ELITE",
-    baseCost: 100,
-    maxInWarband: 1,
-    keywords: ["ELITE", "CIVILIAN", "PROTECTOR"],
-    profile: { M: 5, A: 2, R: 4, D: 1, W: 3 },
-    abilities: [
-      { name: "Human Shield", text: "Once per Round, when a friendly model within 3\" would suffer Injury Dice from a Ranged Attack, you may redirect 1 Injury Die to this model." },
-      { name: "No One Left Behind", text: "Friendly Troops within 6\" may ignore the first Fear-related penalty they would suffer each Round (if applicable in your ruleset)." }
-    ],
-    defaultLoadout: ["shotgun", "trench_club", "standard_armour"]
-  },
-
-  fuse_sister: {
-    id: "fuse_sister",
-    name: "Fuse Sister",
-    type: "ELITE",
-    baseCost: 105,
-    maxInWarband: 1,
-    keywords: ["ELITE", "CIVILIAN", "SAPPER"],
-    profile: { M: 5, A: 1, R: 3, D: 1, W: 3 },
-    abilities: [
-      { name: "Blessed Detonation", text: "Once per battle, when this model uses a Satchel Charge, you may re-roll the Injury Roll (or the equivalent damage roll)." },
-      { name: "Wire-Cutter", text: "This model treats all terrain as having one less penalty level for movement (to a minimum of normal movement) when moving through rubble/wire-like terrain." }
-    ],
-    defaultLoadout: ["pistol", "trench_knife", "satchel_charge", "combat_helmet"]
-  },
-
-  dockside_giant: {
-    id: "dockside_giant",
-    name: "Dockside Giant",
-    type: "ELITE",
-    baseCost: 120,
-    maxInWarband: 1,
-    keywords: ["ELITE", "CIVILIAN", "STRONG"],
-    profile: { M: 5, A: 3, R: 4, D: 1, W: 4 },
-    abilities: [
-      { name: "Labourer’s Wrath", text: "On a Critical Success in Melee, add +1 additional Injury Die (if your melee system uses Injury Dice; otherwise apply your equivalent boost) once per Activation." }
-    ],
-    defaultLoadout: ["great_hammer", "standard_armour"]
-  }
-};
-
-/* =========================
-   DATA: New Antioch Battlekit + core profiles
-   Costs from Warbands-of-Trench-Crusade (New Antioch Armoury tables).
-   Weapon profiles from Trench-Crusade Digital Rulebook (Battlekit section).
-   ========================= */
-
-const DEFAULT_SELL_RATE = 0.5; // 50% ducats back when auto-selling over-limit items
-
-const BATTLEKIT = {
-  // RANGED (New Antioch Armoury costs)
-  pistol: { id:"pistol", name:"Pistol", cat:"RANGED", cost:6, hands:1, profile:{ type:"1-Handed", range:'12"/Melee', keywords:["PISTOL"] } },
-  shotgun: { id:"shotgun", name:"Shotgun", cat:"RANGED", cost:10, hands:2, profile:{ type:"2-Handed", range:'12"', keywords:["+1 DICE","SHOTGUN"] } },
-  bolt_action_rifle: { id:"bolt_action_rifle", name:"Bolt-Action Rifle", cat:"RANGED", cost:10, hands:2, profile:{ type:"2-Handed", range:'24"', keywords:["-"] } },
-  semi_auto_rifle: { id:"semi_auto_rifle", name:"Semi-Automatic Rifle", cat:"RANGED", cost:15, hands:2, profile:{ type:"2-Handed", range:'24"', keywords:["ASSAULT"] } },
-  sniper_rifle: { id:"sniper_rifle", name:"Sniper Rifle", cat:"RANGED", cost:35, hands:2, limitWarband:3, eliteOnly:false, profile:{ type:"2-Handed", range:'48"', keywords:["+1 DICE","CRITICAL","RISKY"], rules:["Bull’s Eye: If the Success Roll is a Critical Success, the Injury Roll gains IGNORE ARMOUR."] } },
-  machine_gun: { id:"machine_gun", name:"Machine Gun", cat:"RANGED", cost:50, hands:2, limitWarband:2, eliteOnly:false, profile:{ type:"2-Handed", range:'36"', keywords:["AUTOMATIC 3","HEAVY","RELOAD"] } },
-  flamethrower: { id:"flamethrower", name:"Flamethrower", cat:"RANGED", cost:30, hands:2, limitWarband:3, eliteOnly:false, profile:{ type:"2-Handed", range:'8"', keywords:["-1 INJURY DICE","FIRE","FLAMETHROWER","IGNORE ARMOUR"] } },
-
-  // MELEE
-  trench_knife: { id:"trench_knife", name:"Trench Knife", cat:"MELEE", cost:1, hands:1 },
-  trench_club: { id:"trench_club", name:"Trench Club", cat:"MELEE", cost:3, hands:1 },
-  sword_axe: { id:"sword_axe", name:"Sword/Axe", cat:"MELEE", cost:4, hands:1 },
-  great_hammer: { id:"great_hammer", name:"Great Hammer/Maul", cat:"MELEE", cost:10, hands:2 },
-  great_sword: { id:"great_sword", name:"Great Sword/Axe", cat:"MELEE", cost:12, hands:2 },
-
-  // GRENADES
-  frag_grenades: { id:"frag_grenades", name:"Frag Grenades", cat:"GRENADES", cost:7, hands:0 },
-  satchel_charge: { id:"satchel_charge", name:"Satchel Charge", cat:"GRENADES", cost:15, hands:0, limitWarband:3, consumable:true, perModelLimit:1 },
-
-  // ARMOUR
-  standard_armour: { id:"standard_armour", name:"Standard Armour", cat:"ARMOUR", cost:15, body:true },
-  reinforced_armour: { id:"reinforced_armour", name:"Reinforced Armour", cat:"ARMOUR", cost:40, body:true, eliteOnly:true },
-
-  // HEADGEAR / EQUIPMENT
-  combat_helmet: { id:"combat_helmet", name:"Combat Helmet", cat:"EQUIPMENT", cost:5, head:true },
-  gas_mask: { id:"gas_mask", name:"Gas Mask", cat:"EQUIPMENT", cost:5 },
-  medi_kit: { id:"medi_kit", name:"Medi-kit", cat:"EQUIPMENT", cost:5 },
-  binoculars: { id:"binoculars", name:"Binoculars", cat:"EQUIPMENT", cost:10, eliteOnly:true } // Hearthcell overrides to allow Troops (restricted list)
-};
-
-/* =========================
-   Hearthcell Battlekit Restrictions (your stated rule)
-   ========================= */
-
-const TROOP_ALLOWED = new Set([
-  "pistol","shotgun","bolt_action_rifle",
-  "trench_knife","trench_club","sword_axe",
-  "frag_grenades",
-  "standard_armour","combat_helmet","gas_mask","medi_kit",
-  "binoculars" // Hearthcell special allowance (even though NA normally says ELITE only)
-]);
-
-const TROOP_BANNED = new Set([
-  "machine_gun","sniper_rifle","flamethrower",
-  "reinforced_armour"
-]);
-
-function isEliteUnit(unitId){
-  const u = UNIT_DEFS[unitId];
-  return u && u.type === "ELITE";
-}
-
-/* =========================
-   STATE
-   ========================= */
-
-let state = {
-  version: "0.6",
-  warbandName: WAR_BAND_NAME,
-  pointsLimit: 700,
-  currencyName: "👑",
-  ducats: 0,
-  glory: 0,
-  arsenal: {}, // { itemId: qty }
-  models: [],  // { id, unitId, name, status, notes, kit: [itemId], injuries:[], scars:[], promotionsFailed:0, progression:[] }
-  dead: [],    // same structure, kept separate
-  log: []      // strings with timestamps
-};
-
-function uid(){
-  return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
-}
-
-function nowStamp(){
-  const d = new Date();
-  return d.toLocaleString();
-}
-
-function logEvent(msg){
-  state.log.unshift(`[${nowStamp()}] ${msg}`);
-  renderAll();
-}
-
-/* =========================
-   COSTS / LIMITS / VALIDATION
-   ========================= */
-
-function kitCostForModel(model, itemId){
-  const item = BATTLEKIT[itemId];
-  if(!item) return 0;
-
-  // Hearthcell special: Satchel Charge discount for Sapper’s Mate only
-  if(itemId === "satchel_charge" && model.unitId === "sappers_mate"){
-    return 10;
-  }
-  return item.cost;
-}
-
-function modelTotalCost(model){
-  const def = UNIT_DEFS[model.unitId];
-  if(!def) return 0;
-  let sum = def.baseCost;
-  for(const k of (model.kit || [])){
-    sum += kitCostForModel(model, k);
-  }
-  return sum;
-}
-
-function warbandTotalCost(){
-  return [...state.models].reduce((a,m)=>a+modelTotalCost(m),0);
-}
-
-function warbandModelCount(){
-  return state.models.length;
-}
-
-function countItemAcrossWarband(itemId){
-  let c = 0;
-  for(const m of state.models){
-    if((m.kit||[]).includes(itemId)) c += 1;
-  }
-  return c;
-}
-
-function itemWarbandLimit(itemId){
-  const item = BATTLEKIT[itemId];
-  return item?.limitWarband ?? null;
-}
-
-function canModelTakeItem(model, itemId){
-  const def = UNIT_DEFS[model.unitId];
-  const item = BATTLEKIT[itemId];
-  if(!def || !item) return { ok:false, reason:"Unknown unit or item." };
-
-  const isElite = def.type === "ELITE";
-  const isTroop = def.type === "TROOP";
-
-  // Troop restrictions
-  if(isTroop){
-    if(TROOP_BANNED.has(itemId)) return { ok:false, reason:"Troops cannot take this item." };
-    if(!TROOP_ALLOWED.has(itemId)) return { ok:false, reason:"Troops may only take items from the Hearthcell Troop list." };
-  }
-
-  // Elite-only items (but Hearthcell says Elites may take any NA battlekit)
-  if(item.eliteOnly && !isElite){
-    // Hearthcell override: binoculars are allowed for troops (special list includes them)
-    if(itemId === "binoculars" && isTroop) {
-      // allow
-    } else {
-      return { ok:false, reason:"ELITE only item." };
-    }
-  }
-
-  // Per-model limit
-  if(item.perModelLimit && (model.kit||[]).filter(x=>x===itemId).length >= item.perModelLimit){
-    return { ok:false, reason:"Limit: 1 per model." };
-  }
-
-  // Body / Head uniqueness
-  if(item.body && (model.kit||[]).some(x => BATTLEKIT[x]?.body)){
-    return { ok:false, reason:"Only one body armour item per model." };
-  }
-  if(item.head && (model.kit||[]).some(x => BATTLEKIT[x]?.head)){
-    return { ok:false, reason:"Only one headgear item per model." };
-  }
-
-  // Hands check (very simple)
-  const handsUsed = (model.kit||[]).reduce((a,x)=>a+(BATTLEKIT[x]?.hands||0),0);
-  if((item.hands||0) > 0 && handsUsed + item.hands > 2){
-    return { ok:false, reason:"Not enough hands (max 2)." };
-  }
-
-  // Warband limit
-  const lim = itemWarbandLimit(itemId);
-  if(lim !== null){
-    const current = countItemAcrossWarband(itemId);
-    if(current >= lim) return { ok:false, reason:`Warband Limit reached (${lim}).` };
-  }
-
-  return { ok:true, reason:"" };
-}
-
-/* =========================
-   QUARTERMASTER: ARSENAL
-   ========================= */
-
-function arsenalQty(itemId){
-  return state.arsenal[itemId] || 0;
-}
-
-function addToArsenal(itemId, qty=1){
-  if(!state.arsenal[itemId]) state.arsenal[itemId]=0;
-  state.arsenal[itemId]+=qty;
-  if(state.arsenal[itemId]<=0) delete state.arsenal[itemId];
-}
-
-function removeFromArsenal(itemId, qty=1){
-  addToArsenal(itemId, -qty);
-}
-
-function autoSellOverLimit(itemId, sellRate=DEFAULT_SELL_RATE){
-  const lim = itemWarbandLimit(itemId);
-  if(lim === null) return;
-
-  const currentOnModels = countItemAcrossWarband(itemId);
-  const totalOwned = currentOnModels + arsenalQty(itemId);
-
-  if(totalOwned <= lim) return;
-
-  const excess = totalOwned - lim;
-  const sellEach = Math.max(0, Math.floor((BATTLEKIT[itemId].cost || 0) * sellRate));
-  removeFromArsenal(itemId, Math.min(excess, arsenalQty(itemId))); // only sell from arsenal
-  state.ducats += sellEach * Math.min(excess, arsenalQty(itemId) + excess); // safe-ish
-  logEvent(`Quartermaster auto-sold ${excess}× ${BATTLEKIT[itemId].name} for ${sellEach*excess} ducats (over warband limit).`);
-}
-
-function enforceAllArsenalLimits(){
-  for(const itemId of Object.keys(state.arsenal)){
-    autoSellOverLimit(itemId);
-  }
-}
-
-/* =========================
-   MODEL CRUD
-   ========================= */
-
-function addModel(unitId){
-  const def = UNIT_DEFS[unitId];
-  if(!def) return;
-
-  const m = {
-    id: uid(),
-    unitId,
-    name: def.name,
-    status: "Active",
-    notes: "",
-    kit: [...(def.defaultLoadout || [])],
-    injuries: [],
-    scars: [],
-    promotionsFailed: 0,
-    progression: []
-  };
-
-  // Apply legality: remove anything illegal (shouldn't happen often)
-  m.kit = m.kit.filter(itemId => canModelTakeItem(m, itemId).ok);
-
-  state.models.push(m);
-  logEvent(`Added model: ${def.name}.`);
-}
-
-function deleteModel(modelId){
-  state.models = state.models.filter(m=>m.id!==modelId);
-  logEvent(`Deleted model.`);
-}
-
-function killModel(modelId){
-  const idx = state.models.findIndex(m=>m.id===modelId);
-  if(idx<0) return;
-  const [m] = state.models.splice(idx,1);
-  m.status = "Dead";
-  state.dead.push(m);
-  logEvent(`${m.name} was marked Dead and moved to the Dead list.`);
-}
-
-function reviveModel(modelId){
-  const idx = state.dead.findIndex(m=>m.id===modelId);
-  if(idx<0) return;
-  const [m] = state.dead.splice(idx,1);
-  m.status = "Active";
-  state.models.push(m);
-  logEvent(`${m.name} was restored to Active models.`);
-}
-
-/* =========================
-   KIT PICKER / ARSENAL TRANSFERS
-   ========================= */
-
-function giveItemToModelFromArsenal(modelId, itemId){
-  const m = state.models.find(x=>x.id===modelId);
-  if(!m) return;
-
-  if(arsenalQty(itemId) <= 0){
-    alert("Not in Arsenal.");
-    return;
-  }
-
-  const check = canModelTakeItem(m, itemId);
-  if(!check.ok){
-    alert(check.reason);
-    return;
-  }
-
-  removeFromArsenal(itemId, 1);
-  m.kit.push(itemId);
-  logEvent(`Issued ${BATTLEKIT[itemId].name} to ${m.name} from Arsenal.`);
-}
-
-function returnItemToArsenal(modelId, itemId){
-  const m = state.models.find(x=>x.id===modelId);
-  if(!m) return;
-
-  const i = (m.kit||[]).indexOf(itemId);
-  if(i<0) return;
-
-  m.kit.splice(i,1);
-  addToArsenal(itemId,1);
-
-  // Quartermaster: auto-sell if this pushes us over limit
-  enforceAllArsenalLimits();
-
-  logEvent(`${m.name} returned ${BATTLEKIT[itemId].name} to Arsenal.`);
-}
-
-function buyToArsenal(itemId, qty=1){
-  const item = BATTLEKIT[itemId];
-  if(!item) return;
-
-  // Buying uses ducats (you can rename/decide economy later)
-  const cost = item.cost * qty;
-  if(state.ducats < cost){
-    alert(`Not enough ducats. Need ${cost}.`);
-    return;
-  }
-  state.ducats -= cost;
-  addToArsenal(itemId, qty);
-
-  // Quartermaster: enforce limits after purchase
-  enforceAllArsenalLimits();
-
-  logEvent(`Bought ${qty}× ${item.name} into Arsenal for ${cost} ducats.`);
-}
-
-/* =========================
-   AUTOPICK LEGAL FORCE (simple)
-   - Ensures each model has a legal kit
-   - Removes illegal items
-   - Optionally issues core Troop kit if empty
-   ========================= */
-
-function autopickLegalForce(){
-  for(const m of state.models){
-    // Strip illegal items
-    m.kit = (m.kit||[]).filter(itemId => canModelTakeItem(m, itemId).ok);
-
-    // If Troop ends up empty, give them a knife by default
-    const def = UNIT_DEFS[m.unitId];
-    if(def?.type==="TROOP" && m.kit.length===0){
-      if(canModelTakeItem(m,"trench_knife").ok) m.kit.push("trench_knife");
-    }
-  }
-  logEvent("Auto-pick legal force applied (illegal kit removed; empty Troops given basic kit).");
-}
-
-/* =========================
-   UI RENDERING
-   ========================= */
-
-function el(id){ return document.getElementById(id); }
-
-function fmt(n){ return `${n} ${state.currencyName}`; }
-
-function renderSummary(){
-  if(!el("summary")) return;
-  el("summary").innerHTML = `
-    <div class="row" style="justify-content:space-between; gap:12px; flex-wrap:wrap;">
-      <div><div class="muted">Warband</div><div class="h2">${escapeHtml(state.warbandName)}</div></div>
-      <div><div class="muted">Limit</div><div class="h2">${fmt(state.pointsLimit)}</div></div>
-      <div><div class="muted">Total</div><div class="h2">${fmt(warbandTotalCost())}</div></div>
-      <div><div class="muted">Models (Game 1 cap 10)</div><div class="h2">${warbandModelCount()} / 10</div></div>
-      <div><div class="muted">Ducats</div><div class="h2">${state.ducats}</div></div>
-      <div><div class="muted">Glory</div><div class="h2">${state.glory}</div></div>
-    </div>
-  `;
-}
-
-function renderAddButtons(){
-  if(!el("addButtons")) return;
-
-  const groups = { TROOP: [], ELITE: [] };
-  Object.values(UNIT_DEFS).forEach(u=>groups[u.type].push(u));
-
-  const mk = (u)=>`
-    <button class="btn" onclick="addModel('${u.id}')">
-      + ${escapeHtml(u.name)} <span class="muted">(${fmt(u.baseCost)})</span>
-    </button>
-  `;
-
-  el("addButtons").innerHTML = `
-    <div class="card">
-      <div class="h2">Add Models</div>
-      <div class="muted">Troops use the Hearthcell Troop Battlekit list. Elites may take any New Antioch Battlekit (subject to limits).</div>
-      <div style="height:10px"></div>
-      <div class="h3">Troops</div>
-      <div class="grid">${groups.TROOP.map(mk).join("")}</div>
-      <div style="height:12px"></div>
-      <div class="h3">Elites</div>
-      <div class="grid">${groups.ELITE.map(mk).join("")}</div>
-      <div style="height:12px"></div>
-      <div class="row" style="gap:8px; flex-wrap:wrap;">
-        <button class="btn" onclick="autopickLegalForce()">Auto-pick legal force</button>
-        <button class="btn" onclick="printRoster()">Print roster (with profiles)</button>
-        <button class="btn" onclick="saveToFile()">Export JSON</button>
-        <button class="btn" onclick="loadFromFile()">Import JSON</button>
-      </div>
-    </div>
-  `;
-}
-
-function renderRoster(){
-  if(!el("roster")) return;
-
-  const rows = state.models.map(m=>{
-    const def = UNIT_DEFS[m.unitId];
-    const kitLines = (m.kit||[]).map(itemId=>{
-      const item = BATTLEKIT[itemId];
-      const cost = kitCostForModel(m, itemId);
+  if(!keys.length){
+    host.innerHTML = `<div class="note muted">Arsenal is empty. Use quick add, sync from roster, or campaign purchases.</div>`;
+  } else {
+    const rows = keys.map(k=>{
+      const item = BATTLEKIT[k];
+      const lim = limitFor(k);
+      const combined = combinedCounts()[k] || 0;
+      const pill = lim!=null
+        ? (combined>lim ? `<span class="pill bad">Combined ${combined}/${lim}</span>` : `<span class="pill good">Combined ${combined}/${lim}</span>`)
+        : `<span class="pill">Combined ${combined}</span>`;
       return `
-        <div class="pill">
-          <span>${escapeHtml(item?.name || itemId)}</span>
-          <span class="muted">${cost}</span>
-          <button class="tiny" title="Return to Arsenal" onclick="returnItemToArsenal('${m.id}','${itemId}')">↩</button>
-        </div>
+        <tr>
+          <td><b>${escapeHtml(item?.name||k)}</b><div class="muted mono">${k}</div></td>
+          <td class="mono">${item?.cost ?? "?"} 👑</td>
+          <td class="mono">${ar[k]}</td>
+          <td>${lim!=null ? `<span class="mono">${lim}</span>` : `<span class="muted">-</span>`}</td>
+          <td>${pill}</td>
+          <td class="right">
+            <button class="btn small" data-ar="+1" data-kit="${k}">+1</button>
+            <button class="btn small danger" data-ar="-1" data-kit="${k}">-1</button>
+          </td>
+        </tr>
       `;
     }).join("");
 
-    return `
-      <div class="card">
-        <div class="row" style="justify-content:space-between; gap:10px; flex-wrap:wrap;">
-          <div>
-            <div class="h2">${escapeHtml(m.name)}</div>
-            <div class="muted">${escapeHtml(def.name)} • ${def.type} • ${fmt(def.baseCost)} base</div>
-          </div>
-          <div class="right">
-            <div class="h2">${fmt(modelTotalCost(m))}</div>
-            <div class="muted">${escapeHtml(def.keywords.join(", "))}</div>
-          </div>
-        </div>
-
-        <div style="height:10px"></div>
-        <div class="row" style="gap:8px; flex-wrap:wrap;">
-          <div class="pill"><span>Profile</span><span class="muted">M${def.profile.M} A${def.profile.A} R${def.profile.R} D${def.profile.D} W${def.profile.W}</span></div>
-          ${def.abilities.map(a=>`<div class="pill" title="${escapeHtml(a.text)}"><span>${escapeHtml(a.name)}</span><span class="muted">Ability</span></div>`).join("")}
-        </div>
-
-        <div style="height:10px"></div>
-        <div class="h3">Battlekit</div>
-        <div class="row" style="gap:8px; flex-wrap:wrap;">
-          ${kitLines || `<div class="muted">No kit.</div>`}
-        </div>
-
-        <div style="height:10px"></div>
-        <div class="row" style="gap:8px; flex-wrap:wrap;">
-          <button class="btn" onclick="openKitPicker('${m.id}')">Add / change kit</button>
-          <button class="btn" onclick="killModel('${m.id}')">Mark Dead</button>
-          <button class="btn" onclick="deleteModel('${m.id}')">Delete</button>
-        </div>
-      </div>
+    host.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th><th>Cost</th><th>Qty in Arsenal</th><th>Limit</th><th>Combined</th><th class="right">Adjust</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
     `;
-  }).join("");
 
-  el("roster").innerHTML = `
-    <div class="card">
-      <div class="h2">Active Roster</div>
-      <div class="muted">Game 1 cap is typically 10 models: build a “starting roster + bench” by keeping extras here and only fielding 10.</div>
-    </div>
-    ${rows || `<div class="card"><div class="muted">No models yet. Add some above.</div></div>`}
+    host.querySelectorAll("button[data-ar]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const kit = btn.getAttribute("data-kit");
+        const op = btn.getAttribute("data-ar");
+        if(op==="+1") adjustArsenal(kit, +1);
+        if(op==="-1") adjustArsenal(kit, -1);
+      });
+    });
+  }
+
+  // Limits reference table
+  const limitHost = document.getElementById("limitTable");
+  const limKeys = Object.keys(LIMITS).sort((a,b)=>a>b?1:-1);
+  limitHost.innerHTML = `
+    <table>
+      <thead><tr><th>Battlekit</th><th>Limit</th><th>Notes</th></tr></thead>
+      <tbody>
+        ${limKeys.map(k=>{
+          const item = BATTLEKIT[k];
+          const note = (k==="machine_gun"||k==="sniper_rifle"||k==="flamethrower") ? "Typically Elite access (Troops forbidden)." : "";
+          return `<tr><td>${escapeHtml(item?.name||k)}</td><td class="mono">${LIMITS[k]}</td><td class="muted">${note}</td></tr>`;
+        }).join("")}
+      </tbody>
+    </table>
   `;
-}
 
-function renderDead(){
-  if(!el("dead")) return;
-
-  const rows = state.dead.map(m=>{
-    const def = UNIT_DEFS[m.unitId];
-    return `
-      <div class="card">
-        <div class="row" style="justify-content:space-between; gap:10px; flex-wrap:wrap;">
-          <div>
-            <div class="h2">${escapeHtml(m.name)}</div>
-            <div class="muted">${escapeHtml(def.name)} • ${def.type}</div>
-          </div>
-          <div class="right">
-            <div class="pill"><span>Status</span><span class="muted">Dead</span></div>
-          </div>
-        </div>
-        <div style="height:10px"></div>
-        <button class="btn" onclick="reviveModel('${m.id}')">Restore to Active</button>
-      </div>
-    `;
-  }).join("");
-
-  el("dead").innerHTML = `
-    <div class="card">
-      <div class="h2">Dead (Campaign Tracking)</div>
-      <div class="muted">These are kept separate for campaign bookkeeping.</div>
-    </div>
-    ${rows || `<div class="card"><div class="muted">No deaths recorded.</div></div>`}
-  `;
-}
-
-function renderArsenal(){
-  if(!el("arsenal")) return;
-
-  const entries = Object.entries(state.arsenal).sort((a,b)=>a[0].localeCompare(b[0]));
-  const lines = entries.map(([itemId, qty])=>{
-    const item = BATTLEKIT[itemId];
-    const lim = itemWarbandLimit(itemId);
-    const limTxt = (lim!==null) ? `Limit ${lim}` : "";
-    return `
-      <div class="row" style="justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid #222;">
-        <div>
-          <div><b>${escapeHtml(item?.name || itemId)}</b> <span class="muted">x${qty}</span></div>
-          <div class="muted">${escapeHtml(item?.cat || "")} ${limTxt ? "• "+limTxt : ""}</div>
-        </div>
-        <div class="row" style="gap:8px;">
-          <button class="btn" onclick="buyToArsenal('${itemId}',1)">Buy +1</button>
-        </div>
-      </div>
-    `;
-  }).join("");
-
-  el("arsenal").innerHTML = `
-    <div class="card">
-      <div class="h2">Quartermaster Arsenal</div>
-      <div class="muted">Buy items into the Arsenal, then issue them to models from the Kit Picker. If an item exceeds warband limits, excess is auto-sold for ducats.</div>
-      <div style="height:10px"></div>
-
-      <div class="h3">Buy New Antioch Battlekit</div>
-      <div class="grid">
-        ${Object.values(BATTLEKIT).map(it=>`
-          <button class="btn" onclick="buyToArsenal('${it.id}',1)">Buy ${escapeHtml(it.name)} <span class="muted">(${it.cost} ducats)</span></button>
-        `).join("")}
-      </div>
-
-      <div style="height:12px"></div>
-      <div class="h3">Arsenal Contents</div>
-      ${lines || `<div class="muted">Arsenal is empty.</div>`}
-    </div>
-  `;
-}
-
-function renderLog(){
-  if(!el("log")) return;
-  el("log").innerHTML = `
-    <div class="card">
-      <div class="h2">Campaign Log</div>
-      <div class="muted">Lightweight audit trail of edits, deaths, purchases, etc.</div>
-      <div style="height:10px"></div>
-      <div class="mono" style="white-space:pre-wrap;">${escapeHtml(state.log.slice(0,60).join("\n"))}</div>
-    </div>
-  `;
-}
-
-function renderAll(){
-  renderSummary();
-  renderAddButtons();
-  renderRoster();
-  renderDead();
-  renderArsenal();
-  renderLog();
+  // bind quick add/remove
+  document.getElementById("btnArsenalAdd").onclick = ()=>{
+    const kitId = document.getElementById("arsenalAddSelect").value;
+    adjustArsenal(kitId, +1);
+  };
+  document.getElementById("btnArsenalRemove").onclick = ()=>{
+    const kitId = document.getElementById("arsenalAddSelect").value;
+    adjustArsenal(kitId, -1);
+  };
 }
 
 /* =========================
-   KIT PICKER MODAL
+   Actions
    ========================= */
 
-function openKitPicker(modelId){
-  const m = state.models.find(x=>x.id===modelId);
+function addModel(){
+  const entryId = document.getElementById("entrySelect").value;
+  const name = document.getElementById("modelName").value || "";
+  const status = document.getElementById("modelStatus").value || "active";
+  const notes = document.getElementById("modelNotes").value || "";
+
+  const m = {
+    id: uid(),
+    entryId,
+    name,
+    status,
+    notes,
+    kit: [],
+    campaign: defaultCampaignFields({entryId})
+  };
+
+  state.roster.push(m);
+  document.getElementById("modelName").value = "";
+  document.getElementById("modelNotes").value = "";
+  save();
+  rerenderAll();
+}
+
+function deleteModel(id){
+  state.roster = state.roster.filter(m=>m.id!==id);
+  save();
+  rerenderAll();
+}
+
+function cycleStatus(id){
+  const m = state.roster.find(x=>x.id===id);
+  if(!m) return;
+  if(m.status==="active") m.status="benched";
+  else if(m.status==="benched") m.status="dead";
+  else m.status="active";
+  save();
+  rerenderAll();
+}
+
+function setDeadToggle(id){
+  const m = state.roster.find(x=>x.id===id);
+  if(!m) return;
+  m.status = (m.status==="dead") ? "active" : "dead";
+  stampLog(`${modelLabel(m)} marked ${m.status.toUpperCase()}.`);
+  save();
+  rerenderAll();
+}
+
+function promoAttempt(id){
+  const m = state.roster.find(x=>x.id===id);
+  if(!m) return;
+  const entry = entryById(m.entryId);
+  if(!entry?.promotable) return;
+  m.campaign = m.campaign || defaultCampaignFields(m);
+  m.campaign.failedPromos = Number(m.campaign.failedPromos||0) + 1;
+  stampLog(`${modelLabel(m)}: recorded a Promotion Roll attempt (fail counter now ${m.campaign.failedPromos}).`);
+  save();
+  rerenderAll();
+}
+
+function addScar(id){
+  const m = state.roster.find(x=>x.id===id);
+  if(!m) return;
+  m.campaign = m.campaign || defaultCampaignFields(m);
+  m.campaign.scars = Number(m.campaign.scars||0) + 1;
+  stampLog(`${modelLabel(m)} gained a Battle Scar (now ${m.campaign.scars}).`);
+  save();
+  rerenderAll();
+}
+function removeScar(id){
+  const m = state.roster.find(x=>x.id===id);
+  if(!m) return;
+  m.campaign = m.campaign || defaultCampaignFields(m);
+  m.campaign.scars = Math.max(0, Number(m.campaign.scars||0) - 1);
+  stampLog(`${modelLabel(m)} reduced Battle Scars (now ${m.campaign.scars}).`);
+  save();
+  rerenderAll();
+}
+
+function stampLog(line){
+  const ts = new Date().toLocaleString();
+  const cur = state.meta.campaignLog || "";
+  state.meta.campaignLog = (cur ? (cur + "\n") : "") + `[${ts}] ${line}`;
+  document.getElementById("campaignLog").value = state.meta.campaignLog;
+}
+
+function modelLabel(m){
+  const entry = entryById(m.entryId);
+  const title = m.name?.trim() ? m.name.trim() : entry?.name || "Unknown";
+  return `${title} (${entry?.name||m.entryId})`;
+}
+
+function adjustArsenal(kitId, delta){
+  state.arsenal[kitId] = Number(state.arsenal[kitId]||0) + delta;
+  if(state.arsenal[kitId] <= 0) delete state.arsenal[kitId];
+  stampLog(`Arsenal: ${delta>0?"+":"-"}${Math.abs(delta)} ${BATTLEKIT[kitId]?.name||kitId}.`);
+  save();
+  rerenderAll();
+}
+
+function syncArsenalFromRoster(){
+  // Adds equipped items into Arsenal counts (does not remove from models). This is a "stocktake" helper.
+  const eq = equippedCounts();
+  for(const k of Object.keys(eq)){
+    state.arsenal[k] = Math.max(Number(state.arsenal[k]||0), 0);
+    state.arsenal[k] += eq[k];
+  }
+  stampLog("Arsenal: synced from equipped Battlekit on roster (added counts).");
+  save();
+  rerenderAll();
+}
+
+function sellExcessAboveLimits(){
+  const over = overLimitList();
+  if(!over.length){
+    alert("No Limits exceeded.");
+    return;
+  }
+  let payout = 0;
+  const details = [];
+  for(const o of over){
+    const excess = o.have - o.limit;
+    const item = BATTLEKIT[o.kitId];
+    const value = halfCostRoundingUp(item?.cost ?? 0) * excess;
+    payout += value;
+    details.push(`${item?.name||o.kitId} x${excess} for ${value} 👑`);
+
+    // remove excess from Arsenal first, then from equipped if needed
+    let remaining = excess;
+    const arQty = Number(state.arsenal[o.kitId]||0);
+    const takeFromAr = Math.min(arQty, remaining);
+    if(takeFromAr>0){
+      state.arsenal[o.kitId] = arQty - takeFromAr;
+      if(state.arsenal[o.kitId] <= 0) delete state.arsenal[o.kitId];
+      remaining -= takeFromAr;
+    }
+
+    if(remaining>0){
+      // strip from models carrying it, starting with benched then active, never dead
+      const carriers = state.roster
+        .filter(m=>m.status!=="dead" && (m.kit||[]).includes(o.kitId))
+        .sort((a,b)=> (a.status==="benched"?-1:1));
+      for(const m of carriers){
+        if(remaining<=0) break;
+        const idx = m.kit.indexOf(o.kitId);
+        if(idx>=0){
+          m.kit.splice(idx,1);
+          remaining--;
+        }
+      }
+    }
+  }
+
+  state.meta.strongboxCrowns = Number(state.meta.strongboxCrowns||0) + payout;
+  stampLog(`Sold excess Battlekit above Limits for ${payout} 👑 (half cost rounding up). Items: ${details.join("; ")}.`);
+  save();
+  rerenderAll();
+}
+
+function clearRoster(){
+  if(!confirm("Clear all models from roster?")) return;
+  state.roster = [];
+  save();
+  rerenderAll();
+}
+
+function autoPickLegal(){
+  // Autopick: adds default legal loadouts if empty, and removes illegal kit.
+  for(const m of state.roster){
+    if(m.status==="dead") continue;
+    // remove illegal kit
+    m.kit = (m.kit||[]).filter(k=>kitAllowedForModel(m.entryId,k));
+    // if none, apply defaults (but only legal pieces)
+    if(!m.kit.length){
+      const def = DEFAULT_LOADOUTS[m.entryId] || [];
+      for(const k of def){
+        if(kitAllowedForModel(m.entryId,k)){
+          m.kit.push(k);
+        }
+      }
+    }
+    // Urchins cannot be promoted
+    const entry = entryById(m.entryId);
+    if(entry && entry.promotable===false){
+      m.campaign = m.campaign || defaultCampaignFields(m);
+      m.campaign.promotable = false;
+    }
+  }
+  stampLog("Autopick legal force: cleaned illegal kit and applied default legal loadouts.");
+  save();
+  rerenderAll();
+}
+
+/* =========================
+   Model editor modal (inline)
+   ========================= */
+
+function openEditor(id){
+  const m = state.roster.find(x=>x.id===id);
   if(!m) return;
 
-  const def = UNIT_DEFS[m.unitId];
-  const isTroop = def.type === "TROOP";
+  const entry = entryById(m.entryId);
+  const elite = isElite(m.entryId);
+  const title = m.name?.trim() ? m.name.trim() : entry?.name || "Model";
 
-  const items = Object.values(BATTLEKIT).filter(it=>{
-    if(isTroop){
-      return TROOP_ALLOWED.has(it.id) && !TROOP_BANNED.has(it.id);
-    }
-    return true; // Elites: anything (still subject to canModelTakeItem checks)
+  const allowedList = Object.keys(BATTLEKIT).filter(k=>kitAllowedForModel(m.entryId,k));
+  const forbiddenList = Object.keys(BATTLEKIT).filter(k=>!kitAllowedForModel(m.entryId,k));
+
+  const container = document.createElement("div");
+  container.className = "panel";
+  container.style.position = "fixed";
+  container.style.inset = "18px";
+  container.style.zIndex = "9999";
+  container.style.overflow = "auto";
+  container.style.background = "rgba(17,19,25,0.98)";
+  container.style.backdropFilter = "blur(2px)";
+
+  container.innerHTML = `
+    <div class="flex">
+      <h2 style="margin:0;">Edit: ${escapeHtml(title)}</h2>
+      <span class="spacer"></span>
+      <button class="btn" id="edClose">Close</button>
+    </div>
+    <div class="hr"></div>
+
+    <div class="two">
+      <div>
+        <label>Display Name</label>
+        <input id="edName" type="text" value="${escapeAttr(m.name||"")}" />
+      </div>
+      <div>
+        <label>Status</label>
+        <select id="edStatus">
+          <option value="active" ${m.status==="active"?"selected":""}>Active</option>
+          <option value="benched" ${m.status==="benched"?"selected":""}>Benched</option>
+          <option value="dead" ${m.status==="dead"?"selected":""}>Dead</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="two">
+      <div>
+        <label>Notes</label>
+        <input id="edNotes" type="text" value="${escapeAttr(m.notes||"")}" />
+      </div>
+      <div>
+        <label>Points</label>
+        <div class="pill">Base ${entry?.cost ?? 0} 👑 + kit = <span class="mono">${modelCrowns(m)}</span> 👑</div>
+        <div class="note muted">Sapper’s Mate Satchel Charge discount applied automatically.</div>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <h3>Battlekit</h3>
+    <div class="note">${elite ? "ELITE: full New Antioch armoury access (Limits still apply)." : "TROOP: restricted New Antioch list enforced."}</div>
+
+    <div class="two">
+      <div>
+        <label>Add Battlekit</label>
+        <select id="edAddKit">
+          ${allowedList.map(k=>`<option value="${k}">${escapeHtml(BATTLEKIT[k].name)} (${BATTLEKIT[k].cost} 👑)</option>`).join("")}
+        </select>
+        <div class="flex" style="margin-top:8px;">
+          <button class="btn good" id="edAddBtn">Add</button>
+          <button class="btn danger" id="edRemoveBtn">Remove selected</button>
+          <span class="spacer"></span>
+          <button class="btn" id="edClearKit">Clear kit</button>
+        </div>
+      </div>
+      <div>
+        <label>Equipped Battlekit</label>
+        <select id="edEquipped" size="10" style="min-height:200px;">
+          ${(m.kit||[]).map(k=>`<option value="${k}">${escapeHtml(BATTLEKIT[k]?.name||k)} (cost ${kitEffectiveCost(m,k)} 👑)</option>`).join("")}
+        </select>
+        <div class="note muted" style="margin-top:8px;">
+          Illegal items cannot be added here for Troops. If you imported older data, Autopick Legal will strip illegal kit.
+        </div>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <h3>Abilities (reference)</h3>
+    <div class="note">
+      ${(ENTRY_ABILITIES[m.entryId]||[]).map(a=>`<div style="margin-bottom:8px;"><b>${escapeHtml(a.name)}:</b> ${escapeHtml(a.text)}</div>`).join("") || `<span class="muted">No builder notes.</span>`}
+    </div>
+
+    <div class="hr"></div>
+
+    <h3>Forbidden Battlekit (for this model)</h3>
+    <div class="note muted">
+      ${forbiddenList.length ? forbiddenList.map(k=>BATTLEKIT[k]?.name||k).join(", ") : "None"}
+    </div>
+  `;
+
+  document.body.appendChild(container);
+
+  const close = ()=>{ container.remove(); rerenderAll(); };
+
+  container.querySelector("#edClose").onclick = close;
+  container.querySelector("#edName").addEventListener("input", (e)=>{
+    m.name = e.target.value;
+    save();
+  });
+  container.querySelector("#edStatus").addEventListener("change", (e)=>{
+    m.status = e.target.value;
+    save();
+  });
+  container.querySelector("#edNotes").addEventListener("input", (e)=>{
+    m.notes = e.target.value;
+    save();
   });
 
-  // Build table
-  const rows = items.map(it=>{
-    const check = canModelTakeItem(m, it.id);
-    const owned = arsenalQty(it.id);
-    const cost = kitCostForModel(m, it.id);
-    const profile = it.profile ? `${it.profile.type} • ${it.profile.range} • ${it.profile.keywords.join(", ")}` : "";
-    const lim = itemWarbandLimit(it.id);
-    const limTxt = (lim!==null) ? `Limit ${lim}` : "";
-    return `
-      <div class="row" style="justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid #222;">
-        <div style="min-width:220px;">
-          <div><b>${escapeHtml(it.name)}</b> <span class="muted">${cost} ${state.currencyName}</span></div>
-          <div class="muted">${escapeHtml(it.cat)} ${limTxt ? "• "+limTxt : ""}</div>
-          ${profile ? `<div class="muted">${escapeHtml(profile)}</div>` : ""}
-          ${it.rules ? `<div class="muted">${escapeHtml(it.rules.join(" "))}</div>` : ""}
-        </div>
-        <div class="right">
-          <div class="muted">Arsenal: ${owned}</div>
-          <div style="height:6px"></div>
-          <button class="btn" ${(!check.ok || owned<=0) ? "disabled" : ""} onclick="giveItemToModelFromArsenal('${m.id}','${it.id}')">Issue</button>
-          ${!check.ok ? `<div class="muted" style="margin-top:6px; max-width:260px;">${escapeHtml(check.reason)}</div>` : ""}
-        </div>
-      </div>
-    `;
-  }).join("");
-
-  const modal = el("modal");
-  const modalInner = el("modalInner");
-  modalInner.innerHTML = `
-    <div class="row" style="justify-content:space-between; gap:10px; align-items:flex-start;">
-      <div>
-        <div class="h2">Kit Picker</div>
-        <div class="muted">${escapeHtml(m.name)} • ${escapeHtml(def.name)}</div>
-        <div class="muted">Tip: Buy into Arsenal first, then Issue here.</div>
-      </div>
-      <button class="btn" onclick="closeModal()">Close</button>
-    </div>
-    <div style="height:12px"></div>
-    <div class="card">${rows}</div>
-  `;
-  modal.classList.remove("hidden");
-}
-
-function closeModal(){
-  el("modal").classList.add("hidden");
-  el("modalInner").innerHTML = "";
-}
-
-/* =========================
-   PRINT ROSTER (quick reference)
-   ========================= */
-
-function weaponBlock(itemId){
-  const it = BATTLEKIT[itemId];
-  if(!it) return "";
-  if(!it.profile) return `<div class="muted">• ${escapeHtml(it.name)}</div>`;
-  return `
-    <div class="muted">• <b>${escapeHtml(it.name)}</b>: ${escapeHtml(it.profile.type)} | ${escapeHtml(it.profile.range)} | ${escapeHtml((it.profile.keywords||[]).join(", "))}</div>
-    ${it.rules ? `<div class="muted" style="margin-left:12px;">${escapeHtml(it.rules.join(" "))}</div>` : ""}
-  `;
-}
-
-function printRoster(){
-  const w = window.open("", "_blank");
-  const lines = state.models.map(m=>{
-    const def = UNIT_DEFS[m.unitId];
-    const kit = (m.kit||[]);
-    const weapons = kit.filter(x=>["RANGED","MELEE","GRENADES"].includes(BATTLEKIT[x]?.cat));
-    const gear = kit.filter(x=>["ARMOUR","EQUIPMENT"].includes(BATTLEKIT[x]?.cat));
-    return `
-      <div style="border:1px solid #333; padding:12px; margin:12px 0;">
-        <h2 style="margin:0 0 4px 0;">${escapeHtml(m.name)} <span style="font-weight:normal; color:#666;">(${escapeHtml(def.name)})</span></h2>
-        <div style="color:#666;">Cost: ${modelTotalCost(m)} ${state.currencyName} | Profile: M${def.profile.M} A${def.profile.A} R${def.profile.R} D${def.profile.D} W${def.profile.W}</div>
-        <div style="color:#666;">Keywords: ${escapeHtml(def.keywords.join(", "))}</div>
-
-        <h3 style="margin:10px 0 4px 0;">Abilities</h3>
-        ${(def.abilities||[]).map(a=>`<div style="color:#444;"><b>${escapeHtml(a.name)}:</b> ${escapeHtml(a.text)}</div>`).join("")}
-
-        <h3 style="margin:10px 0 4px 0;">Weapons</h3>
-        ${weapons.length ? weapons.map(weaponBlock).join("") : `<div style="color:#666;">None</div>`}
-
-        <h3 style="margin:10px 0 4px 0;">Armour & Equipment</h3>
-        ${gear.length ? gear.map(x=>`<div style="color:#666;">• ${escapeHtml(BATTLEKIT[x].name)}</div>`).join("") : `<div style="color:#666;">None</div>`}
-      </div>
-    `;
-  }).join("");
-
-  w.document.write(`
-    <html><head><title>${escapeHtml(state.warbandName)} Roster</title></head>
-    <body style="font-family:Arial, sans-serif; padding:16px;">
-      <h1 style="margin:0 0 8px 0;">${escapeHtml(state.warbandName)}</h1>
-      <div style="color:#666; margin-bottom:12px;">Total: ${warbandTotalCost()} ${state.currencyName} | Models: ${warbandModelCount()}</div>
-      ${lines || "<div>No models.</div>"}
-    </body></html>
-  `);
-  w.document.close();
-  w.focus();
-  w.print();
-}
-
-/* =========================
-   SAVE / LOAD
-   ========================= */
-
-function saveToFile(){
-  const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "hearthcell_builder_save.json";
-  a.click();
-  URL.revokeObjectURL(a.href);
-  logEvent("Exported JSON.");
-}
-
-function loadFromFile(){
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "application/json";
-  input.onchange = () => {
-    const file = input.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try{
-        const obj = JSON.parse(reader.result);
-        state = obj;
-        // safety defaults
-        state.arsenal = state.arsenal || {};
-        state.models = state.models || [];
-        state.dead = state.dead || [];
-        state.log = state.log || [];
-        enforceAllArsenalLimits();
-        logEvent("Imported JSON.");
-      }catch(e){
-        alert("Could not import JSON.");
-      }
-    };
-    reader.readAsText(file);
+  container.querySelector("#edAddBtn").onclick = ()=>{
+    const kitId = container.querySelector("#edAddKit").value;
+    if(!kitAllowedForModel(m.entryId, kitId)){
+      alert("Illegal Battlekit for this model.");
+      return;
+    }
+    m.kit.push(kitId);
+    save();
+    openEditorRefresh(container, m.id);
   };
-  input.click();
+
+  container.querySelector("#edRemoveBtn").onclick = ()=>{
+    const kitId = container.querySelector("#edEquipped").value;
+    if(!kitId) return;
+    const idx = m.kit.indexOf(kitId);
+    if(idx>=0) m.kit.splice(idx,1);
+    save();
+    openEditorRefresh(container, m.id);
+  };
+
+  container.querySelector("#edClearKit").onclick = ()=>{
+    m.kit = [];
+    save();
+    openEditorRefresh(container, m.id);
+  };
+}
+
+function openEditorRefresh(container, id){
+  // close and reopen to keep things simple
+  container.remove();
+  openEditor(id);
 }
 
 /* =========================
-   BOOT
+   Print view
    ========================= */
 
-(function boot(){
-  // Friendly starter resources
-  if(state.log.length===0){
-    logEvent("Builder initialised.");
-    state.ducats = 50; // small starter pool so you can test buying
-    logEvent("Starter ducats set to 50 for testing. Change/remove this when you want strict campaign economy.");
-  }
-  renderAll();
-})();
+function refreshPrint(){
+  const area = document.getElementById("printArea");
+  const name = state.meta.warbandName || "Hearthcell Resistance";
+  const size = Number(state.meta.gameSize||0);
+  const tot = totalCrowns();
+  const c = counts();
 
-/* ====== v0.6 PART 2 END ====== */
+  const rosterActive = state.roster.filter(m=>m.status!=="dead");
+  const rosterDead = state.roster.filter(m=>m.status==="dead");
+
+  const warbandRules = `
+    <div class="panel">
+      <h2>${escapeHtml(name)} (Hearthcell Resistance)</h2>
+      <div class="note">
+        <b>Game Size:</b> <span class="mono">${tot}</span> / <span class="mono">${size}</span> 👑
+        &nbsp; | &nbsp; <b>Models:</b> <span class="mono">${c.models}</span> (Troops ${c.troops}, Elites ${c.elites})
+      </div>
+      <div class="hr"></div>
+      <div class="note">
+        <b>Builder notes:</b> Troop Battlekit restrictions applied, Elites can access full New Antioch armoury.
+        Campaign selling is half cost rounding up. :contentReference[oaicite:11]{index=11}
+      </div>
+    </div>
+  `;
+
+  const modelBlocks = rosterActive.map(m=>printModelBlock(m)).join("");
+  const deadBlocks = rosterDead.length ? `
+    <div class="panel">
+      <h2>Dead (campaign record)</h2>
+      ${rosterDead.map(m=>printModelBlock(m,true)).join("")}
+    </div>` : "";
+
+  const kitProfiles = printKitProfilesUsed();
+
+  area.innerHTML = `
+    ${warbandRules}
+    <div class="panel">
+      <h2>Roster</h2>
+      ${modelBlocks || `<div class="note muted">No models.</div>`}
+    </div>
+    ${deadBlocks}
+    <div class="panel">
+      <h2>Battlekit Profiles (used in this roster)</h2>
+      ${kitProfiles}
+    </div>
+  `;
+}
+
+function printModelBlock(m, dead=false){
+  const entry = entryById(m.entryId);
+  const title = m.name?.trim() ? m.name.trim() : entry?.name || "Unknown";
+  const elite = isElite(m.entryId);
+  const kit = (m.kit||[]).map(k=>BATTLEKIT[k]?.name||k).join(", ") || "None";
+  const abil = (ENTRY_ABILITIES[m.entryId]||[]).map(a=>`<div><b>${escapeHtml(a.name)}:</b> ${escapeHtml(a.text)}</div>`).join("") || `<div class="muted">None.</div>`;
+
+  return `
+    <div style="border-top:1px solid var(--line); padding-top:10px; margin-top:10px;">
+      <div class="flex">
+        <div><b>${escapeHtml(title)}</b> <span class="muted">(${escapeHtml(entry?.name||"")})</span></div>
+        <span class="spacer"></span>
+        <span class="pill">${elite?"ELITE":"TROOP"}</span>
+        <span class="pill ${dead?"bad":"good"}">${dead?"Dead":"In Force"}</span>
+        <span class="pill">Cost: <span class="mono">${modelCrowns(m)}</span> 👑</span>
+      </div>
+      <div class="note"><b>Battlekit:</b> ${escapeHtml(kit)}</div>
+      <div class="note"><b>Abilities:</b><div style="margin-top:6px;">${abil}</div></div>
+    </div>
+  `;
+}
+
+function printKitProfilesUsed(){
+  const used = new Set();
+  for(const m of state.roster){
+    for(const k of (m.kit||[])) used.add(k);
+  }
+  const list = Array.from(used).sort((a,b)=>a>b?1:-1);
+  if(!list.length) return `<div class="note muted">No Battlekit equipped.</div>`;
+
+  const rows = list.map(k=>{
+    const it = BATTLEKIT[k];
+    return `<tr>
+      <td><b>${escapeHtml(it?.name||k)}</b><div class="muted mono">${k}</div></td>
+      <td class="mono">${it?.cost ?? "?"} 👑</td>
+      <td>${escapeHtml(it?.type||"-")}</td>
+      <td class="mono">${escapeHtml(it?.range||"-")}</td>
+      <td class="mono">${escapeHtml(it?.keywords||"-")}</td>
+    </tr>`;
+  }).join("");
+
+  return `
+    <table>
+      <thead><tr><th>Item</th><th>Cost</th><th>Type</th><th>Range</th><th>Keywords</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+/* =========================
+   Utilities
+   ========================= */
+
+function escapeHtml(str){
+  return (str ?? "").toString()
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+function escapeAttr(str){ return escapeHtml(str).replaceAll("\n"," "); }
+
+/* =========================
+   Rerender + bindings
+   ========================= */
+
+function rerenderAll(){
+  renderSummary();
+  renderRosterList();
+  renderCampaign();
+  renderArsenal();
+  save();
+}
+
+function bind(){
+  // Tabs
+  document.querySelectorAll(".tabbtn").forEach(btn=>{
+    btn.addEventListener("click", ()=> setTab(btn.getAttribute("data-tab")));
+  });
+
+  // Meta
+  document.getElementById("warbandName").addEventListener("input", (e)=>{
+    state.meta.warbandName = e.target.value;
+    save();
+  });
+  document.getElementById("gameSize").addEventListener("input", (e)=>{
+    state.meta.gameSize = Number(e.target.value||0);
+    rerenderAll();
+  });
+
+  // Add model
+  document.getElementById("btnAddModel").addEventListener("click", addModel);
+
+  // Buttons
+  document.getElementById("btnClearList").addEventListener("click", clearRoster);
+  document.getElementById("btnAutoLegal").addEventListener("click", autoPickLegal);
+
+  // Campaign meta
+  document.getElementById("strongboxCrowns").addEventListener("input", (e)=>{
+    state.meta.strongboxCrowns = Number(e.target.value||0); save();
+  });
+  document.getElementById("strongboxGlory").addEventListener("input", (e)=>{
+    state.meta.strongboxGlory = Number(e.target.value||0); save();
+  });
+  document.getElementById("gamesPlayed").addEventListener("input", (e)=>{
+    state.meta.gamesPlayed = Number(e.target.value||0); save();
+  });
+  document.getElementById("explorationSkills").addEventListener("input", (e)=>{
+    state.meta.explorationSkills = e.target.value; save();
+  });
+  document.getElementById("campaignLog").addEventListener("input", (e)=>{
+    state.meta.campaignLog = e.target.value; save();
+  });
+  document.getElementById("btnLogStamp").addEventListener("click", ()=>{
+    stampLog("Note");
+    save();
+  });
+  document.getElementById("btnClearLog").addEventListener("click", ()=>{
+    if(!confirm("Clear campaign log?")) return;
+    state.meta.campaignLog = "";
+    save();
+    rerenderAll();
+  });
+
+  // Arsenal actions
+  document.getElementById("btnSyncArsenal").addEventListener("click", syncArsenalFromRoster);
+  document.getElementById("btnSellExcess").addEventListener("click", sellExcessAboveLimits);
+
+  // Print
+  document.getElementById("btnPrint").addEventListener("click", ()=> window.print());
+  document.getElementById("btnRefreshPrint").addEventListener("click", refreshPrint);
+
+  // Save/Load
+  document.getElementById("btnExport").addEventListener("click", ()=>{
+    document.getElementById("dataBox").value = JSON.stringify(state, null, 2);
+  });
+  document.getElementById("btnImport").addEventListener("click", ()=>{
+    const raw = document.getElementById("dataBox").value.trim();
+    if(!raw) return alert("Paste JSON first.");
+    try{
+      const obj = JSON.parse(raw);
+      state = obj;
+      save();
+      rerenderAll();
+      alert("Imported.");
+    }catch(e){
+      alert("Invalid JSON.");
+    }
+  });
+  document.getElementById("btnWipeAll").addEventListener("click", ()=>{
+    if(!confirm("Wipe all data (localStorage) and reset?")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    state = {
+      meta: {
+        warbandName: "Hearthcell Resistance",
+        gameSize: 700,
+        strongboxCrowns: 0,
+        strongboxGlory: 0,
+        gamesPlayed: 0,
+        explorationSkills: "",
+        campaignLog: ""
+      },
+      roster: [],
+      arsenal: {}
+    };
+    save();
+    rerenderAll();
+  });
+}
+
+/* =========================
+   Boot
+   ========================= */
+
+load();
+fillSelects();
+bind();
+rerenderAll();
+
 </script>
+</div>
 </body>
 </html>
-
