@@ -593,7 +593,7 @@ function renderRoster() {
       if ((model.chosenKit||[]).length === 0) list.innerHTML = `<span class="muted">None</span>`;
 
       chooseBox.appendChild(select);
-      chooseBox.appendChild(document.createElement("div")).innerHTML = `<div class="tiny">Costs default to 0 unless you fill BATTLEKIT_COSTS.</div>`;
+      chooseBox.appendChild(document.createElement("div")).innerHTML = `<div class="tiny">Select your Battlekit.</div>`;
       chooseBox.appendChild(list);
     }
 
