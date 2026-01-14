@@ -1,0 +1,1723 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Warband Builder + Campaign Tracker (v0.3)</title>
+  <style>
+    :root{
+      --bg:#0f1115;
+      --panel:#171a21;
+      --panel2:#1f2430;
+      --text:#e7e7e7;
+      --muted:#a9b0be;
+      --accent:#7ad7ff;
+      --danger:#ff6b6b;
+      --ok:#7dffb2;
+      --warn:#ffd36b;
+      --line:#2a3140;
+      --chip:#232a38;
+      --radius:14px;
+      --pad:14px;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:var(--font);
+      background:radial-gradient(1200px 800px at 15% 10%, #172134 0%, var(--bg) 55%);
+      color:var(--text);
+    }
+    header{
+      padding:18px 18px 10px;
+      display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0));
+      position:sticky; top:0; z-index:5;
+      backdrop-filter: blur(6px);
+    }
+    header .title{display:flex; flex-direction:column; gap:2px}
+    header h1{margin:0; font-size:18px; letter-spacing:0.4px}
+    header .sub{color:var(--muted); font-size:12px}
+    .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+    .btn{
+      appearance:none; border:1px solid var(--line);
+      background:var(--panel2); color:var(--text);
+      padding:9px 12px; border-radius:12px;
+      cursor:pointer; font-weight:600; font-size:13px;
+    }
+    .btn:hover{border-color:#3b4760}
+    .btn.primary{border-color:rgba(122,215,255,0.35); box-shadow:0 0 0 1px rgba(122,215,255,0.15) inset}
+    .btn.danger{border-color:rgba(255,107,107,0.35)}
+    .btn.ok{border-color:rgba(125,255,178,0.35)}
+    .btn.warn{border-color:rgba(255,211,107,0.35)}
+    .btn.small{padding:6px 10px; font-size:12px; border-radius:10px}
+    .btn:disabled{opacity:0.5; cursor:not-allowed}
+    .wrap{padding:18px; max-width:1220px; margin:0 auto}
+    .tabs{display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px}
+    .tab{
+      padding:8px 10px; border-radius:12px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      color:var(--muted);
+      cursor:pointer;
+      font-size:13px; font-weight:700;
+    }
+    .tab.active{color:var(--text); border-color:rgba(122,215,255,0.35); background:rgba(122,215,255,0.08)}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap:14px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+    }
+    .card{
+      background:rgba(23,26,33,0.72);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:var(--pad);
+      box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+    }
+    .card h2{margin:0 0 8px; font-size:15px}
+    .card h3{margin:14px 0 8px; font-size:13px; color:var(--muted); letter-spacing:0.3px}
+    .muted{color:var(--muted)}
+    .pill{
+      display:inline-flex; gap:6px; align-items:center;
+      background:var(--chip);
+      border:1px solid var(--line);
+      padding:5px 8px; border-radius:999px;
+      font-size:12px; color:var(--muted);
+    }
+    .pill b{color:var(--text); font-weight:800}
+    .kpis{display:flex; flex-wrap:wrap; gap:8px}
+    .field{display:flex; flex-direction:column; gap:6px; margin:8px 0;}
+    label{font-size:12px; color:var(--muted); font-weight:700}
+    input, select, textarea{
+      width:100%;
+      padding:9px 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#0f1218;
+      color:var(--text);
+      font-size:13px;
+      outline:none;
+    }
+    textarea{min-height:90px; resize:vertical; font-family:var(--font)}
+    input:focus, select:focus, textarea:focus{border-color:#3b4760}
+    .split{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    @media (max-width: 540px){
+      .split{grid-template-columns:1fr}
+    }
+    table{width:100%; border-collapse:collapse; font-size:13px}
+    th, td{padding:8px 8px; border-bottom:1px solid var(--line); vertical-align:top}
+    th{color:var(--muted); text-align:left; font-size:12px; letter-spacing:0.2px}
+    tr:hover td{background:rgba(255,255,255,0.02)}
+    .tag{display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,0.03); color:var(--muted); font-size:12px}
+    .tag.elite{border-color:rgba(122,215,255,0.35); color:rgba(122,215,255,0.9)}
+    .tag.troop{border-color:rgba(255,211,107,0.35); color:rgba(255,211,107,0.95)}
+    .tag.dead{border-color:rgba(255,107,107,0.35); color:rgba(255,107,107,0.95)}
+    .tag.illegal{border-color:rgba(255,107,107,0.55); color:rgba(255,107,107,1)}
+    .right{display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap}
+    .mono{font-family:var(--mono)}
+    .notice{
+      border:1px dashed rgba(122,215,255,0.35);
+      background:rgba(122,215,255,0.06);
+      padding:10px 12px; border-radius:12px;
+      color:var(--muted); font-size:13px;
+    }
+    .warnbox{
+      border:1px dashed rgba(255,211,107,0.35);
+      background:rgba(255,211,107,0.07);
+      padding:10px 12px; border-radius:12px;
+      color:var(--muted); font-size:13px;
+    }
+    .badbox{
+      border:1px dashed rgba(255,107,107,0.35);
+      background:rgba(255,107,107,0.07);
+      padding:10px 12px; border-radius:12px;
+      color:var(--muted); font-size:13px;
+    }
+    .kitgrid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:8px;
+    }
+    .kititem{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.03);
+      border-radius:12px;
+      padding:8px 10px;
+      align-items:center;
+    }
+    .kititem .left{display:flex; flex-direction:column; gap:2px}
+    .kititem .meta{font-size:12px; color:var(--muted)}
+    .kititem .cost{font-family:var(--mono); color:var(--text); white-space:nowrap}
+
+    /* Print */
+    @media print{
+      header, .tabs, .noprint { display:none !important; }
+      body{ background:#fff; color:#000; }
+      .wrap{ max-width:none; padding:0; }
+      .card{ box-shadow:none; border:1px solid #bbb; background:#fff; }
+      .muted{ color:#333; }
+      .pill, .tag{ border:1px solid #bbb; color:#000; background:#fff; }
+      table{ font-size:11px; }
+      th{ color:#111; }
+    }
+  </style>
+</head>
+<body>
+<header class="noprint">
+  <div class="title">
+    <h1>Warband Builder + Campaign Tracker</h1>
+    <div class="sub">v0.3: battlekit legality, promotion workflow, print sheet, schema versioning, faction-agnostic catalogue</div>
+  </div>
+  <div class="row">
+    <button class="btn primary" id="btnExport">Export JSON</button>
+    <button class="btn" id="btnImport">Import JSON</button>
+    <button class="btn" id="btnPrint">Print</button>
+    <button class="btn danger" id="btnReset">Reset</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="tabs noprint" id="tabs"></div>
+  <div id="view"></div>
+</div>
+
+<script>
+/* Warband Builder + Campaign Tracker v0.3
+   - LocalStorage persistence
+   - Roster and force selection
+   - Campaign tracking
+   - Battlekit: catalogue + per-model assignment with legality filtering
+   - Promotion workflow with eligibility rules (Urchins default blocked)
+   - Printable roster sheet
+   - Schema versioning + migrations from older exports
+*/
+
+const STORAGE_KEY = "warband_builder_v03";
+const SCHEMA_VERSION = "0.3";
+
+const DEFAULT_DATA = {
+  schemaVersion: SCHEMA_VERSION,
+  meta: {
+    warbandName: "Hearthcell Resistance",
+    playerName: "",
+    notes: ""
+  },
+  campaign: {
+    gameNumber: 1,
+    strongboxDucats: 0,
+    glory: 0,
+    failedPromotionRolls: 0,
+    deaths: 0,
+    explorationFinds: [],
+    locationsFound: [],
+    eventLog: []
+  },
+  roster: {
+    nextId: 1,
+    models: []
+  },
+  catalogue: {
+    units: [
+      { key:"cell_marshal", name:"Cell Marshal", role:"ELITE", cost:85, limit:"1", keywords:"HEARTHCELL, ELITE", canPromote:true, notes:"Commander. Civilian leader." },
+      { key:"weaver", name:"Weaver of Ciphers", role:"ELITE", cost:80, limit:"0-1", keywords:"HEARTHCELL, ELITE", canPromote:true, notes:"Intel specialist." },
+      { key:"ward_angel", name:"Ward Angel", role:"ELITE", cost:85, limit:"0-1", keywords:"HEARTHCELL, ELITE", canPromote:true, notes:"Elite medic. Civilian." },
+      { key:"fuse_sister", name:"Fuse Sister", role:"ELITE", cost:80, limit:"0-1", keywords:"HEARTHCELL, ELITE", canPromote:true, notes:"Explosives specialist." },
+      { key:"dockside_giant", name:"Dockside Giant", role:"ELITE", cost:85, limit:"0-1", keywords:"HEARTHCELL, ELITE, STRONG", canPromote:true, notes:"Massive melee threat." },
+
+      { key:"street_urchin", name:"Street Urchin", role:"TROOPS", cost:18, limit:"0-6", keywords:"HEARTHCELL, TROOPS", canPromote:false, notes:"Feral pack unit. Cannot promote." },
+      { key:"lookout", name:"Lookout", role:"TROOPS", cost:28, limit:"0-3", keywords:"HEARTHCELL, TROOPS", canPromote:true, notes:"Primary ranged troop option." },
+      { key:"bruiser", name:"Bruiser", role:"TROOPS", cost:45, limit:"0-3", keywords:"HEARTHCELL, TROOPS", canPromote:true, notes:"Melee anchor." },
+      { key:"field_medic", name:"Field Medic", role:"TROOPS", cost:40, limit:"0-2", keywords:"HEARTHCELL, TROOPS", canPromote:true, notes:"Support." },
+      { key:"sappers_mate", name:"Sapper’s Mate", role:"TROOPS", cost:45, limit:"0-3", keywords:"HEARTHCELL, TROOPS", canPromote:true, notes:"Tools and charges." }
+    ],
+    battlekit: [
+      // Legality fields:
+      // allowedUnitKeys: [] => only these units may take
+      // blockedUnitKeys: [] => these units may not take
+      // allowedRoles: ["ELITE","TROOPS"] => only these roles may take (optional)
+      { key:"pistol", name:"Civilian Pistol", type:"Weapon", cost:10, allowedUnitKeys:["cell_marshal","lookout"], blockedUnitKeys:[], allowedRoles:[], notes:"Sidearm. Lookouts and leader only by default." },
+      { key:"rifle", name:"Bolt-Action Rifle", type:"Weapon", cost:20, allowedUnitKeys:["lookout"], blockedUnitKeys:[], allowedRoles:[], notes:"Lookout ranged option." },
+      { key:"knife", name:"Trench Knife", type:"Weapon", cost:5, allowedUnitKeys:[], blockedUnitKeys:[], allowedRoles:[], notes:"Simple blade." },
+      { key:"binocs", name:"Binoculars", type:"Equipment", cost:5, allowedUnitKeys:[], blockedUnitKeys:[], allowedRoles:[], notes:"Spotting and counting." },
+      { key:"medkit", name:"Medical Kit", type:"Equipment", cost:10, allowedUnitKeys:["ward_angel","field_medic"], blockedUnitKeys:[], allowedRoles:[], notes:"Medic kit." },
+      { key:"charges", name:"Demolition Charges", type:"Equipment", cost:20, allowedUnitKeys:["fuse_sister","sappers_mate"], blockedUnitKeys:[], allowedRoles:[], notes:"Explosives and fuses." }
+    ]
+  },
+  armoury: { items: [] }
+};
+
+// Campaign caps (editable later)
+const CAMPAIGN_TABLE = [
+  { game:1, threshold:700, field:10 },
+  { game:2, threshold:800, field:11 },
+  { game:3, threshold:900, field:12 },
+  { game:4, threshold:1000, field:13 },
+  { game:5, threshold:1100, field:14 },
+  { game:6, threshold:1200, field:15 }
+];
+
+let DATA = loadData();
+let ACTIVE_TAB = "Force Builder";
+
+const TAB_LIST = [
+  "Force Builder",
+  "Roster",
+  "Campaign",
+  "Exploration",
+  "Armoury",
+  "Catalogue",
+  "Print"
+];
+
+const viewEl = document.getElementById("view");
+const tabsEl = document.getElementById("tabs");
+
+// ---------- Utilities ----------
+function deepCopy(o){ return JSON.parse(JSON.stringify(o)); }
+function clampInt(n, min, max){
+  n = parseInt(n, 10);
+  if (Number.isNaN(n)) n = min;
+  return Math.max(min, Math.min(max, n));
+}
+function money(n){ return `${n} 👑`; }
+function nowISO(){ return new Date().toISOString(); }
+
+function escapeHtml(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+function escapeAttr(s){ return escapeHtml(s).replaceAll("\n"," "); }
+
+function mergeDefaults(base, incoming){
+  for (const k of Object.keys(incoming || {})){
+    if (incoming[k] && typeof incoming[k] === "object" && !Array.isArray(incoming[k])){
+      base[k] = mergeDefaults(base[k] || {}, incoming[k]);
+    } else {
+      base[k] = incoming[k];
+    }
+  }
+  return base;
+}
+
+function pushLog(type, text){
+  DATA.campaign.eventLog.unshift({ ts: nowISO(), type, text });
+  saveData();
+}
+
+function saveData(){
+  DATA.schemaVersion = SCHEMA_VERSION;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+}
+
+function migrateImported(imported){
+  // Add missing top-level defaults
+  let d = mergeDefaults(deepCopy(DEFAULT_DATA), imported || {});
+  // Handle older schemas
+  d.schemaVersion = d.schemaVersion || "0.1";
+
+  // Ensure model fields exist
+  for (const m of (d.roster?.models || [])){
+    if (!("kit" in m)) m.kit = [];
+    if (!("kitCost" in m)) m.kitCost = 0;
+    if (!("baseCost" in m)) m.baseCost = m.cost ?? 0;
+    if (!("unitKey" in m)) m.unitKey = m.unitKey || m.unit_key || "";
+    if (!("unitName" in m)) m.unitName = m.unitName || m.unit || m.name || "";
+    if (!("canPromote" in m)) m.canPromote = true;
+    if (!("promotions" in m)) m.promotions = { attempts:0, successes:0, failures:0, history:[] };
+    if (!("scars" in m)) m.scars = [];
+    if (!("progressionRolls" in m)) m.progressionRolls = [];
+    if (!("dead" in m)) m.dead = false;
+    if (!("inForce" in m)) m.inForce = false;
+    if (!("isCommander" in m)) m.isCommander = false;
+    if (!("notes" in m)) m.notes = "";
+  }
+
+  // Older v0.1 had kitCost numeric, keep it as legacyKitCost if we want
+  // Here we simply keep kitCost as manual override, and also support battlekit list.
+  d.schemaVersion = SCHEMA_VERSION;
+  return d;
+}
+
+function loadData(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return deepCopy(DEFAULT_DATA);
+  try{
+    const parsed = JSON.parse(raw);
+    return migrateImported(parsed);
+  }catch{
+    return deepCopy(DEFAULT_DATA);
+  }
+}
+
+function getGameCaps(){
+  const g = clampInt(DATA.campaign.gameNumber, 1, 99);
+  const row = CAMPAIGN_TABLE.find(r => r.game === g);
+  if (row) return row;
+  const last = CAMPAIGN_TABLE[CAMPAIGN_TABLE.length - 1];
+  const extra = g - last.game;
+  return { game: g, threshold: last.threshold + extra * 100, field: last.field + extra * 1 };
+}
+
+function unitByKey(key){
+  return DATA.catalogue.units.find(u => u.key === key) || null;
+}
+
+function kitItemByKey(key){
+  return DATA.catalogue.battlekit.find(k => k.key === key) || null;
+}
+
+function calcKitCost(model){
+  let sum = 0;
+  for (const k of (model.kit || [])){
+    const item = kitItemByKey(k);
+    if (item) sum += (item.cost || 0);
+  }
+  return sum;
+}
+
+function calcTotalCost(model){
+  return (model.baseCost || 0) + (calcKitCost(model) || 0) + (model.kitCost || 0);
+}
+
+function kitLegalForModel(item, model){
+  if (!item || !model) return false;
+  const uKey = model.unitKey;
+  const role = model.role;
+
+  const allowedUnits = (item.allowedUnitKeys || []).filter(Boolean);
+  const blockedUnits = (item.blockedUnitKeys || []).filter(Boolean);
+  const allowedRoles = (item.allowedRoles || []).filter(Boolean);
+
+  if (blockedUnits.includes(uKey)) return false;
+  if (allowedUnits.length > 0 && !allowedUnits.includes(uKey)) return false;
+  if (allowedRoles.length > 0 && !allowedRoles.includes(role)) return false;
+
+  return true;
+}
+
+function kitIllegalKeysOnModel(model){
+  const bad = [];
+  for (const k of (model.kit || [])){
+    const item = kitItemByKey(k);
+    if (!item) continue;
+    if (!kitLegalForModel(item, model)) bad.push(k);
+  }
+  return bad;
+}
+
+// ---------- Tabs ----------
+function renderTabs(){
+  tabsEl.innerHTML = "";
+  for (const t of TAB_LIST){
+    const b = document.createElement("button");
+    b.className = "tab" + (t === ACTIVE_TAB ? " active" : "");
+    b.textContent = t;
+    b.addEventListener("click", () => { ACTIVE_TAB = t; render(); });
+    tabsEl.appendChild(b);
+  }
+}
+
+// ---------- Force Builder ----------
+function renderForceBuilder(){
+  const caps = getGameCaps();
+  const roster = DATA.roster.models;
+
+  // Update costs
+  for (const m of roster){
+    m.kitComputedCost = calcKitCost(m);
+    m.totalCost = calcTotalCost(m);
+  }
+
+  const force = roster.filter(m => m.inForce && !m.dead);
+  const forceCount = force.length;
+  const forceCost = force.reduce((sum, m) => sum + (m.totalCost || 0), 0);
+
+  const eliteCount = force.filter(m => m.role === "ELITE").length;
+
+  const errors = [];
+  if (forceCount > caps.field) errors.push(`Too many models in Force: ${forceCount} / ${caps.field}.`);
+  if (forceCost > caps.threshold) errors.push(`Over Threshold Value: ${money(forceCost)} / ${money(caps.threshold)}.`);
+  if (!force.some(m => m.isCommander)) errors.push("No commander selected.");
+  if (eliteCount > 4) errors.push(`Too many ELITES in Force: ${eliteCount} / 4.`);
+
+  const boxes = [];
+  if (errors.length){
+    boxes.push(`<div class="badbox"><b style="color:var(--danger)">Force issues</b><ul style="margin:8px 0 0 18px">${errors.map(e=>`<li>${escapeHtml(e)}</li>`).join("")}</ul></div>`);
+  } else {
+    boxes.push(`<div class="notice"><b style="color:var(--ok)">Force legal</b> for Game ${caps.game}: ${forceCount}/${caps.field} models, ${money(forceCost)}/${money(caps.threshold)}.</div>`);
+  }
+
+  const rosterRows = roster
+    .filter(m => !m.dead)
+    .sort((a,b)=> (a.role === b.role ? a.name.localeCompare(b.name) : (a.role === "ELITE" ? -1 : 1)))
+    .map(m => {
+      const tag = `<span class="tag ${m.role === "ELITE" ? "elite" : "troop"}">${m.role}</span>`;
+      const cmd = m.isCommander ? ` <span class="pill"><b>Commander</b></span>` : "";
+      const illegal = kitIllegalKeysOnModel(m);
+      const illegalTag = illegal.length ? ` <span class="tag illegal">Illegal kit</span>` : "";
+      return `
+        <tr>
+          <td>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+              <b>${escapeHtml(m.name)}</b>
+              ${tag}${cmd}${illegalTag}
+            </div>
+            <div class="muted" style="margin-top:4px">${escapeHtml(m.unitName)} | ${escapeHtml(m.keywords || "")}</div>
+          </td>
+          <td class="mono">${money(m.totalCost || 0)}</td>
+          <td>
+            <label class="pill" style="cursor:pointer">
+              <input type="checkbox" ${m.inForce ? "checked" : ""} data-act="toggleForce" data-id="${m.id}" style="width:auto; margin:0" />
+              <span>In Force</span>
+            </label>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+  return `
+    <div class="grid">
+      <div class="card">
+        <h2>Force Builder</h2>
+
+        <div class="split">
+          <div class="field">
+            <label>Campaign Game Number</label>
+            <input type="number" min="1" max="99" value="${caps.game}" id="gameNumber" />
+          </div>
+          <div class="field">
+            <label>Warband Name</label>
+            <input type="text" value="${escapeAttr(DATA.meta.warbandName)}" id="warbandName" />
+          </div>
+        </div>
+
+        <div class="kpis" style="margin-top:8px">
+          <span class="pill">Threshold <b>${money(caps.threshold)}</b></span>
+          <span class="pill">Field Strength <b>${caps.field}</b></span>
+          <span class="pill">Force Models <b>${forceCount}</b></span>
+          <span class="pill">Force Cost <b>${money(forceCost)}</b></span>
+          <span class="pill">ELITES <b>${eliteCount}/4</b></span>
+        </div>
+
+        <div style="margin-top:10px">${boxes.join("")}</div>
+
+        <h3>Pick your Force from your roster</h3>
+        <div class="muted" style="margin-bottom:8px">Tick models to include them in the Force for the next game.</div>
+        <div style="overflow:auto; border-radius:12px; border:1px solid var(--line)">
+          <table>
+            <thead><tr><th>Model</th><th>Total Cost</th><th>Field</th></tr></thead>
+            <tbody>${rosterRows || `<tr><td colspan="3" class="muted">No models on roster yet. Add models using Quick Add.</td></tr>`}</tbody>
+          </table>
+        </div>
+
+        <div class="right" style="margin-top:10px">
+          <button class="btn" id="btnForceClear">Clear Force</button>
+          <button class="btn ok" id="btnForceAuto">Auto-pick legal Force</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Quick Add</h2>
+        <div class="muted">Add models to your roster from the unit catalogue.</div>
+
+        <div class="field">
+          <label>Unit Type</label>
+          <select id="quickUnit">
+            ${DATA.catalogue.units.map(u=>`<option value="${escapeAttr(u.key)}">${escapeHtml(u.name)} (${u.role}, ${money(u.cost)})</option>`).join("")}
+          </select>
+        </div>
+
+        <div class="split">
+          <div class="field">
+            <label>Model Name</label>
+            <input type="text" id="quickName" placeholder="e.g. 'Urchin A' or 'Martha the Counter'" />
+          </div>
+          <div class="field">
+            <label>Manual Extra Cost (optional)</label>
+            <input type="number" min="0" step="1" id="quickKitCost" value="0" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Notes (optional)</label>
+          <textarea id="quickNotes" placeholder="Gear, scars, campaign notes..."></textarea>
+        </div>
+
+        <div class="right">
+          <button class="btn primary" id="btnQuickAdd">Add to Roster</button>
+        </div>
+
+        <h3>Tip</h3>
+        <div class="warnbox">
+          Keep a bench roster for campaigns. You still obey Field Strength when selecting a Force.
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function forceAutoPick(){
+  const caps = getGameCaps();
+  const roster = DATA.roster.models.filter(m => !m.dead);
+  roster.forEach(m => m.inForce = false);
+
+  const commander = roster.find(m => m.isCommander);
+  if (commander) commander.inForce = true;
+
+  const sorted = roster
+    .filter(m => !m.isCommander)
+    .sort((a,b)=>{
+      const ra = a.role === "TROOPS" ? 0 : 1;
+      const rb = b.role === "TROOPS" ? 0 : 1;
+      if (ra !== rb) return ra - rb;
+      return calcTotalCost(a) - calcTotalCost(b);
+    });
+
+  let force = roster.filter(m => m.inForce);
+  let cost = force.reduce((s,m)=>s+calcTotalCost(m),0);
+  let count = force.length;
+
+  for (const m of sorted){
+    if (count >= caps.field) break;
+    const nextCost = cost + calcTotalCost(m);
+    if (nextCost > caps.threshold) continue;
+    m.inForce = true;
+    cost = nextCost;
+    count += 1;
+  }
+
+  saveData();
+  pushLog("force", `Auto-picked Force for Game ${caps.game}: ${count} models, ${money(cost)}.`);
+  render();
+}
+
+// ---------- Roster ----------
+function renderRoster(){
+  const models = DATA.roster.models.slice().sort((a,b)=>b.id-a.id);
+
+  for (const m of models){
+    m.kitComputedCost = calcKitCost(m);
+    m.totalCost = calcTotalCost(m);
+  }
+
+  const rows = models.map(m=>{
+    const tag = `<span class="tag ${m.role === "ELITE" ? "elite" : "troop"}">${m.role}</span>`;
+    const deadTag = m.dead ? ` <span class="tag dead">DEAD</span>` : "";
+    const cmd = m.isCommander ? ` <span class="pill"><b>Commander</b></span>` : "";
+    const illegal = kitIllegalKeysOnModel(m);
+    const illegalTag = illegal.length ? ` <span class="tag illegal">Illegal kit</span>` : "";
+
+    const kitList = (m.kit || []).map(k=>{
+      const it = kitItemByKey(k);
+      if (!it) return `<span class="pill">${escapeHtml(k)}</span>`;
+      const bad = kitLegalForModel(it, m) ? "" : ` <span class="tag illegal">illegal</span>`;
+      return `<span class="pill">${escapeHtml(it.name)}${bad}</span>`;
+    }).join(" ");
+
+    return `
+      <tr>
+        <td>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+            <b>${escapeHtml(m.name)}</b>
+            ${tag}${deadTag}${cmd}${illegalTag}
+          </div>
+          <div class="muted" style="margin-top:4px">${escapeHtml(m.unitName)} | ${escapeHtml(m.keywords||"")}</div>
+          ${kitList ? `<div style="margin-top:6px">${kitList}</div>` : ""}
+          ${m.notes ? `<div class="muted" style="margin-top:6px">${escapeHtml(m.notes)}</div>` : ""}
+        </td>
+        <td class="mono">${money(m.totalCost||0)}</td>
+        <td class="right">
+          <button class="btn small" data-act="editModel" data-id="${m.id}">Edit</button>
+          <button class="btn small ${m.dead ? "" : "danger"}" data-act="toggleDead" data-id="${m.id}">${m.dead ? "Revive" : "Mark Dead"}</button>
+          <button class="btn small" data-act="setCommander" data-id="${m.id}">Set Commander</button>
+          <button class="btn small warn" data-act="promote" data-id="${m.id}">Promotion</button>
+          <button class="btn small danger" data-act="deleteModel" data-id="${m.id}">Delete</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <div class="card">
+      <h2>Warband Roster</h2>
+      <div class="muted">Use Edit to assign battlekit, scars, and progression. Use Promotion to record rolls.</div>
+
+      <div style="overflow:auto; border-radius:12px; border:1px solid var(--line); margin-top:10px">
+        <table>
+          <thead><tr><th>Model</th><th>Total Cost</th><th></th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="3" class="muted">No models yet. Add models in Force Builder.</td></tr>`}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function openModelEditor(modelId){
+  const m = DATA.roster.models.find(x=>x.id===modelId);
+  if (!m) return;
+
+  const unit = unitByKey(m.unitKey);
+
+  // Ensure structure
+  if (!m.kit) m.kit = [];
+  if (!m.promotions) m.promotions = { attempts:0, successes:0, failures:0, history:[] };
+  if (!m.scars) m.scars = [];
+  if (!m.progressionRolls) m.progressionRolls = [];
+
+  const scarsText = (m.scars || []).join("\n");
+  const progText = (m.progressionRolls || []).join("\n");
+
+  const legalKit = DATA.catalogue.battlekit
+    .filter(it => kitLegalForModel(it, m))
+    .sort((a,b)=> (a.type===b.type ? a.name.localeCompare(b.name) : a.type.localeCompare(b.type)));
+
+  const illegalKeys = kitIllegalKeysOnModel(m);
+
+  const selectedKitHtml = (m.kit || []).map(k=>{
+    const it = kitItemByKey(k);
+    const name = it ? it.name : k;
+    const bad = it && !kitLegalForModel(it, m);
+    return `
+      <div class="kititem">
+        <div class="left">
+          <b>${escapeHtml(name)}</b>
+          <div class="meta">${it ? escapeHtml(it.type) : "Unknown"}${bad ? " | ILLEGAL" : ""}</div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center">
+          <span class="cost">${money(it ? it.cost : 0)}</span>
+          <button class="btn small danger" id="rm_${escapeAttr(k)}">Remove</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const legalOptionsHtml = legalKit.map(it=>{
+    return `<option value="${escapeAttr(it.key)}">${escapeHtml(it.name)} (${escapeHtml(it.type)}, ${money(it.cost)})</option>`;
+  }).join("");
+
+  const computedKitCost = calcKitCost(m);
+  const total = calcTotalCost(m);
+
+  viewEl.innerHTML = `
+    <div class="card">
+      <h2>Edit Model</h2>
+      <div class="muted">Battlekit is filtered to legal items for this unit. Manual Extra Cost is still available for house rules.</div>
+
+      <div class="split">
+        <div class="field">
+          <label>Model Name</label>
+          <input id="editName" value="${escapeAttr(m.name)}" />
+        </div>
+        <div class="field">
+          <label>Unit Type</label>
+          <select id="editUnit">
+            ${DATA.catalogue.units.map(u=>`<option value="${escapeAttr(u.key)}" ${u.key===m.unitKey?"selected":""}>${escapeHtml(u.name)} (${u.role}, ${money(u.cost)})</option>`).join("")}
+          </select>
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="field">
+          <label>Base Cost</label>
+          <input type="number" min="0" step="1" id="editBaseCost" value="${m.baseCost ?? m.cost ?? 0}" />
+        </div>
+        <div class="field">
+          <label>Manual Extra Cost</label>
+          <input type="number" min="0" step="1" id="editKitCost" value="${m.kitCost ?? 0}" />
+        </div>
+      </div>
+
+      <div class="kpis">
+        <span class="pill">Battlekit Cost <b>${money(computedKitCost)}</b></span>
+        <span class="pill">Total Cost <b>${money(total)}</b></span>
+        <span class="pill">Promotion Eligible <b>${m.canPromote ? "Yes" : "No"}</b></span>
+      </div>
+
+      ${illegalKeys.length ? `
+        <div class="badbox" style="margin-top:10px">
+          <b style="color:var(--danger)">Illegal kit detected</b>
+          <div style="margin-top:6px">Remove the illegal items, or change battlekit restrictions in Catalogue.</div>
+        </div>
+      ` : ""}
+
+      <h3>Battlekit</h3>
+      <div class="split">
+        <div class="field">
+          <label>Add legal item</label>
+          <select id="kitAddSel">
+            ${legalOptionsHtml || `<option value="">No legal items</option>`}
+          </select>
+        </div>
+        <div class="field" style="display:flex; align-items:flex-end">
+          <button class="btn primary" id="btnAddKit" ${legalKit.length ? "" : "disabled"}>Add</button>
+        </div>
+      </div>
+
+      <div class="kitgrid">
+        ${selectedKitHtml || `<div class="muted">No battlekit assigned.</div>`}
+      </div>
+
+      <h3>Scars / Injuries (one per line)</h3>
+      <textarea id="editScars">${escapeHtml(scarsText)}</textarea>
+
+      <h3>Progression Rolls / Notes (one per line)</h3>
+      <textarea id="editProg">${escapeHtml(progText)}</textarea>
+
+      <h3>Notes</h3>
+      <textarea id="editNotes">${escapeHtml(m.notes||"")}</textarea>
+
+      <div class="right" style="margin-top:10px">
+        <button class="btn" id="btnBack">Back</button>
+        <button class="btn primary" id="btnSaveModel">Save</button>
+      </div>
+    </div>
+  `;
+
+  // Wire remove buttons
+  for (const k of (m.kit || [])){
+    const btn = document.getElementById(`rm_${k}`);
+    if (!btn) continue;
+    btn.addEventListener("click", ()=>{
+      m.kit = (m.kit || []).filter(x=>x!==k);
+      saveData();
+      openModelEditor(modelId);
+    });
+  }
+
+  document.getElementById("btnBack").addEventListener("click", () => render());
+
+  document.getElementById("btnAddKit").addEventListener("click", ()=>{
+    const key = document.getElementById("kitAddSel").value;
+    if (!key) return;
+    if (!m.kit.includes(key)) m.kit.push(key);
+    saveData();
+    openModelEditor(modelId);
+  });
+
+  document.getElementById("btnSaveModel").addEventListener("click", () => {
+    const unitKey = document.getElementById("editUnit").value;
+    const unit2 = unitByKey(unitKey);
+
+    m.name = document.getElementById("editName").value.trim() || m.name;
+    m.unitKey = unitKey;
+    m.unitName = unit2 ? unit2.name : m.unitName;
+    m.role = unit2 ? unit2.role : m.role;
+    m.keywords = unit2 ? unit2.keywords : m.keywords;
+    m.canPromote = unit2 ? !!unit2.canPromote : !!m.canPromote;
+
+    m.baseCost = clampInt(document.getElementById("editBaseCost").value, 0, 99999);
+    m.kitCost = clampInt(document.getElementById("editKitCost").value, 0, 99999);
+
+    m.scars = document.getElementById("editScars").value.split("\n").map(s=>s.trim()).filter(Boolean);
+    m.progressionRolls = document.getElementById("editProg").value.split("\n").map(s=>s.trim()).filter(Boolean);
+    m.notes = document.getElementById("editNotes").value.trim();
+
+    saveData();
+    pushLog("model", `Updated model: ${m.name}.`);
+    render();
+  });
+}
+
+function openPromotionDialog(modelId){
+  const m = DATA.roster.models.find(x=>x.id===modelId);
+  if (!m) return;
+
+  if (!m.promotions) m.promotions = { attempts:0, successes:0, failures:0, history:[] };
+
+  const reasons = [];
+  if (m.dead) reasons.push("Model is dead.");
+  if (!m.canPromote) reasons.push("This unit cannot promote.");
+  const blocked = reasons.length > 0;
+
+  const history = (m.promotions.history || []).slice().reverse().map(h=>{
+    const when = new Date(h.ts).toLocaleString("en-GB");
+    return `<li class="muted">${escapeHtml(when)}: ${escapeHtml(h.result)}${h.note ? " | " + escapeHtml(h.note) : ""}</li>`;
+  }).join("");
+
+  viewEl.innerHTML = `
+    <div class="card">
+      <h2>Promotion</h2>
+      <div class="muted">${escapeHtml(m.name)} | ${escapeHtml(m.unitName)}</div>
+
+      <div class="kpis" style="margin-top:10px">
+        <span class="pill">Attempts <b>${m.promotions.attempts || 0}</b></span>
+        <span class="pill">Successes <b>${m.promotions.successes || 0}</b></span>
+        <span class="pill">Failures <b>${m.promotions.failures || 0}</b></span>
+      </div>
+
+      ${blocked ? `
+        <div class="badbox" style="margin-top:10px">
+          <b style="color:var(--danger)">Promotion blocked</b>
+          <ul style="margin:8px 0 0 18px">${reasons.map(r=>`<li>${escapeHtml(r)}</li>`).join("")}</ul>
+        </div>
+      ` : `
+        <div class="notice" style="margin-top:10px">
+          Record the result of the promotion roll for this model.
+        </div>
+        <div class="split" style="margin-top:10px">
+          <div class="field">
+            <label>Optional note</label>
+            <input id="promNote" placeholder="e.g. 'Rolled on table, gained +1 Melee'" />
+          </div>
+          <div class="field" style="display:flex; align-items:flex-end; gap:8px">
+            <button class="btn ok" id="btnPromSuccess">Success</button>
+            <button class="btn danger" id="btnPromFail">Fail</button>
+          </div>
+        </div>
+      `}
+
+      <h3>Promotion history</h3>
+      ${history ? `<ul style="margin:6px 0 0 18px">${history}</ul>` : `<div class="muted">No promotion history.</div>`}
+
+      <div class="right" style="margin-top:10px">
+        <button class="btn" id="btnBackRoster">Back</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("btnBackRoster").addEventListener("click", ()=>{
+    ACTIVE_TAB = "Roster";
+    render();
+  });
+
+  if (!blocked){
+    document.getElementById("btnPromSuccess").addEventListener("click", ()=>{
+      const note = document.getElementById("promNote").value.trim();
+      m.promotions.attempts = (m.promotions.attempts || 0) + 1;
+      m.promotions.successes = (m.promotions.successes || 0) + 1;
+      m.promotions.history.unshift({ ts: nowISO(), result:"Success", note });
+      saveData();
+      pushLog("promotion", `${m.name}: promotion success${note ? " | " + note : ""}.`);
+      ACTIVE_TAB = "Roster"; render();
+    });
+
+    document.getElementById("btnPromFail").addEventListener("click", ()=>{
+      const note = document.getElementById("promNote").value.trim();
+      m.promotions.attempts = (m.promotions.attempts || 0) + 1;
+      m.promotions.failures = (m.promotions.failures || 0) + 1;
+      m.promotions.history.unshift({ ts: nowISO(), result:"Fail", note });
+      DATA.campaign.failedPromotionRolls = (DATA.campaign.failedPromotionRolls || 0) + 1;
+      saveData();
+      pushLog("promotion", `${m.name}: promotion failed${note ? " | " + note : ""}.`);
+      ACTIVE_TAB = "Roster"; render();
+    });
+  }
+}
+
+// ---------- Campaign ----------
+function renderCampaign(){
+  const caps = getGameCaps();
+  const c = DATA.campaign;
+
+  const logRows = (c.eventLog || []).slice(0, 30).map(e=>{
+    const when = new Date(e.ts).toLocaleString("en-GB");
+    return `<tr><td class="mono">${escapeHtml(when)}</td><td><span class="pill">${escapeHtml(e.type)}</span></td><td>${escapeHtml(e.text)}</td></tr>`;
+  }).join("");
+
+  return `
+    <div class="grid">
+      <div class="card">
+        <h2>Campaign Tracking</h2>
+
+        <div class="split">
+          <div class="field">
+            <label>Game Number</label>
+            <input type="number" min="1" max="99" id="campGame" value="${caps.game}" />
+          </div>
+          <div class="field">
+            <label>Player Name (optional)</label>
+            <input id="playerName" value="${escapeAttr(DATA.meta.playerName||"")}" />
+          </div>
+        </div>
+
+        <div class="split">
+          <div class="field">
+            <label>Ducats (Strongbox)</label>
+            <input type="number" min="0" step="1" id="ducats" value="${c.strongboxDucats||0}" />
+          </div>
+          <div class="field">
+            <label>Glory</label>
+            <input type="number" min="0" step="1" id="glory" value="${c.glory||0}" />
+          </div>
+        </div>
+
+        <div class="split">
+          <div class="field">
+            <label>Failed Promotion Rolls (count)</label>
+            <input type="number" min="0" step="1" id="failProm" value="${c.failedPromotionRolls||0}" />
+          </div>
+          <div class="field">
+            <label>Total Deaths (count)</label>
+            <input type="number" min="0" step="1" id="deaths" value="${c.deaths||0}" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Campaign Notes</label>
+          <textarea id="campNotes">${escapeHtml(DATA.meta.notes||"")}</textarea>
+        </div>
+
+        <div class="right">
+          <button class="btn primary" id="btnSaveCampaign">Save</button>
+          <button class="btn" id="btnAddLog">Add Log Entry</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Recent Event Log</h2>
+        <div class="muted">Newest first (showing up to 30).</div>
+        <div style="overflow:auto; border-radius:12px; border:1px solid var(--line); margin-top:10px">
+          <table>
+            <thead><tr><th>When</th><th>Type</th><th>Text</th></tr></thead>
+            <tbody>${logRows || `<tr><td colspan="3" class="muted">No log entries yet.</td></tr>`}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function openLogPrompt(){
+  const text = prompt("Log entry:");
+  if (!text) return;
+  pushLog("note", text.trim());
+  render();
+}
+
+// ---------- Exploration ----------
+function renderExploration(){
+  const c = DATA.campaign;
+  const finds = (c.explorationFinds || []).map((f,i)=>`
+    <tr><td>${escapeHtml(f)}</td><td class="right"><button class="btn small danger" data-act="delFind" data-i="${i}">Delete</button></td></tr>
+  `).join("");
+  const locs = (c.locationsFound || []).map((f,i)=>`
+    <tr><td>${escapeHtml(f)}</td><td class="right"><button class="btn small danger" data-act="delLoc" data-i="${i}">Delete</button></td></tr>
+  `).join("");
+
+  return `
+    <div class="grid">
+      <div class="card">
+        <h2>Exploration</h2>
+        <h3>Finds</h3>
+        <div style="overflow:auto; border-radius:12px; border:1px solid var(--line)">
+          <table><thead><tr><th>Item</th><th></th></tr></thead><tbody>${finds || `<tr><td colspan="2" class="muted">No finds yet.</td></tr>`}</tbody></table>
+        </div>
+        <div class="split" style="margin-top:10px">
+          <div class="field"><label>Add Find</label><input id="newFind" placeholder="e.g. 'Recovered Rifle'" /></div>
+          <div class="field" style="display:flex; align-items:flex-end"><button class="btn primary" id="btnAddFind">Add</button></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Locations</h2>
+        <h3>Locations Found</h3>
+        <div style="overflow:auto; border-radius:12px; border:1px solid var(--line)">
+          <table><thead><tr><th>Location</th><th></th></tr></thead><tbody>${locs || `<tr><td colspan="2" class="muted">No locations yet.</td></tr>`}</tbody></table>
+        </div>
+        <div class="split" style="margin-top:10px">
+          <div class="field"><label>Add Location</label><input id="newLoc" placeholder="e.g. 'Collapsed Tram Tunnel'" /></div>
+          <div class="field" style="display:flex; align-items:flex-end"><button class="btn primary" id="btnAddLoc">Add</button></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ---------- Armoury ----------
+function renderArmoury(){
+  const items = DATA.armoury.items || [];
+  const rows = items.map((it, idx)=>`
+    <tr>
+      <td><b>${escapeHtml(it.name)}</b><div class="muted">${escapeHtml(it.type||"")}</div></td>
+      <td class="mono">${it.cost ? money(it.cost) : ""}</td>
+      <td class="mono">${it.qty ?? 1}</td>
+      <td class="muted">${escapeHtml(it.notes||"")}</td>
+      <td class="right">
+        <button class="btn small" data-act="editItem" data-idx="${idx}">Edit</button>
+        <button class="btn small danger" data-act="deleteItem" data-idx="${idx}">Delete</button>
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+    <div class="grid">
+      <div class="card">
+        <h2>Armoury / Arsenal</h2>
+        <div class="muted">Shared stock and recovered items.</div>
+        <div style="overflow:auto; border-radius:12px; border:1px solid var(--line); margin-top:10px">
+          <table>
+            <thead><tr><th>Item</th><th>Cost</th><th>Qty</th><th>Notes</th><th></th></tr></thead>
+            <tbody>${rows || `<tr><td colspan="5" class="muted">No items yet.</td></tr>`}</tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Add Item</h2>
+        <div class="field"><label>Name</label><input id="itemName" placeholder="e.g. 'Smoke Pot'" /></div>
+        <div class="split">
+          <div class="field"><label>Type</label><input id="itemType" placeholder="Weapon, Equipment, Armour..." /></div>
+          <div class="field"><label>Cost (optional)</label><input type="number" min="0" step="1" id="itemCost" value="0" /></div>
+        </div>
+        <div class="split">
+          <div class="field"><label>Quantity</label><input type="number" min="1" step="1" id="itemQty" value="1" /></div>
+          <div class="field"><label>Notes</label><input id="itemNotes" placeholder="Limits, who holds it, etc." /></div>
+        </div>
+        <div class="right"><button class="btn primary" id="btnAddItem">Add</button></div>
+      </div>
+    </div>
+  `;
+}
+
+function openItemEditor(idx){
+  const it = DATA.armoury.items[idx];
+  if (!it) return;
+
+  viewEl.innerHTML = `
+    <div class="card">
+      <h2>Edit Item</h2>
+      <div class="field"><label>Name</label><input id="eName" value="${escapeAttr(it.name)}" /></div>
+      <div class="split">
+        <div class="field"><label>Type</label><input id="eType" value="${escapeAttr(it.type||"")}" /></div>
+        <div class="field"><label>Cost</label><input type="number" min="0" step="1" id="eCost" value="${it.cost||0}" /></div>
+      </div>
+      <div class="split">
+        <div class="field"><label>Quantity</label><input type="number" min="1" step="1" id="eQty" value="${it.qty ?? 1}" /></div>
+        <div class="field"><label>Notes</label><input id="eNotes" value="${escapeAttr(it.notes||"")}" /></div>
+      </div>
+      <div class="right">
+        <button class="btn" id="btnBackItem">Back</button>
+        <button class="btn primary" id="btnSaveItem">Save</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("btnBackItem").addEventListener("click", () => render());
+  document.getElementById("btnSaveItem").addEventListener("click", () => {
+    it.name = document.getElementById("eName").value.trim() || it.name;
+    it.type = document.getElementById("eType").value.trim();
+    it.cost = clampInt(document.getElementById("eCost").value, 0, 99999);
+    it.qty = clampInt(document.getElementById("eQty").value, 1, 99999);
+    it.notes = document.getElementById("eNotes").value.trim();
+    saveData();
+    pushLog("armoury", `Updated item: ${it.name}.`);
+    render();
+  });
+}
+
+// ---------- Catalogue ----------
+function renderCatalogue(){
+  const units = DATA.catalogue.units || [];
+  const kit = DATA.catalogue.battlekit || [];
+
+  const unitRows = units.map((u, idx)=>`
+    <tr>
+      <td><b>${escapeHtml(u.name)}</b><div class="muted">${escapeHtml(u.key)} | ${escapeHtml(u.keywords||"")}</div></td>
+      <td><span class="tag ${u.role==="ELITE"?"elite":"troop"}">${u.role}</span></td>
+      <td class="mono">${money(u.cost||0)}</td>
+      <td class="mono">${escapeHtml(u.limit||"")}</td>
+      <td class="mono">${u.canPromote ? "Yes" : "No"}</td>
+      <td class="right">
+        <button class="btn small" data-act="editUnit" data-idx="${idx}">Edit</button>
+        <button class="btn small danger" data-act="deleteUnit" data-idx="${idx}">Delete</button>
+      </td>
+    </tr>
+  `).join("");
+
+  const kitRows = kit.map((k, idx)=>`
+    <tr>
+      <td><b>${escapeHtml(k.name)}</b><div class="muted">${escapeHtml(k.key)} | ${escapeHtml(k.type||"")}</div></td>
+      <td class="mono">${money(k.cost||0)}</td>
+      <td class="muted">${escapeHtml(k.notes||"")}</td>
+      <td class="muted">${escapeHtml((k.allowedUnitKeys||[]).join(", ")) || "Any"}</td>
+      <td class="muted">${escapeHtml((k.blockedUnitKeys||[]).join(", ")) || "-"}</td>
+      <td class="muted">${escapeHtml((k.allowedRoles||[]).join(", ")) || "Any"}</td>
+      <td class="right">
+        <button class="btn small" data-act="editKit" data-idx="${idx}">Edit</button>
+        <button class="btn small danger" data-act="deleteKit" data-idx="${idx}">Delete</button>
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+    <div class="card">
+      <h2>Catalogue</h2>
+      <div class="muted">Faction-agnostic mode: edit Units and Battlekit for any homebrew warband.</div>
+
+      <h3>Units</h3>
+      <div style="overflow:auto; border-radius:12px; border:1px solid var(--line)">
+        <table>
+          <thead><tr><th>Unit</th><th>Role</th><th>Cost</th><th>Limit</th><th>Can promote</th><th></th></tr></thead>
+          <tbody>${unitRows}</tbody>
+        </table>
+      </div>
+
+      <div class="right" style="margin-top:10px">
+        <button class="btn primary" id="btnAddUnit">Add Unit</button>
+      </div>
+
+      <h3>Battlekit</h3>
+      <div class="muted">Legality rules: allowlist and blocklist by unitKey, and optional role restriction.</div>
+      <div style="overflow:auto; border-radius:12px; border:1px solid var(--line); margin-top:10px">
+        <table>
+          <thead><tr><th>Item</th><th>Cost</th><th>Notes</th><th>Allowed units</th><th>Blocked units</th><th>Allowed roles</th><th></th></tr></thead>
+          <tbody>${kitRows}</tbody>
+        </table>
+      </div>
+
+      <div class="right" style="margin-top:10px">
+        <button class="btn primary" id="btnAddKit">Add Battlekit Item</button>
+      </div>
+    </div>
+  `;
+}
+
+function openUnitEditor(idx){
+  const isNew = (idx === -1);
+  const u = isNew ? { key:"", name:"", role:"TROOPS", cost:0, limit:"", keywords:"", canPromote:true, notes:"" } : DATA.catalogue.units[idx];
+
+  viewEl.innerHTML = `
+    <div class="card">
+      <h2>${isNew ? "Add Unit" : "Edit Unit"}</h2>
+      <div class="split">
+        <div class="field"><label>Key</label><input id="euKey" value="${escapeAttr(u.key)}" /></div>
+        <div class="field"><label>Name</label><input id="euName" value="${escapeAttr(u.name)}" /></div>
+      </div>
+      <div class="split">
+        <div class="field">
+          <label>Role</label>
+          <select id="euRole">
+            <option ${u.role==="ELITE"?"selected":""}>ELITE</option>
+            <option ${u.role==="TROOPS"?"selected":""}>TROOPS</option>
+          </select>
+        </div>
+        <div class="field"><label>Cost</label><input type="number" min="0" step="1" id="euCost" value="${u.cost||0}" /></div>
+      </div>
+      <div class="split">
+        <div class="field"><label>Limit</label><input id="euLimit" value="${escapeAttr(u.limit||"")}" /></div>
+        <div class="field"><label>Keywords</label><input id="euKeywords" value="${escapeAttr(u.keywords||"")}" /></div>
+      </div>
+      <div class="split">
+        <div class="field">
+          <label>Can promote</label>
+          <select id="euProm">
+            <option value="true" ${u.canPromote ? "selected" : ""}>Yes</option>
+            <option value="false" ${!u.canPromote ? "selected" : ""}>No</option>
+          </select>
+        </div>
+        <div class="field"><label>Notes</label><input id="euNotes" value="${escapeAttr(u.notes||"")}" /></div>
+      </div>
+
+      <div class="right">
+        <button class="btn" id="btnBackCat">Back</button>
+        <button class="btn primary" id="btnSaveUnit">Save</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("btnBackCat").addEventListener("click", ()=>{ ACTIVE_TAB="Catalogue"; render(); });
+  document.getElementById("btnSaveUnit").addEventListener("click", ()=>{
+    const key = document.getElementById("euKey").value.trim();
+    const name = document.getElementById("euName").value.trim();
+    if (!key || !name){ alert("Key and Name are required."); return; }
+
+    const updated = {
+      key,
+      name,
+      role: document.getElementById("euRole").value,
+      cost: clampInt(document.getElementById("euCost").value, 0, 99999),
+      limit: document.getElementById("euLimit").value.trim(),
+      keywords: document.getElementById("euKeywords").value.trim(),
+      canPromote: document.getElementById("euProm").value === "true",
+      notes: document.getElementById("euNotes").value.trim()
+    };
+
+    if (isNew) DATA.catalogue.units.push(updated);
+    else DATA.catalogue.units[idx] = updated;
+
+    saveData();
+    pushLog("catalogue", `${isNew ? "Added" : "Updated"} unit: ${updated.name}.`);
+    ACTIVE_TAB="Catalogue";
+    render();
+  });
+}
+
+function openKitEditor(idx){
+  const isNew = (idx === -1);
+  const k = isNew ? { key:"", name:"", type:"Equipment", cost:0, notes:"", allowedUnitKeys:[], blockedUnitKeys:[], allowedRoles:[] } : DATA.catalogue.battlekit[idx];
+
+  viewEl.innerHTML = `
+    <div class="card">
+      <h2>${isNew ? "Add Battlekit Item" : "Edit Battlekit Item"}</h2>
+
+      <div class="split">
+        <div class="field"><label>Key</label><input id="ekKey" value="${escapeAttr(k.key)}" /></div>
+        <div class="field"><label>Name</label><input id="ekName" value="${escapeAttr(k.name)}" /></div>
+      </div>
+
+      <div class="split">
+        <div class="field"><label>Type</label><input id="ekType" value="${escapeAttr(k.type||"")}" placeholder="Weapon, Equipment, Armour" /></div>
+        <div class="field"><label>Cost</label><input type="number" min="0" step="1" id="ekCost" value="${k.cost||0}" /></div>
+      </div>
+
+      <div class="field"><label>Notes</label><input id="ekNotes" value="${escapeAttr(k.notes||"")}" /></div>
+
+      <h3>Legality rules</h3>
+      <div class="muted">Comma-separated unit keys. Leave empty to allow any.</div>
+
+      <div class="split">
+        <div class="field"><label>Allowed unit keys (allowlist)</label><input id="ekAllow" value="${escapeAttr((k.allowedUnitKeys||[]).join(", "))}" /></div>
+        <div class="field"><label>Blocked unit keys (blocklist)</label><input id="ekBlock" value="${escapeAttr((k.blockedUnitKeys||[]).join(", "))}" /></div>
+      </div>
+
+      <div class="field">
+        <label>Allowed roles (comma separated: ELITE, TROOPS). Leave empty to allow any.</label>
+        <input id="ekRoles" value="${escapeAttr((k.allowedRoles||[]).join(", "))}" />
+      </div>
+
+      <div class="right">
+        <button class="btn" id="btnBackCat2">Back</button>
+        <button class="btn primary" id="btnSaveKit">Save</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("btnBackCat2").addEventListener("click", ()=>{ ACTIVE_TAB="Catalogue"; render(); });
+  document.getElementById("btnSaveKit").addEventListener("click", ()=>{
+    const key = document.getElementById("ekKey").value.trim();
+    const name = document.getElementById("ekName").value.trim();
+    if (!key || !name){ alert("Key and Name are required."); return; }
+
+    const parseList = (s)=> s.split(",").map(x=>x.trim()).filter(Boolean);
+
+    const updated = {
+      key,
+      name,
+      type: document.getElementById("ekType").value.trim() || "Equipment",
+      cost: clampInt(document.getElementById("ekCost").value, 0, 99999),
+      notes: document.getElementById("ekNotes").value.trim(),
+      allowedUnitKeys: parseList(document.getElementById("ekAllow").value),
+      blockedUnitKeys: parseList(document.getElementById("ekBlock").value),
+      allowedRoles: parseList(document.getElementById("ekRoles").value).map(r=>r.toUpperCase())
+    };
+
+    if (isNew) DATA.catalogue.battlekit.push(updated);
+    else DATA.catalogue.battlekit[idx] = updated;
+
+    saveData();
+    pushLog("catalogue", `${isNew ? "Added" : "Updated"} battlekit: ${updated.name}.`);
+    ACTIVE_TAB="Catalogue";
+    render();
+  });
+}
+
+// ---------- Print ----------
+function renderPrint(){
+  const caps = getGameCaps();
+  const roster = DATA.roster.models.filter(m => !m.dead);
+  for (const m of roster){
+    m.kitComputedCost = calcKitCost(m);
+    m.totalCost = calcTotalCost(m);
+  }
+  const force = roster.filter(m => m.inForce);
+  const forceCost = force.reduce((s,m)=>s+(m.totalCost||0),0);
+
+  const rows = force.sort((a,b)=>a.role.localeCompare(b.role)).map(m=>{
+    const kitNames = (m.kit||[]).map(k=>kitItemByKey(k)?.name || k).join(", ");
+    const scars = (m.scars||[]).join("; ");
+    const prog = (m.progressionRolls||[]).join("; ");
+    const prom = m.promotions ? `${m.promotions.attempts||0}A/${m.promotions.successes||0}S/${m.promotions.failures||0}F` : "";
+    return `
+      <tr>
+        <td><b>${escapeHtml(m.name)}</b><div class="muted">${escapeHtml(m.unitName)} | ${escapeHtml(m.role)}</div></td>
+        <td class="mono">${money(m.totalCost||0)}</td>
+        <td class="muted">${escapeHtml(kitNames)}</td>
+        <td class="muted">${escapeHtml(scars)}</td>
+        <td class="muted">${escapeHtml(prog)}</td>
+        <td class="muted">${escapeHtml(prom)}</td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <div class="card">
+      <h2>${escapeHtml(DATA.meta.warbandName)} | Force Sheet</h2>
+      <div class="muted">Game ${caps.game} | Threshold ${money(caps.threshold)} | Field Strength ${caps.field}</div>
+
+      <div class="kpis" style="margin-top:10px">
+        <span class="pill">Force models <b>${force.length}</b></span>
+        <span class="pill">Force cost <b>${money(forceCost)}</b></span>
+        <span class="pill">Ducats <b>${DATA.campaign.strongboxDucats||0}</b></span>
+        <span class="pill">Glory <b>${DATA.campaign.glory||0}</b></span>
+        <span class="pill">Deaths <b>${DATA.campaign.deaths||0}</b></span>
+        <span class="pill">Failed promotions <b>${DATA.campaign.failedPromotionRolls||0}</b></span>
+      </div>
+
+      <h3>Selected Force</h3>
+      <div style="overflow:auto; border-radius:12px; border:1px solid var(--line)">
+        <table>
+          <thead><tr><th>Model</th><th>Cost</th><th>Battlekit</th><th>Scars</th><th>Progression</th><th>Promotion</th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="6" class="muted">No models selected in Force Builder.</td></tr>`}</tbody>
+        </table>
+      </div>
+
+      <h3>Warband Notes</h3>
+      <div class="muted">${escapeHtml(DATA.meta.notes||"") || "No notes."}</div>
+
+      <div class="warnbox noprint" style="margin-top:10px">
+        Use your browser print. This view is print-friendly.
+      </div>
+    </div>
+  `;
+}
+
+// ---------- Main Render ----------
+function render(){
+  renderTabs();
+
+  if (ACTIVE_TAB === "Force Builder"){
+    viewEl.innerHTML = renderForceBuilder();
+    wireForceBuilder();
+  } else if (ACTIVE_TAB === "Roster"){
+    viewEl.innerHTML = renderRoster();
+    wireRoster();
+  } else if (ACTIVE_TAB === "Campaign"){
+    viewEl.innerHTML = renderCampaign();
+    wireCampaign();
+  } else if (ACTIVE_TAB === "Exploration"){
+    viewEl.innerHTML = renderExploration();
+    wireExploration();
+  } else if (ACTIVE_TAB === "Armoury"){
+    viewEl.innerHTML = renderArmoury();
+    wireArmoury();
+  } else if (ACTIVE_TAB === "Catalogue"){
+    viewEl.innerHTML = renderCatalogue();
+    wireCatalogue();
+  } else if (ACTIVE_TAB === "Print"){
+    viewEl.innerHTML = renderPrint();
+  }
+}
+
+// ---------- Wiring ----------
+function wireForceBuilder(){
+  document.getElementById("gameNumber").addEventListener("change", (e)=>{
+    DATA.campaign.gameNumber = clampInt(e.target.value,1,99);
+    saveData();
+    pushLog("campaign", `Set game number to ${DATA.campaign.gameNumber}.`);
+    render();
+  });
+  document.getElementById("warbandName").addEventListener("change", (e)=>{
+    DATA.meta.warbandName = e.target.value.trim() || DATA.meta.warbandName;
+    saveData();
+    render();
+  });
+
+  document.getElementById("btnForceClear").addEventListener("click", ()=>{
+    DATA.roster.models.forEach(m=>m.inForce=false);
+    saveData();
+    pushLog("force","Cleared Force selection.");
+    render();
+  });
+
+  document.getElementById("btnForceAuto").addEventListener("click", ()=>forceAutoPick());
+
+  viewEl.querySelectorAll('input[data-act="toggleForce"]').forEach(cb=>{
+    cb.addEventListener("change", (e)=>{
+      const id = parseInt(e.target.getAttribute("data-id"), 10);
+      const m = DATA.roster.models.find(x=>x.id===id);
+      if (!m || m.dead) return;
+      m.inForce = e.target.checked;
+      saveData();
+      render();
+    });
+  });
+
+  document.getElementById("btnQuickAdd").addEventListener("click", ()=>{
+    const unitKey = document.getElementById("quickUnit").value;
+    const unit = unitByKey(unitKey);
+    if (!unit) return;
+
+    const name = (document.getElementById("quickName").value.trim() || unit.name);
+    const extra = clampInt(document.getElementById("quickKitCost").value, 0, 99999);
+    const notes = document.getElementById("quickNotes").value.trim();
+
+    const id = DATA.roster.nextId++;
+    const model = {
+      id,
+      name,
+      unitKey: unit.key,
+      unitName: unit.name,
+      role: unit.role,
+      baseCost: unit.cost,
+      kitCost: extra,     // manual extra for house rules
+      kit: [],            // battlekit keys
+      keywords: unit.keywords || "",
+      inForce: false,
+      dead: false,
+      isCommander: (unit.key === "cell_marshal" && !DATA.roster.models.some(m=>m.isCommander)),
+      canPromote: !!unit.canPromote,
+      promotions: { attempts:0, successes:0, failures:0, history:[] },
+      scars: [],
+      progressionRolls: [],
+      notes
+    };
+
+    DATA.roster.models.push(model);
+    saveData();
+    pushLog("roster", `Added model: ${name} (${unit.name}).`);
+
+    document.getElementById("quickName").value = "";
+    document.getElementById("quickKitCost").value = "0";
+    document.getElementById("quickNotes").value = "";
+    render();
+  });
+}
+
+function wireRoster(){
+  viewEl.querySelectorAll('button[data-act]').forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const act = btn.getAttribute("data-act");
+      const id = parseInt(btn.getAttribute("data-id"),10);
+      const m = DATA.roster.models.find(x=>x.id===id);
+      if (!m) return;
+
+      if (act === "editModel") return openModelEditor(id);
+
+      if (act === "toggleDead"){
+        m.dead = !m.dead;
+        if (m.dead){
+          DATA.campaign.deaths = (DATA.campaign.deaths||0) + 1;
+          m.inForce = false;
+          pushLog("death", `Marked dead: ${m.name}.`);
+        } else {
+          pushLog("death", `Revived: ${m.name}.`);
+        }
+        saveData();
+        render();
+        return;
+      }
+
+      if (act === "setCommander"){
+        DATA.roster.models.forEach(x=>x.isCommander=false);
+        m.isCommander = true;
+        saveData();
+        pushLog("roster", `Set commander: ${m.name}.`);
+        render();
+        return;
+      }
+
+      if (act === "promote"){
+        return openPromotionDialog(id);
+      }
+
+      if (act === "deleteModel"){
+        if (!confirm(`Delete ${m.name}?`)) return;
+        DATA.roster.models = DATA.roster.models.filter(x=>x.id!==id);
+        if (!DATA.roster.models.some(x=>x.isCommander)){
+          const cm = DATA.roster.models.find(x=>x.unitKey==="cell_marshal" && !x.dead);
+          if (cm) cm.isCommander = true;
+        }
+        saveData();
+        pushLog("roster", `Deleted model: ${m.name}.`);
+        render();
+        return;
+      }
+    });
+  });
+}
+
+function wireCampaign(){
+  document.getElementById("btnSaveCampaign").addEventListener("click", ()=>{
+    DATA.campaign.gameNumber = clampInt(document.getElementById("campGame").value,1,99);
+    DATA.meta.playerName = document.getElementById("playerName").value.trim();
+    DATA.campaign.strongboxDucats = clampInt(document.getElementById("ducats").value,0,999999);
+    DATA.campaign.glory = clampInt(document.getElementById("glory").value,0,999999);
+    DATA.campaign.failedPromotionRolls = clampInt(document.getElementById("failProm").value,0,999999);
+    DATA.campaign.deaths = clampInt(document.getElementById("deaths").value,0,999999);
+    DATA.meta.notes = document.getElementById("campNotes").value.trim();
+    saveData();
+    pushLog("campaign","Updated campaign totals.");
+    render();
+  });
+
+  document.getElementById("btnAddLog").addEventListener("click", ()=>openLogPrompt());
+}
+
+function wireExploration(){
+  document.getElementById("btnAddFind").addEventListener("click", ()=>{
+    const v = document.getElementById("newFind").value.trim();
+    if (!v) return;
+    DATA.campaign.explorationFinds.push(v);
+    saveData();
+    pushLog("exploration", `Found item: ${v}.`);
+    render();
+  });
+
+  document.getElementById("btnAddLoc").addEventListener("click", ()=>{
+    const v = document.getElementById("newLoc").value.trim();
+    if (!v) return;
+    DATA.campaign.locationsFound.push(v);
+    saveData();
+    pushLog("exploration", `Found location: ${v}.`);
+    render();
+  });
+
+  viewEl.querySelectorAll('button[data-act="delFind"]').forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const i = parseInt(btn.getAttribute("data-i"),10);
+      const v = DATA.campaign.explorationFinds[i];
+      DATA.campaign.explorationFinds.splice(i,1);
+      saveData();
+      pushLog("exploration", `Removed find: ${v}.`);
+      render();
+    });
+  });
+
+  viewEl.querySelectorAll('button[data-act="delLoc"]').forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const i = parseInt(btn.getAttribute("data-i"),10);
+      const v = DATA.campaign.locationsFound[i];
+      DATA.campaign.locationsFound.splice(i,1);
+      saveData();
+      pushLog("exploration", `Removed location: ${v}.`);
+      render();
+    });
+  });
+}
+
+function wireArmoury(){
+  document.getElementById("btnAddItem").addEventListener("click", ()=>{
+    const name = document.getElementById("itemName").value.trim();
+    if (!name) return alert("Item name is required.");
+    const type = document.getElementById("itemType").value.trim();
+    const cost = clampInt(document.getElementById("itemCost").value,0,999999);
+    const qty = clampInt(document.getElementById("itemQty").value,1,999999);
+    const notes = document.getElementById("itemNotes").value.trim();
+    DATA.armoury.items.push({ name, type, cost, qty, notes });
+    saveData();
+    pushLog("armoury", `Added item: ${name} x${qty}.`);
+    render();
+  });
+
+  viewEl.querySelectorAll('button[data-act="editItem"]').forEach(btn=>{
+    btn.addEventListener("click", ()=> openItemEditor(parseInt(btn.getAttribute("data-idx"),10)));
+  });
+
+  viewEl.querySelectorAll('button[data-act="deleteItem"]').forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = parseInt(btn.getAttribute("data-idx"),10);
+      const it = DATA.armoury.items[idx];
+      if (!it) return;
+      if (!confirm(`Delete item '${it.name}'?`)) return;
+      DATA.armoury.items.splice(idx,1);
+      saveData();
+      pushLog("armoury", `Deleted item: ${it.name}.`);
+      render();
+    });
+  });
+}
+
+function wireCatalogue(){
+  document.getElementById("btnAddUnit").addEventListener("click", ()=>openUnitEditor(-1));
+  document.getElementById("btnAddKit").addEventListener("click", ()=>openKitEditor(-1));
+
+  viewEl.querySelectorAll('button[data-act="editUnit"]').forEach(btn=>{
+    btn.addEventListener("click", ()=> openUnitEditor(parseInt(btn.getAttribute("data-idx"),10)));
+  });
+  viewEl.querySelectorAll('button[data-act="deleteUnit"]').forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = parseInt(btn.getAttribute("data-idx"),10);
+      const u = DATA.catalogue.units[idx];
+      if (!u) return;
+      if (!confirm(`Delete unit '${u.name}'?`)) return;
+      DATA.catalogue.units.splice(idx,1);
+      saveData();
+      pushLog("catalogue", `Deleted unit: ${u.name}.`);
+      render();
+    });
+  });
+
+  viewEl.querySelectorAll('button[data-act="editKit"]').forEach(btn=>{
+    btn.addEventListener("click", ()=> openKitEditor(parseInt(btn.getAttribute("data-idx"),10)));
+  });
+  viewEl.querySelectorAll('button[data-act="deleteKit"]').forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = parseInt(btn.getAttribute("data-idx"),10);
+      const k = DATA.catalogue.battlekit[idx];
+      if (!k) return;
+      if (!confirm(`Delete battlekit '${k.name}'?`)) return;
+      DATA.catalogue.battlekit.splice(idx,1);
+      saveData();
+      pushLog("catalogue", `Deleted battlekit: ${k.name}.`);
+      render();
+    });
+  });
+}
+
+// ---------- Import / Export / Reset / Print ----------
+document.getElementById("btnExport").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const safeName = (DATA.meta.warbandName || "warband").replace(/[^a-z0-9]+/gi,"_").toLowerCase();
+  a.download = `${safeName}_builder_v03.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("btnImport").addEventListener("click", ()=>{
+  const inp = document.createElement("input");
+  inp.type = "file";
+  inp.accept = "application/json";
+  inp.onchange = () => {
+    const f = inp.files && inp.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const imported = JSON.parse(reader.result);
+        DATA = migrateImported(imported);
+        saveData();
+        pushLog("system","Imported JSON data.");
+        render();
+      }catch{
+        alert("Import failed: invalid JSON.");
+      }
+    };
+    reader.readAsText(f);
+  };
+  inp.click();
+});
+
+document.getElementById("btnReset").addEventListener("click", ()=>{
+  if (!confirm("Reset all data? This will wipe your roster and campaign tracking in this browser.")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  DATA = deepCopy(DEFAULT_DATA);
+  saveData();
+  render();
+});
+
+document.getElementById("btnPrint").addEventListener("click", ()=>{
+  ACTIVE_TAB = "Print";
+  render();
+  setTimeout(()=>window.print(), 100);
+});
+
+// Init
+render();
+</script>
+</body>
+</html>
