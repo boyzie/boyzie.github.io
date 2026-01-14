@@ -3,704 +3,685 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Hearthcell Resistance — Warband Builder (v0.9.3)</title>
+<title>Hearthcell Resistance — Campaign Roster (v1.0)</title>
 <style>
-  :root{
-    --bg:#f4f4f4; --card:#fff; --ink:#111; --muted:#555; --line:#ccc; --line2:#888;
-    --accent:#7b0f16;
-  }
-  /* Global box-sizing prevents textareas from overlapping containers */
+  :root{ --bg:#f4f4f4; --card:#fff; --ink:#111; --muted:#555; --line:#ccc; --line2:#888; --accent:#7b0f16; }
   *, *::before, *::after { box-sizing: border-box; }
-
-  body{ font-family: serif; background:var(--bg); color:var(--ink); margin:0; padding:18px; }
-  h1{ margin:0 0 12px 0; font-size: 44px; letter-spacing: 0.5px; }
-  h2{ margin:0 0 10px 0; }
-  h3{ margin: 0 0 6px 0; font-size: 20px; }
+  body{ font-family: serif; background:var(--bg); color:var(--ink); margin:0; padding:18px; font-size:16px; }
+  h1{ margin:0 0 12px 0; font-size: 36px; letter-spacing: 0.5px; }
+  h2{ margin:0 0 10px 0; font-size: 24px; border-bottom: 2px solid var(--ink); padding-bottom: 4px; }
+  h3{ margin: 0 0 6px 0; font-size: 18px; font-weight: 700; }
+  
   .section{ background:var(--card); border:1px solid var(--line); padding:14px; margin:0 0 14px 0; }
-  .row{ display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; }
-  .col{ display:flex; flex-direction:column; gap:6px; }
-  label{ font-size: 0.9em; color:var(--muted); }
-  button, select, input{ font-family: inherit; font-size: 16px; padding:6px 10px; }
-  button{ cursor:pointer; }
-  textarea{ width:100%; min-height:70px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; padding:8px; }
+  .row{ display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; }
+  .col{ display:flex; flex-direction:column; gap:4px; }
+  
+  label{ font-size: 0.85em; font-weight: 700; color:var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  button, select, input, textarea{ font-family: inherit; font-size: 14px; padding:6px 8px; border:1px solid #aaa; }
+  button{ cursor:pointer; background:#eee; font-weight: 700; }
+  button:hover{ background:#ddd; }
+  button.primary{ background: var(--accent); color: #fff; border-color: #5a0b10; }
+  textarea{ width:100%; min-height:60px; font-family: ui-monospace, monospace; font-size: 13px; }
+  
   .tiny{ font-size:0.85em; color:var(--muted); }
-  .muted{ color:var(--muted); }
-  .pill{ display:inline-block; border:1px solid #aaa; padding:2px 8px; margin:2px 4px 2px 0; border-radius:999px; font-size:0.9em; background:#fafafa; }
+  .pill{ display:inline-block; border:1px solid #aaa; padding:2px 8px; margin:0 4px 2px 0; border-radius:4px; font-size:0.85em; background:#fafafa; }
+  .pill.danger{ background:#fee; color:#b00; border-color:#faa; }
+  .pill.success{ background:#efe; color:#060; border-color:#afa; }
 
-  /* Layout */
-  .split{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
-  @media (max-width: 1100px){ .split{ grid-template-columns: 1fr; } }
+  /* TABS */
+  .tabs { display:flex; gap:4px; margin-bottom: -1px; }
+  .tab { padding: 8px 16px; cursor:pointer; background:#ddd; border:1px solid #aaa; border-bottom:none; border-radius: 4px 4px 0 0; }
+  .tab.active { background:#fff; border-bottom: 1px solid #fff; font-weight:700; }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
 
-  .list{ display:flex; flex-direction:column; gap:10px; }
-  .model-card{
-    border:1px solid var(--line2);
-    padding:10px;
-    background:#fff;
-    cursor:pointer;
-    transition: 0.1s border-color;
-  }
+  /* Layouts */
+  .split{ display:grid; grid-template-columns: 400px 1fr; gap:14px; }
+  @media (max-width: 900px){ .split{ grid-template-columns: 1fr; } }
+
+  .list{ display:flex; flex-direction:column; gap:8px; }
+  .model-card{ border:1px solid var(--line2); padding:8px; background:#fff; cursor:pointer; border-left: 4px solid transparent; }
   .model-card:hover { border-color: var(--accent); }
-  .model-card.selected{ outline: 3px solid rgba(123,15,22,0.25); border-color: var(--accent); }
-  .head{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
-  .head strong{ font-size: 18px; }
-  .meta{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
-  .statline{ font-style: italic; margin:6px 0 8px 0; }
-  .btnrow{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:flex-end; }
-  .danger{ background:#fff3f3; border:1px solid #f3b1b1; }
+  .model-card.selected{ border-left-color: var(--accent); background:#fffafa; }
+  .head{ display:flex; justify-content:space-between; align-items:flex-start; }
 
-  /* Kit selectors */
-  .kit-grid{ display:flex; flex-wrap:wrap; gap:10px; align-items:flex-start; margin-top:8px; }
-  .kit-box{ border:1px dashed #aaa; padding:8px; min-width: 280px; background:#fafafa; }
-  .kit-box h4{ margin:0 0 8px 0; font-size: 1em; }
-  .kit-list{ display:flex; flex-wrap:wrap; gap:6px; }
-  .kit-item{ display:flex; align-items:center; gap:6px; }
-  .kit-item input{ transform: scale(1.15); }
+  /* Detail Panel */
+  .detail{ border: 2px solid #333; padding:15px; background:#fff; min-height: 400px; }
+  .detail .titlebar { border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px; display:flex; justify-content:space-between; }
+  
+  /* Stats Grid */
+  .stats-table { width:100%; border-collapse: collapse; margin: 10px 0; }
+  .stats-table th { text-align: left; background:#eee; padding: 4px; border:1px solid #ccc; font-size: 0.9em; }
+  .stats-table td { padding: 4px; border:1px solid #ccc; position: relative; }
+  .stat-mod { width: 40px; text-align: center; }
 
-  /* Detail panel */
-  .detail{
-    border: 2px solid #222;
-    padding:12px;
-    background:#fff;
-    min-height: 220px;
-  }
-  .detail .titlebar{
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-    align-items:flex-start;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 8px;
-    margin-bottom: 10px;
-  }
-  .detail .titlebar .name{ font-size:22px; font-weight:700; }
-  .detail .titlebar .sub{ color:var(--muted); font-size: 0.95em; }
+  /* Battle Log Table */
+  table.log { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.log th, table.log td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+  table.log th { background: #eee; }
 
-  table.stats{ border-collapse: collapse; width:100%; margin: 8px 0 10px 0; }
-  table.stats th, table.stats td{ border:1px solid #000; padding:4px 8px; text-align:left; font-size: 0.95em; }
-  table.stats th{ width: 22%; background:#f0f0f0; }
-
-  .block{ margin: 10px 0; }
-  .block .hdr{ font-weight:700; margin-bottom:6px; text-transform: uppercase; font-size: 0.9em; letter-spacing: 0.5px; border-bottom:1px solid #eee; }
-  .ability{ margin: 0 0 8px 0; line-height: 1.4; }
-  .ability b{ font-weight:700; color: var(--accent); }
-  .divider{ height:1px; background:#ddd; margin:10px 0; }
-
-  details{ border:1px solid #ddd; padding:8px; background:#fafafa; margin-bottom: 6px; }
-  details > summary{ cursor:pointer; font-weight:700; }
-
-  /* PRINT VIEW CONTROLS */
+  /* Print */
   #printArea { display: none; }
-
-  @media print{
-    body { background:#fff; padding:0; margin:0; }
-    .section, h1, #rosterList { display:none !important; }
-    #printArea { display: block; width: 100%; }
-    .print-header { text-align:center; border-bottom:2px solid #000; margin-bottom: 15px; padding-bottom:10px; }
-    .print-header h2 { margin:0; font-size:24px; }
-    .print-section { margin-bottom: 20px; page-break-inside: avoid; }
-    .print-card { border: 1px solid #000; padding: 10px; margin-bottom: 15px; page-break-inside: avoid; }
-    .print-card .head { border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 5px; }
-    .print-card h3 { margin:0; font-size: 18px; }
+  @media print {
+    body{ background:#fff; padding:0; }
+    .section, .tabs, h1 { display:none !important; }
+    #printArea { display: block; width:100%; }
+    .print-page { page-break-after: always; }
+    .print-header { border-bottom: 2px solid #000; margin-bottom: 15px; padding-bottom: 10px; display:flex; justify-content:space-between; align-items:flex-end; }
+    .print-header h1 { display:block !important; font-size: 24px; margin:0; }
     .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    table.stats th, table.stats td { border:1px solid #444; }
+    .print-card { border: 1px solid #000; padding: 10px; break-inside: avoid; margin-bottom: 10px; }
+    table.print-stats { width:100%; border-collapse: collapse; margin-top:5px; }
+    table.print-stats th, table.print-stats td { border:1px solid #000; padding:4px; font-size:12px; }
   }
 </style>
-
-<script>
-let detailMode = "warband"; // 'warband' | 'model'
-</script>
 </head>
-
-
 <body>
-<h1>Hearthcell Resistance — Warband Builder (v0.9.3)</h1>
 
-<div class="section controls">
-  <h2>Warband Controls</h2>
-  <div class="row">
-    <div class="col">
-      <label>Campaign Progress</label>
-      <select id="gamePicker" style="font-weight:700;">
-        <option value="1">Game 1 (700 👑 / 10 Models)</option>
-        <option value="2">Game 2 (800 👑 / 11 Models)</option>
-        <option value="3">Game 3 (900 👑 / 12 Models)</option>
-        <option value="4">Game 4 (1,000 👑 / 13 Models)</option>
-        <option value="5">Game 5 (1,100 👑 / 14 Models)</option>
-        <option value="6">Game 6 (1,200 👑 / 15 Models)</option>
-        <option value="7">Game 7 (1,300 👑 / 16 Models)</option>
-        <option value="8">Game 8 (1,400 👑 / 17 Models)</option>
-        <option value="9">Game 9 (1,500 👑 / 18 Models)</option>
-        <option value="10">Game 10 (1,600 👑 / 19 Models)</option>
-        <option value="11">Game 11 (1,700 👑 / 20 Models)</option>
-        <option value="12">Game 12 (1,800 👑 / 22 Models)</option>
-      </select>
-      <div class="tiny">Sets Threshold & Field Strength caps.</div>
-    </div>
+<h1>Hearthcell Resistance — Campaign Roster</h1>
 
-    <div class="col">
-      <label>Manual Build</label>
-      <select id="unitPicker"></select>
-      <button id="btnAddUnit">Add Model</button>
-      <div class="tiny">Limits enforced. Click model to edit kit.</div>
-    </div>
-
-    <div class="col">
-      <label>Quick actions</label>
-      <button id="btnFix">Fix / Auto-Equip</button>
-      <button id="btnPrint">Print Reference Sheet</button>
-      <button id="btnClear" class="danger">Clear Roster</button>
-    </div>
-
-    <div class="col" style="flex:1; min-width:260px;">
-      <label>Status</label>
-      <div id="statusLine" class="muted"></div>
-      <div id="capLine" class="muted"></div>
-      <div id="warnings" class="tiny"></div>
-    </div>
-  </div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('roster')">1. Roster & Models</div>
+  <div class="tab" onclick="switchTab('hq')">2. Campaign HQ & Log</div>
+  <div class="tab" onclick="switchTab('io')">3. Save / Load</div>
 </div>
 
-<div class="section io">
-  <h2>Import / Export</h2>
-  <div class="row">
-    <div class="col" style="flex:1; min-width:320px;">
-      <label>Export / Import JSON</label>
-      <textarea id="ioBox" placeholder="Click Export JSON to populate this, or paste JSON here and click Import JSON."></textarea>
-      <div class="row">
-        <button id="btnExport">Export JSON</button>
-        <button id="btnImport">Import JSON</button>
+<div id="tab-roster" class="tab-content active section">
+  <div style="background:#eee; padding:10px; margin-bottom:15px; border-bottom:1px solid #ccc;">
+    <div class="row">
+      <div class="col">
+        <label>Game Number</label>
+        <select id="gamePicker" onchange="updateGameLimits()">
+          <option value="1">Game 1 (700👑/10)</option>
+          <option value="2">Game 2 (800👑/11)</option>
+          <option value="3">Game 3 (900👑/12)</option>
+          <option value="4">Game 4 (1000👑/13)</option>
+          <option value="5">Game 5 (1100👑/14)</option>
+          <option value="6">Game 6 (1200👑/15)</option>
+          <option value="7">Game 7 (1300👑/16)</option>
+          <option value="8">Game 8 (1400👑/17)</option>
+          <option value="9">Game 9 (1500👑/18)</option>
+          <option value="10">Game 10 (1600👑/19)</option>
+          <option value="11">Game 11 (1700👑/20)</option>
+          <option value="12">Game 12 (1800👑/22)</option>
+        </select>
       </div>
-      <div class="tiny">Tip: this saves campaign state too (game #, bench/dead, kit, notes).</div>
-    </div>
-    <div class="col" style="flex:1; min-width:320px;">
-      <label>Notes</label>
-      <textarea id="notesBox" placeholder="Optional: campaign notes, glory/ducats, exploration items, scars, etc."></textarea>
-      <div class="tiny">Stored inside your Export JSON.</div>
+      <div class="col">
+        <label>Recruit Model</label>
+        <div style="display:flex; gap:5px;">
+          <select id="unitPicker"></select>
+          <button onclick="addUnit()" class="primary">+ Add</button>
+        </div>
+      </div>
+      <div class="col" style="flex:1; text-align:right;">
+         <label>Status</label>
+         <div id="statusLine" style="font-weight:bold;"></div>
+         <div id="warnings" class="tiny"></div>
+      </div>
+      <div class="col">
+        <label>Actions</label>
+        <button onclick="printRoster()">🖨️ Print</button>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="section">
   <div class="split">
     <div>
-      <h2>Roster List</h2>
-      <div class="tiny">Click a model to open details on the right. “Dead” models stay in roster for campaign tracking.</div>
+      <h3>Current Force</h3>
       <div id="rosterList" class="list"></div>
     </div>
+    
     <div>
-      <h2>Details</h2>
-      <div id="detailPanel" class="detail"></div>
+      <h3>Model Record</h3>
+      <div id="detailPanel" class="detail">
+        <div style="text-align:center; color:#777; padding-top:40px;">Select a model to edit stats, kit, and XP.</div>
+      </div>
     </div>
   </div>
+</div>
+
+<div id="tab-hq" class="tab-content section">
+  <div class="split">
+    <div>
+      <h2>Warband Overview</h2>
+      <div class="row">
+        <div class="col" style="flex:1"><label>Warband Name</label><input type="text" id="wbName" placeholder="e.g. The Gutter Saints"></div>
+        <div class="col" style="flex:1"><label>Faction</label><input type="text" id="wbFaction" value="Hearthcell Resistance"></div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <div class="col" style="flex:1"><label>Patron</label><input type="text" id="wbPatron" placeholder="Temporal Lord / Saint"></div>
+        <div class="col"><label>Camp. VP</label><input type="number" id="wbVP" value="0" style="width:80px;"></div>
+      </div>
+
+      <div class="divider" style="margin:20px 0; border-bottom:1px solid #ddd;"></div>
+
+      <h2>Treasury & Inventory</h2>
+      <div class="row">
+        <div class="col"><label>Strongbox (👑)</label><input type="number" id="wbGold" value="0"></div>
+        <div class="col"><label>Glory Points</label><input type="number" id="wbGlory" value="0"></div>
+      </div>
+      <div class="col" style="margin-top:10px;">
+        <label>Arsenal (Unassigned Kit)</label>
+        <textarea id="wbArsenal" placeholder="List items in reserve..."></textarea>
+      </div>
+      <div class="col" style="margin-top:10px;">
+        <label>Exploration Skills</label>
+        <textarea id="wbSkills" placeholder="Skills gained via Exploration..."></textarea>
+      </div>
+      <div class="col" style="margin-top:10px;">
+        <label>Discovered Locations</label>
+        <textarea id="wbLocs" placeholder="Unique locations found..."></textarea>
+      </div>
+    </div>
+
+    <div>
+      <h2>Battle Log</h2>
+      <div style="max-height: 500px; overflow-y:auto; border:1px solid #ccc; padding:1px;">
+        <table class="log" id="logTable">
+          <thead>
+            <tr>
+              <th width="40">#</th>
+              <th>Scenario</th>
+              <th width="60">Result</th>
+              <th>Deeds / Notes</th>
+              <th width="40"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div style="background:#eee; padding:10px; border-top:1px solid #ccc; margin-top:0;">
+        <button onclick="addLogEntry()" class="primary">+ Add Battle Entry</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-io" class="tab-content section">
+  <h2>Data Management</h2>
+  <p>Save your campaign progress to a text file (JSON) to load later.</p>
+  <div class="row">
+    <button onclick="exportJSON()">Export to JSON</button>
+    <button onclick="importJSON()">Import from JSON</button>
+  </div>
+  <textarea id="ioBox" style="margin-top:10px; height:200px;"></textarea>
 </div>
 
 <div id="printArea"></div>
 
 <script>
-/* ============================================================
-   CONSTANTS & DATA
-   ============================================================ */
-
-// NEW: Campaign Scaling Table
-const CAMPAIGN_SCALING = {
-  1: { pts: 700, max: 10 },
-  2: { pts: 800, max: 11 },
-  3: { pts: 900, max: 12 },
-  4: { pts: 1000, max: 13 },
-  5: { pts: 1100, max: 14 },
-  6: { pts: 1200, max: 15 },
-  7: { pts: 1300, max: 16 },
-  8: { pts: 1400, max: 17 },
-  9: { pts: 1500, max: 18 },
-  10: { pts: 1600, max: 19 },
-  11: { pts: 1700, max: 20 },
-  12: { pts: 1800, max: 22 } // Final Battle
+/* ================= DATA STRUCTURES ================= */
+const SCALING = { 
+  1: {pts:700, max:10}, 2: {pts:800, max:11}, 3: {pts:900, max:12}, 4: {pts:1000, max:13},
+  5: {pts:1100, max:14}, 6: {pts:1200, max:15}, 7: {pts:1300, max:16}, 8: {pts:1400, max:17},
+  9: {pts:1500, max:18}, 10: {pts:1600, max:19}, 11: {pts:1700, max:20}, 12: {pts:1800, max:22}
 };
-
-const WARBAND_RULES_HTML = `
-  <div class="titlebar"><div class="btnrow"><button onclick="showWarband()" disabled>Warband View Active</button></div>
-    <div>
-      <div class="name">Warband Special Rules</div>
-      <div class="sub">General rules for the Hearthcell Resistance faction.</div>
-    </div>
-  </div>
-  <div class="block"><div class="hdr">Clandestine Cell</div><div>All models in this list have the <b>HEARTHCELL</b> Keyword (Tag only).</div></div>
-  <div class="block"><div class="hdr">Hidden in Plain Sight</div><div>Friendly <b>HEARTHCELL TROOPS</b> count as being in <b>COVER</b> while they are within 1&quot; of terrain and more than 6&quot; from all enemy models.</div></div>
-  <div class="block"><div class="hdr">Street Packs</div><div>A <b>Street Urchin</b> adds +1 DICE to Success Rolls for Melee Attacks if at least one other friendly <b>Street Urchin</b> is within 1&quot; of the same enemy model.</div></div>
-  <div class="block"><div class="hdr">Scurry Into the Gutter</div><div>Once per Turn, when a <b>Street Urchin</b> is declared as the target of a Ranged Attack, after the attack (including any Injury Rolls) has been fully resolved, if the model is not Down or Out of Action, it may immediately move D3&quot;. This move cannot be used to move within 1&quot; of an enemy model.</div></div>
-  <div class="block"><div class="hdr">Children of the Ruins</div><div><b>Street Urchins</b> cannot be Promoted.</div></div>
-  <div class="divider"></div>
-  <details open>
-    <summary>Campaign Options (after each game, choose one)</summary>
-    <div class="block"><b>A) Scavenge the Fallen</b>: Skip the Reinforcements Step and the Exploration Step. For each friendly non-Mercenary model removed from your roster in the Trauma Step, you may recover one piece of its Battlekit and add it to your Arsenal. If this exceeds a Limit stipulation, you must sell the excess in the next Quartermaster Step.</div>
-    <div class="block"><b>B) Safehouse Contacts</b>: In the Exploration Step, you may re-roll one additional Exploration die, or you may choose to re-roll the entire Exploration result once (after any individual die re-rolls are made).</div>
-    <div class="block"><b>C) Orphan Pipeline</b>: In the Quartermaster Step, if any <b>TROOP</b> models were removed from your roster in the Trauma Step, you may recruit one <b>Street Urchin</b> model at a -5 👑 discount (to a minimum of 15 👑).</div>
-  </details>
-  <div class="divider"></div>
-  <details>
-    <summary>Armoury Restrictions (New Antioch tables)</summary>
-    <div class="block"><b>TROOPS may only take:</b> Pistol, Shotgun, Bolt-Action Rifle, Trench Knife, Trench Club, Sword/Axe, Frag Grenades, Standard Armour, Combat Helmet, Gas Mask, Medi-kit, Binoculars.</div>
-    <div class="block"><b>TROOPS cannot take:</b> Machine Guns, Sniper Rifles, Flamethrowers, Reinforced Armour, Machine Armour.</div>
-    <div class="block"><b>ELITES:</b> May take any Battlekit from the New Antioch Armoury Tables (subject to Limits).</div>
-  </details>
-`;
 
 const BATTLEKIT_COSTS = {
-  "Pistol": 6, "Shotgun": 10, "Bolt-Action Rifle": 10, "Trench Knife": 1, "Trench Club": 3,
-  "Sword/Axe": 4, "Frag Grenades": 7, "Standard Armour": 15, "Combat Helmet": 5,
-  "Gas Mask": 5, "Medi-kit": 5, "Binoculars": 10, "Satchel Charge": 15,
-  "Great Hammer/Maul": 10, "Great Sword/Axe": 12
-};
-
-const ITEM_PROFILES = {
-  // Ranged
-  "Pistol":               { type:"Ranged", hands:"1", range:'12"/Melee', tags:["PISTOL"], notes:"" },
-  "Shotgun":              { type:"Ranged", hands:"2", range:'12"', mods:["+1 DICE"], tags:["SHOTGUN"], notes:"" },
-  "Bolt-Action Rifle":    { type:"Ranged", hands:"2", range:'24"', tags:[], notes:"" },
-  "Machine Gun":          { type:"Ranged", hands:"2", range:'36"', tags:["AUTOMATIC 3","HEAVY","RELOAD"], notes:"" },
-  "Sniper Rifle":         { type:"Ranged", hands:"2", range:'48"', mods:["+1 DICE"], tags:["CRITICAL","RISKY"], notes:"Critical Success grants IGNORE ARMOUR." },
-  "Flamethrower":         { type:"Ranged", hands:"2", range:'8"', mods:["-1 INJURY DICE"], tags:["FIRE","FLAMETHROWER","IGNORE ARMOUR"], notes:"" },
-  "Grenade Launcher":     { type:"Ranged", hands:"2", range:'36"', tags:['BLAST 3"',"HEAVY","IGNORE COVER","SHRAPNEL"], notes:"" },
-  "Automatic Shotgun":    { type:"Ranged", hands:"2", range:'12"', mods:["+1 DICE"], tags:["ASSAULT","SHOTGUN"], notes:"" },
-  "Automatic Rifle":      { type:"Ranged", hands:"2", range:'24"', tags:["ASSAULT","AUTOMATIC 2"], notes:"Focused Fire: both shots must hit the same target." },
-  "Automatic Pistol":     { type:"Ranged", hands:"1", range:'12"/Melee', tags:["ASSAULT","AUTOMATIC 2","PISTOL"], notes:"" },
-  "Semi-Automatic Rifle": { type:"Ranged", hands:"2", range:'24"', tags:["ASSAULT"], notes:"" },
-  "Submachine Gun":       { type:"Ranged", hands:"2", range:'16"', tags:["ASSAULT"], notes:"Allows two Shoot ACTIONS per Activation." },
-  // Melee
-  "Trench Knife":         { type:"Melee", hands:"1", range:"Melee", tags:[], notes:"" },
-  "Trench Club":          { type:"Melee", hands:"1", range:"Melee", tags:[], notes:"" },
-  "Sword/Axe":            { type:"Melee", hands:"1", range:"Melee", tags:[], notes:"" },
-  "Great Hammer/Maul":    { type:"Melee", hands:"2", range:"Melee", tags:["+1 INJURY MODIFIER","HEAVY"], notes:"" },
-  "Great Sword/Axe":      { type:"Melee", hands:"2", range:"Melee", tags:["+1 INJURY MODIFIER","HEAVY"], notes:"" },
-  "Bayonet":              { type:"Melee", hands:"2", range:"Melee", tags:["CUMBERSOME"], notes:"" },
-  // Explosives
-  "Satchel Charge":       { type:"Explosive", hands:"—", range:'6"', mods:["+1 INJURY DICE"], tags:['BLAST 3"',"CONSUMABLE","HEAVY","IGNORE ARMOUR","IGNORE COVER","SCATTER"], notes:"" },
-  "Frag Grenades":        { type:"Explosive", hands:"—", range:"(see core rules)", tags:["(see core rules)"], notes:"" },
-  // Gear
-  "Standard Armour":      { type:"Armour", tags:["-1 INJURY MODIFIER"], notes:"" },
-  "Reinforced Armour":    { type:"Armour", tags:["-2 INJURY MODIFIER"], notes:"" },
-  "Machine Armour":       { type:"Armour", tags:["-3 INJURY MODIFIER"], notes:"" },
-  "Engineer Body Armour": { type:"Armour", tags:["-2 INJURY MODIFIER","NEGATE SHRAPNEL"], notes:"Special: -1 INJURY DICE vs Shrapnel." },
-  "Combat Helmet":        { type:"Gear", tags:["NEGATE SHRAPNEL"], notes:"" },
-  "Gas Mask":             { type:"Gear", tags:["NEGATE GAS"], notes:"" },
-  "Medi-kit":             { type:"Gear", tags:["Treat ACTION"], notes:"Remove 1 BLOOD MARKER or stand up a Down model." },
-  "Binoculars":           { type:"Gear", tags:["Anti-INFILTRATOR"], notes:"Prevents enemies from using INFILTRATOR to deploy within 16\"." }
+  "Pistol":6, "Shotgun":10, "Bolt-Action Rifle":10, "Trench Knife":1, "Trench Club":3,
+  "Sword/Axe":4, "Frag Grenades":7, "Standard Armour":15, "Combat Helmet":5,
+  "Gas Mask":5, "Medi-kit":5, "Binoculars":10, "Satchel Charge":15,
+  "Great Hammer/Maul":10, "Great Sword/Axe":12
 };
 
 const UNITS = {
-  /* ===== ELITES ===== */
-  cellMarshal: {
-    name: "Cell Marshal",
-    cost: 85, limit: 1, role: "Elite", base: "32mm",
-    stats: { move: '6"/Infantry', ranged: '+0 DICE', melee: '+1 DICE', armour: 0 },
-    battlekitRule: "Any Battlekit from the New Antioch Armoury Tables (subject to Hearthcell restrictions).",
-    kit: { fixed: [], allowed: "ELITE" },
-    abilities: [
-      { name: "Co-ordinate ACTION", text: "Take a Risky Success Roll for the Cell Marshal. If the roll is a Failure, the Cell Marshal’s Activation ends immediately. If the roll is a Success or Critical Success, choose one friendly HEARTHCELL TROOP model within 6\" that is not Down or Out of Action. The chosen model may immediately move up to D3\". This move is not an ACTION." },
-      { name: "No One Left Behind", text: "Friendly HEARTHCELL models within 8\" of the Cell Marshal have the NEGATE FEAR Keyword." }
-    ],
-    keywords: ["NEW ANTIOCH","HEARTHCELL","ELITE","NEGATE FEAR"]
-  },
-  weaver: {
-    name: "Weaver of Ciphers",
-    cost: 80, limit: 1, role: "Elite", base: "25mm",
-    stats: { move: '6"/Infantry', ranged: '+0 DICE', melee: '+0 DICE', armour: 0 },
-    battlekitRule: "Any Battlekit from the New Antioch Armoury Tables (subject to Hearthcell restrictions).",
-    kit: { fixed: [], allowed: "ELITE" },
-    abilities: [
-      { name: "Stitch-Count ACTION", text: "Take a Risky Success Roll for this model. If the roll is a Failure, the model’s Activation ends immediately. If the roll is a Success or Critical Success, place 1 CIPHER MARKER next to an enemy model within 24\" that is in this model’s Line of Sight. There can be a maximum of 2 CIPHER MARKERS on the battlefield at any one time." },
-      { name: "Spent Signal", text: "When a friendly model makes a Ranged Attack against an enemy model with a CIPHER MARKER, you may remove 1 CIPHER MARKER from that enemy to add +1 DICE to the Success Roll for that Ranged Attack." }
-    ],
-    keywords: ["NEW ANTIOCH","HEARTHCELL","ELITE"]
-  },
-  wardAngel: {
-    name: "Ward Angel",
-    cost: 85, limit: 1, role: "Elite", base: "25mm",
-    stats: { move: '6"/Infantry', ranged: '–', melee: '+0 DICE', armour: -1 },
-    battlekitRule: "Always has Standard Armour and a Medi-kit. May take any other Battlekit from the New Antioch Armoury Tables (subject to Hearthcell restrictions), apart from Armour.",
-    kit: { fixed: ["Standard Armour","Medi-kit"], allowed: "WARD_ANGEL" },
-    abilities: [
-      { name: "Battlefield Surgeon", text: "Add +2 DICE to the Risky Success Roll when this model carries out a Treat ACTION with their Medi-kit." },
-      { name: "Mercy Cut", text: "Add +1 DICE to Injury Rolls for Melee Attacks made by this model if the target is Down and does not have the BLACK GRAIL or DEMONIC Keywords." }
-    ],
-    keywords: ["NEW ANTIOCH","HEARTHCELL","ELITE"]
-  },
-  fuseSister: {
-    name: "Fuse-Sister",
-    cost: 80, limit: 1, role: "Elite", base: "32mm",
-    stats: { move: '6"/Infantry', ranged: '+0 DICE', melee: '+0 DICE', armour: 0 },
-    battlekitRule: "Any Battlekit from the New Antioch Armoury Tables (subject to Hearthcell restrictions) but may choose 1 Satchel Charge.",
-    kit: { fixed: [], allowed: "FUSE_SISTER" },
-    abilities: [
-      { name: "Careful Hands", text: "Add +1 DICE to Risky Success Rolls taken for this model when performing an ACTION involving Explosives (such as throwing a Satchel Charge, or using the Defuse Mine or Rig the Approach Actions)." },
-      { name: "Rig the Approach", text: "Once per game, if this model is within 1\" of a terrain piece, you may take a Risky Success Roll. If successful, place a Booby Trap Marker on that terrain. The first enemy model to move within 1\" of that terrain triggers the trap; the model suffers an Injury Roll with the SHRAPNEL Keyword. Then, remove the marker." }
-    ],
-    keywords: ["NEW ANTIOCH","HEARTHCELL","ELITE"]
-  },
-  docksideGiant: {
-    name: "Dockside Giant",
-    cost: 85, limit: 1, role: "Elite", base: "40mm",
-    stats: { move: '6"/Infantry', ranged: '+0 DICE', melee: '+2 DICE', armour: 0 },
-    battlekitRule: "Any Battlekit from the New Antioch Armoury Tables (subject to Hearthcell restrictions). May take one Great Hammer/Maul or Great Sword/Axe.",
-    kit: { fixed: [], allowed: "DOCKSIDE_GIANT" },
-    abilities: [
-      { name: "Break the Line", text: "When you roll the Charge Bonus for a Dockside Giant, roll 1 extra D6 and use the single highest die to determine the bonus." },
-      { name: "Meat and Metal", text: "Add -1 INJURY DICE to Injury Rolls for attacks made against this model with weapons that do not have the HEAVY Keyword." }
-    ],
-    keywords: ["NEW ANTIOCH","HEARTHCELL","ELITE","STRONG"]
-  },
-  /* ===== TROOPS ===== */
-  streetUrchin: {
-    name: "Street Urchin",
-    cost: 18, limit: 6, role: "Troop", base: "25mm",
-    stats: { move: '7"/Infantry', ranged: '–', melee: '-1 DICE', armour: 0 },
-    battlekitRule: "Always has a Trench Knife. Cannot have any other Battlekit.",
-    kit: { fixed: ["Trench Knife"], allowed: "NONE" },
-    abilities: [
-      { name: "Scurry Into the Gutter", text: "Once per Turn, when a Street Urchin is declared as the target of a Ranged Attack, after the attack (including any Injury Rolls) has been fully resolved, if the model is not Down or Out of Action, it may immediately move D3\". This move cannot be used to move within 1\" of an enemy model." },
-      { name: "Street Packs", text: "A Street Urchin adds +1 DICE to Success Rolls for Melee Attacks if at least one other friendly Street Urchin is within 1\" of the same enemy model." },
-      { name: "Children of the Ruins", text: "Street Urchins cannot be Promoted." }
-    ],
-    keywords: ["NEW ANTIOCH","HEARTHCELL","TROOPS"]
-  },
-  lookout: {
-    name: "Lookout",
-    cost: 28, limit: 3, role: "Troop", base: "25mm",
-    stats: { move: '7"/Infantry', ranged: '+0 DICE', melee: '-1 DICE', armour: 0 },
-    battlekitRule: "Always has a Pistol. May also have Binoculars, Shotgun, or Bolt-Action Rifle. Cannot have Armour.",
-    kit: { fixed: ["Pistol"], allowed: "LOOKOUT" },
-    abilities: [
-      { name: "Mark the Kill (ACTION)", text: "Choose one enemy model within 24\" and Line of Sight. Take a Risky Success Roll for the Lookout. If the roll is a Failure, the Lookout’s Activation ends immediately. If the roll is a Success or Critical Success, until the end of the Turn, the first friendly model to make a Ranged Attack against that enemy adds +1 DICE to the Success Roll." }
-    ],
-    keywords: ["NEW ANTIOCH","HEARTHCELL","TROOPS"]
-  },
-  bruiser: {
-    name: "Bruiser",
-    cost: 45, limit: 3, role: "Troop", base: "32mm",
-    stats: { move: '6"/Infantry', ranged: '+0 DICE', melee: '+1 DICE', armour: 0 },
-    battlekitRule: "Always has a Trench Club. May also have Standard Armour and any Battlekit from the New Antioch Armoury Tables (subject to Hearthcell restrictions).",
-    kit: { fixed: ["Trench Club"], allowed: "TROOP" },
-    abilities: [
-      { name: "Crowd Violence", text: "If this model successfully completes a Charge against an enemy model that is already within 1\" of at least one other friendly model, add +1 DICE to the Success Roll for its first Melee Attack during that Activation." }
-    ],
-    keywords: ["NEW ANTIOCH","HEARTHCELL","TROOPS"]
-  },
-  fieldMedic: {
-    name: "Field Medic",
-    cost: 40, limit: 2, role: "Troop", base: "25mm",
-    stats: { move: '6"/Infantry', ranged: '+0 DICE', melee: '+0 DICE', armour: 0 },
-    battlekitRule: "Always has a Medi-kit and a Trench Knife. May have Standard Armour and any Battlekit from the New Antioch Armoury Tables (subject to Hearthcell restrictions).",
-    kit: { fixed: ["Medi-kit","Trench Knife"], allowed: "TROOP" },
-    abilities: [
-      { name: "Street Triage", text: "Add +1 DICE to the Risky Success Roll when this model carries out a Treat ACTION with their Medi-kit." },
-      { name: "Stretcher Bearers (ACTION)", text: "Two Field Medics that form a FIRETEAM may use this ability. If both Medics start their Activation within 1\" of the same friendly model that is Down, they may take a joint Move ACTION to carry that model. If they do so, they may move the Down model along with them. The Down model must remain within 1\" of both Medics throughout the move. During this move, the Medics have their Movement Characteristic halved. This move cannot be a Charge or Retreat." }
-    ],
-    keywords: ["NEW ANTIOCH","HEARTHCELL","TROOPS"]
-  },
-  sapperMate: {
-    name: "Sapper’s Mate",
-    cost: 45, limit: 3, role: "Troop", base: "25mm",
-    stats: { move: '6"/Infantry', ranged: '+0 DICE', melee: '+0 DICE', armour: 0 },
-    battlekitRule: "May have a Shotgun, Bolt-Action Rifle, Frag Grenades, and Satchel Charges. May have Standard Armour.",
-    kit: { fixed: [], allowed: "SAPPER_MATE" },
-    abilities: [
-      { name: "Fuse Runner", text: "Once per battle, after a friendly model within 6\" successfully carries out a Ranged Attack with a Satchel Charge, this model may immediately move D3\". This move is not an ACTION and may be taken even if the Sapper’s Mate has already been Activated this Turn." },
-      { name: "Improvised Explosives", text: "Satchel Charges purchased for a Sapper’s Mate cost 10 👑 each. This does not ignore the standard Limit: 3 (1 per model) stipulation for Satchel Charges in a warband." }
-    ],
-    keywords: ["NEW ANTIOCH","HEARTHCELL","TROOPS"]
-  }
+  cellMarshal: { name:"Cell Marshal", cost:85, limit:1, role:"Elite", base:"32mm", stats:{m:6, r:0, mel:1, arm:0}, kit:{allowed:"ELITE"}, ab: ["Co-ordinate","No One Left Behind"] },
+  weaver: { name:"Weaver of Ciphers", cost:80, limit:1, role:"Elite", base:"25mm", stats:{m:6, r:0, mel:0, arm:0}, kit:{allowed:"ELITE"}, ab: ["Stitch-Count","Spent Signal"] },
+  wardAngel: { name:"Ward Angel", cost:85, limit:1, role:"Elite", base:"25mm", stats:{m:6, r:0, mel:0, arm:-1}, kit:{fixed:["Standard Armour","Medi-kit"], allowed:"WARD_ANGEL"}, ab: ["Battlefield Surgeon","Mercy Cut"] },
+  fuseSister: { name:"Fuse-Sister", cost:80, limit:1, role:"Elite", base:"32mm", stats:{m:6, r:0, mel:0, arm:0}, kit:{allowed:"FUSE_SISTER"}, ab: ["Careful Hands","Rig the Approach"] },
+  docksideGiant: { name:"Dockside Giant", cost:85, limit:1, role:"Elite", base:"40mm", stats:{m:6, r:0, mel:2, arm:0}, kit:{allowed:"DOCKSIDE_GIANT"}, ab: ["Break the Line","Meat and Metal"] },
+  streetUrchin: { name:"Street Urchin", cost:18, limit:6, role:"Troop", base:"25mm", stats:{m:7, r:0, mel:-1, arm:0}, kit:{fixed:["Trench Knife"], allowed:"NONE"}, ab: ["Scurry Into the Gutter","Street Packs","Children of the Ruins"] },
+  lookout: { name:"Lookout", cost:28, limit:3, role:"Troop", base:"25mm", stats:{m:7, r:0, mel:-1, arm:0}, kit:{fixed:["Pistol"], allowed:"LOOKOUT"}, ab: ["Mark the Kill"] },
+  bruiser: { name:"Bruiser", cost:45, limit:3, role:"Troop", base:"32mm", stats:{m:6, r:0, mel:1, arm:0}, kit:{fixed:["Trench Club"], allowed:"TROOP"}, ab: ["Crowd Violence"] },
+  fieldMedic: { name:"Field Medic", cost:40, limit:2, role:"Troop", base:"25mm", stats:{m:6, r:0, mel:0, arm:0}, kit:{fixed:["Medi-kit","Trench Knife"], allowed:"TROOP"}, ab: ["Street Triage","Stretcher Bearers"] },
+  sapperMate: { name:"Sapper’s Mate", cost:45, limit:3, role:"Troop", base:"25mm", stats:{m:6, r:0, mel:0, arm:0}, kit:{allowed:"SAPPER_MATE"}, ab: ["Fuse Runner","Improvised Explosives"] }
 };
 
-const KIT_ALLOWED = {
-  NONE: [],
-  LOOKOUT: ["Binoculars","Shotgun","Bolt-Action Rifle"],
-  SAPPER_MATE: ["Shotgun","Bolt-Action Rifle","Frag Grenades","Satchel Charge","Standard Armour"],
-  TROOP: ["Pistol","Shotgun","Bolt-Action Rifle","Trench Knife","Trench Club","Sword/Axe","Frag Grenades","Standard Armour","Combat Helmet","Gas Mask","Medi-kit","Binoculars"],
-  ELITE: ["Pistol","Shotgun","Bolt-Action Rifle","Trench Knife","Trench Club","Sword/Axe","Frag Grenades","Standard Armour","Combat Helmet","Gas Mask","Medi-kit","Binoculars","Satchel Charge","Great Hammer/Maul","Great Sword/Axe","Machine Gun","Sniper Rifle","Flamethrower","Reinforced Armour","Machine Armour","Engineer Body Armour","Bayonet","Semi-Automatic Rifle","Submachine Gun","Automatic Rifle","Automatic Pistol","Automatic Shotgun","Grenade Launcher"],
-  WARD_ANGEL: ["Pistol","Shotgun","Bolt-Action Rifle","Trench Knife","Trench Club","Sword/Axe","Frag Grenades","Combat Helmet","Gas Mask","Binoculars"],
-  FUSE_SISTER: ["Pistol","Shotgun","Bolt-Action Rifle","Trench Knife","Trench Club","Sword/Axe","Frag Grenades","Standard Armour","Combat Helmet","Gas Mask","Medi-kit","Binoculars","Satchel Charge"],
-  DOCKSIDE_GIANT: ["Pistol","Shotgun","Bolt-Action Rifle","Trench Knife","Trench Club","Sword/Axe","Frag Grenades","Standard Armour","Combat Helmet","Gas Mask","Medi-kit","Binoculars","Great Hammer/Maul","Great Sword/Axe"]
+const KIT_LISTS = {
+  NONE:[],
+  LOOKOUT:["Binoculars","Shotgun","Bolt-Action Rifle"],
+  SAPPER_MATE:["Shotgun","Bolt-Action Rifle","Frag Grenades","Satchel Charge","Standard Armour"],
+  TROOP:["Pistol","Shotgun","Bolt-Action Rifle","Trench Knife","Trench Club","Sword/Axe","Frag Grenades","Standard Armour","Combat Helmet","Gas Mask","Medi-kit","Binoculars"],
+  ELITE:["Pistol","Shotgun","Bolt-Action Rifle","Trench Knife","Trench Club","Sword/Axe","Frag Grenades","Standard Armour","Combat Helmet","Gas Mask","Medi-kit","Binoculars","Satchel Charge","Great Hammer/Maul","Great Sword/Axe","Machine Gun","Sniper Rifle","Flamethrower","Reinforced Armour","Machine Armour","Engineer Body Armour","Bayonet","Semi-Automatic Rifle","Submachine Gun","Automatic Rifle","Automatic Pistol","Automatic Shotgun","Grenade Launcher"],
+  WARD_ANGEL:["Pistol","Shotgun","Bolt-Action Rifle","Trench Knife","Trench Club","Sword/Axe","Frag Grenades","Combat Helmet","Gas Mask","Binoculars"],
+  FUSE_SISTER:["Pistol","Shotgun","Bolt-Action Rifle","Trench Knife","Trench Club","Sword/Axe","Frag Grenades","Standard Armour","Combat Helmet","Gas Mask","Medi-kit","Binoculars","Satchel Charge"],
+  DOCKSIDE_GIANT:["Pistol","Shotgun","Bolt-Action Rifle","Trench Knife","Trench Club","Sword/Axe","Frag Grenades","Standard Armour","Combat Helmet","Gas Mask","Medi-kit","Binoculars","Great Hammer/Maul","Great Sword/Axe"]
 };
 
-/* ============================================================
-   ROSTER STATE
-   ============================================================ */
+// Global State
 let roster = [];
+let battleLog = [];
+let warband = { name:"", faction:"Hearthcell Resistance", patron:"", vp:0, gold:0, glory:0, arsenal:"", skills:"", locs:"" };
 let selectedId = null;
-let gameNumber = 1; // Tracks current campaign stage
+let gameNum = 1;
 
-function uid(){ return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); }
-
-function cloneUnit(unitKey){
-  const u = UNITS[unitKey];
-  return {
-    id: uid(),
-    unitKey,
-    name: u.name,
-    role: u.role,
-    baseCost: u.cost,
-    status: "active",
-    chosenKit: [],
-    notes: "",
-    failedPromotions: 0,
-    scars: [],
-    progression: []
-  };
-}
-
-function kitCost(model){
-  const u = UNITS[model.unitKey];
-  const fixed = (u.kit?.fixed)||[];
-  const chosen = model.chosenKit||[];
-  const items = [...fixed, ...chosen];
-  return items.reduce((sum, item) => {
-    if (item === "Satchel Charge" && model.unitKey === "sapperMate") return sum + 10;
-    return sum + (BATTLEKIT_COSTS[item] || 0);
-  }, 0);
-}
-
-function modelTotalCost(model){ return model.baseCost + kitCost(model); }
-function totalPoints(){ return roster.reduce((s,m)=> s + modelTotalCost(m), 0); }
-
-/* ============================================================
-   VALIDATION LOGIC (Now Campaign Aware)
-   ============================================================ */
-function checkLimits(){
-  const warnings = [];
-  const limits = CAMPAIGN_SCALING[gameNumber] || CAMPAIGN_SCALING[1];
-
-  // Marshal
-  const marshals = roster.filter(m => m.unitKey==="cellMarshal" && m.status !== "dead").length;
-  if (marshals < 1) warnings.push("Must include 1 Cell Marshal (not Dead).");
-
-  // Unit Limits
-  for (const [k,u] of Object.entries(UNITS)){
-    const n = roster.filter(m => m.unitKey===k && m.status !== "dead").length;
-    if (n > u.limit) warnings.push(`${u.name}: limit is ${u.limit}.`);
-  }
-
-  // Field Strength (Active Models only)
-  const fielded = roster.filter(m=> m.status==="active").length;
-  if (fielded > limits.max) {
-    warnings.push(`Field Strength exceeded: ${fielded}/${limits.max}. Move ${fielded - limits.max} to Bench.`);
-  }
-
-  // Threshold Value (Total Cost of Roster)
-  // Note: Usually campaign limits apply to the Fielded force + Bench? 
-  // Standard Trench Crusade campaign rules usually cap the TOTAL roster value.
-  const pts = totalPoints();
-  if (pts > limits.pts) {
-    warnings.push(`Threshold Value exceeded: ${pts}/${limits.pts} 👑.`);
-  }
-
-  return { warnings, limits, fielded, pts };
-}
-
-/* ============================================================
-   RENDER
-   ============================================================ */
-function renderUnitPicker(){
+/* ================= INIT & UI LOGIC ================= */
+function init(){
+  // Populate Unit Picker
   const sel = document.getElementById("unitPicker");
-  sel.innerHTML = "";
-  const keys = Object.keys(UNITS);
-  const elites = keys.filter(k => UNITS[k].role === "Elite");
-  const troops = keys.filter(k => UNITS[k].role === "Troop");
-
-  const g1 = document.createElement("optgroup"); g1.label = "Elites";
-  elites.forEach(k=>{
-    const o = document.createElement("option");
-    o.value = k; o.textContent = `${UNITS[k].name} — ${UNITS[k].cost} 👑`;
-    g1.appendChild(o);
+  Object.keys(UNITS).forEach(k => {
+    const opt = document.createElement("option");
+    opt.value = k; opt.text = `${UNITS[k].name} (${UNITS[k].cost}👑)`;
+    sel.add(opt);
   });
-  const g2 = document.createElement("optgroup"); g2.label = "Troops";
-  troops.forEach(k=>{
-    const o = document.createElement("option");
-    o.value = k; o.textContent = `${UNITS[k].name} — ${UNITS[k].cost} 👑`;
-    g2.appendChild(o);
-  });
-  sel.appendChild(g1); sel.appendChild(g2);
-}
 
-function renderStatus(){
-  const res = checkLimits();
-  
-  // Status Bar
-  document.getElementById("statusLine").textContent = `Game ${gameNumber}: ${res.pts}/${res.limits.pts} 👑 • Field Strength: ${res.fielded}/${res.limits.max} Models`;
-  document.getElementById("capLine").textContent = `Bench: ${roster.filter(m=>m.status==="bench").length} • Dead: ${roster.filter(m=>m.status==="dead").length}`;
-  
-  // Warnings
-  const wDiv = document.getElementById("warnings");
-  if (res.warnings.length) {
-    wDiv.innerHTML = `<span class="danger pill">⚠ Issue</span> ` + res.warnings.map(w=>`<span>${w}</span>`).join(" • ");
-  } else {
-    wDiv.innerHTML = `<span class="pill">✓ Legal</span> Ready for Game ${gameNumber}`;
-  }
-}
-
-function renderRosterList(){
-  const list = document.getElementById("rosterList");
-  list.innerHTML = "";
-  roster.forEach(model=>{
-    const u = UNITS[model.unitKey];
-    const card = document.createElement("div");
-    card.className = "model-card" + (model.id===selectedId ? " selected" : "");
-    const tag = model.status==="dead" ? `<span class="pill danger">Dead</span>` :
-               model.status==="bench" ? `<span class="pill">Bench</span>` :
-               `<span class="pill">Active</span>`;
-
-    card.innerHTML = `
-      <div class="head">
-        <div><strong>${u.name}</strong>
-          <div class="meta">${tag}<span class="pill">${u.role}</span><span class="pill">${modelTotalCost(model)} 👑</span></div>
-          <div class="statline">M:${u.stats.move} R:${u.stats.ranged} M:${u.stats.melee} A:${u.stats.armour}</div>
-        </div>
-        <div class="btnrow"><button data-act="dup" data-id="${model.id}">Dup</button><button data-act="remove" data-id="${model.id}">X</button></div>
-      </div>
-    `;
-    card.addEventListener("click", (ev)=>{
-      if (ev.target.tagName==="BUTTON") return;
-      selectedId = model.id; detailMode='model'; renderAll();
+  // Bind HQ Inputs
+  ['wbName','wbFaction','wbPatron','wbVP','wbGold','wbGlory','wbArsenal','wbSkills','wbLocs'].forEach(id => {
+    document.getElementById(id).addEventListener('input', (e) => {
+      // Map wbName -> warband.name
+      const key = id.replace('wb','').toLowerCase(); 
+      // Special mapping for arsenal/skills/locs if needed, or just match names
+      if(key === 'gold') warband.gold = parseInt(e.target.value)||0;
+      else if(key === 'glory') warband.glory = parseInt(e.target.value)||0;
+      else if(key === 'vp') warband.vp = parseInt(e.target.value)||0;
+      else warband[id.replace('wb','').toLowerCase()] = e.target.value; 
+      // Manual fix for keys that dont match simple logic:
+      if(id==='wbArsenal') warband.arsenal=e.target.value;
+      if(id==='wbSkills') warband.skills=e.target.value;
+      if(id==='wbLocs') warband.locs=e.target.value;
     });
-    list.appendChild(card);
   });
+  
+  updateGameLimits();
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.tab[onclick="switchTab('${id}')"]`).classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+}
+
+function uid(){ return Math.random().toString(36).substr(2,9); }
+
+/* ================= ROSTER LOGIC ================= */
+function addUnit(){
+  const key = document.getElementById("unitPicker").value;
+  const u = UNITS[key];
+  const newModel = {
+    id: uid(),
+    key: key,
+    name: u.name,
+    status: 'active', // active, bench, dead
+    xp: 0,
+    scars: 0,
+    stats: { m:0, r:0, mel:0, arm:0 }, // Modifiers from injury/advancement
+    kit: [],
+    fireteam: "",
+    notes: ""
+  };
+  roster.push(newModel);
+  selectedId = newModel.id;
+  renderAll();
+}
+
+function updateGameLimits(){
+  gameNum = parseInt(document.getElementById("gamePicker").value);
+  renderAll();
+}
+
+function getCost(m){
+  const u = UNITS[m.key];
+  let c = u.cost;
+  const fixed = u.kit.fixed || [];
+  const allKit = [...fixed, ...m.kit];
+  allKit.forEach(k => {
+    if(m.key==='sapperMate' && k==='Satchel Charge') c+=10;
+    else c += (BATTLEKIT_COSTS[k]||0);
+  });
+  return c;
 }
 
 function renderAll(){
-  renderRosterList();
-  renderDetailPanel();
-  renderStatus();
-}
-
-function itemProfileTable(items, printMode = false){
-  const lines = items.map(item=>{
-    const p = ITEM_PROFILES[item];
-    if (!p) return `<div class="tiny">• ${item}: (no profile)</div>`;
-    const content = `
-      <table class="stats">
-        <tr><th>Type</th><td>${p.type}</td></tr>
-        ${p.hands ? `<tr><th>Hands</th><td>${p.hands}</td></tr>` : ""}
-        ${p.range ? `<tr><th>Range</th><td>${p.range}</td></tr>` : ""}
-        ${(p.mods||[]).length ? `<tr><th>Mods</th><td>${p.mods.join(", ")}</td></tr>` : ""}
-        ${(p.tags||[]).length ? `<tr><th>Keywords</th><td>${p.tags.join(", ")}</td></tr>` : ""}
-      </table>
-      ${p.notes ? `<div class="tiny">${p.notes}</div>` : ""}
-    `;
-    if (printMode) return `<div style="margin:6px 0;"><strong>${item}</strong>${content}</div>`;
-    return `<details style="margin:6px 0;"><summary>${item} <span class="tiny">(${p.type})</span></summary>${content}</details>`;
-  }).join("");
-  return lines || `<div class="tiny">No items.</div>`;
-}
-
-function showWarband(){ detailMode='warband'; selectedId=null; renderAll(); }
-
-function renderDetailPanel(){
-  const panel = document.getElementById("detailPanel");
-  if (detailMode === 'warband' || !selectedId) { panel.innerHTML = WARBAND_RULES_HTML; return; }
-
-  const model = roster.find(m=>m.id===selectedId);
-  if (!model) { showWarband(); return; }
-  const u = UNITS[model.unitKey];
-  const fixed = (u.kit?.fixed)||[];
-  const allowed = KIT_ALLOWED[u.kit?.allowed || "NONE"] || [];
+  // 1. Render List
+  const list = document.getElementById("rosterList");
+  list.innerHTML = "";
+  let totalPts = 0;
+  let fielded = 0;
   
-  const kitChecks = allowed.map(item=>{
-    const checked = (model.chosenKit||[]).includes(item);
-    const cost = (item==="Satchel Charge" && model.unitKey==="sapperMate") ? 10 : (BATTLEKIT_COSTS[item]||0);
-    return `<label class="kit-item"><input type="checkbox" data-act="kit" data-item="${encodeURIComponent(item)}" ${checked?"checked":""} ${fixed.includes(item)?"disabled":""}/>${item} <span class="tiny">(${cost} 👑)</span></label>`;
+  roster.forEach(m => {
+    const u = UNITS[m.key];
+    const cost = getCost(m);
+    if(m.status!=='dead') totalPts += cost;
+    if(m.status==='active') fielded++;
+
+    const div = document.createElement("div");
+    div.className = `model-card ${selectedId===m.id?'selected':''}`;
+    div.onclick = () => { selectedId = m.id; renderAll(); };
+    
+    // Status Badge
+    let badge = `<span class="pill success">Active</span>`;
+    if(m.status==='bench') badge = `<span class="pill">Bench</span>`;
+    if(m.status==='dead') badge = `<span class="pill danger">Dead</span>`;
+    
+    // Warning for scars
+    let scarWarn = m.scars >= 3 ? `<span class="pill danger">3 SCARS!</span>` : "";
+
+    div.innerHTML = `
+      <div class="head">
+        <strong>${m.name} <span style="font-weight:400; font-size:0.9em;">(${u.role})</span></strong>
+        <span>${cost}👑</span>
+      </div>
+      <div class="tiny">
+        ${badge} ${scarWarn} XP:${m.xp} • Scars:${m.scars}
+      </div>
+    `;
+    list.appendChild(div);
+  });
+
+  // 2. Status Line
+  const limit = SCALING[gameNum];
+  const ptsOk = totalPts <= limit.pts;
+  const numOk = fielded <= limit.max;
+  
+  document.getElementById("statusLine").innerHTML = `
+    Threshold: <span style="color:${ptsOk?'black':'red'}">${totalPts}</span> / ${limit.pts}👑 &nbsp;|&nbsp; 
+    Field Strength: <span style="color:${numOk?'black':'red'}">${fielded}</span> / ${limit.max} Models
+  `;
+  
+  const warns = [];
+  if(!ptsOk) warns.push("Over Points Limit");
+  if(!numOk) warns.push("Over Model Limit");
+  roster.filter(m=>m.scars>=3 && m.status!=='dead').forEach(m=>warns.push(`${m.name} has 3 Scars (Remove?)`));
+  document.getElementById("warnings").innerHTML = warns.length ? warns.map(w=>`<span class="pill danger">${w}</span>`).join(" ") : "";
+
+  // 3. Render Detail
+  renderDetail();
+}
+
+function renderDetail(){
+  const p = document.getElementById("detailPanel");
+  const m = roster.find(x => x.id === selectedId);
+  if(!m) return; // p.innerHTML handled in HTML default
+
+  const u = UNITS[m.key];
+  const fixed = u.kit.fixed || [];
+  const allowed = KIT_LISTS[u.kit.allowed || "NONE"];
+
+  // Calculate final stats
+  const fm = u.stats.m + (m.stats.m||0);
+  const fr = u.stats.r + (m.stats.r||0);
+  const fmel = u.stats.mel + (m.stats.mel||0);
+  const farm = u.stats.arm + (m.stats.arm||0);
+  
+  // Kit Checkboxes
+  const kitHTML = allowed.map(k => {
+    const isChecked = m.kit.includes(k);
+    const cost = (m.key==='sapperMate' && k==='Satchel Charge') ? 10 : (BATTLEKIT_COSTS[k]||0);
+    return `<label style="display:block; margin-bottom:4px; font-weight:400;">
+      <input type="checkbox" onchange="toggleKit('${m.id}','${k}')" ${isChecked?'checked':''}> ${k} (${cost}👑)
+    </label>`;
   }).join("");
 
-  panel.innerHTML = `
-    <div class="titlebar"><div class="btnrow"><button onclick="showWarband()">Warband</button></div>
-      <div><div class="name">${u.name}</div><div class="sub">${u.role} • ${modelTotalCost(model)} 👑</div></div>
-      <div class="btnrow"><select data-act="status"><option value="active" ${model.status==="active"?"selected":""}>Active</option><option value="bench" ${model.status==="bench"?"selected":""}>Bench</option><option value="dead" ${model.status==="dead"?"selected":""}>Dead</option></select></div>
+  p.innerHTML = `
+    <div class="titlebar">
+       <div>
+         <input type="text" value="${m.name}" onchange="updateModel('${m.id}','name',this.value)" style="font-weight:bold; font-size:1.2em; width:200px;">
+         <div class="tiny">${u.name} • ${u.role}</div>
+       </div>
+       <div style="text-align:right;">
+         <select onchange="updateModel('${m.id}','status',this.value)">
+           <option value="active" ${m.status==='active'?'selected':''}>Active</option>
+           <option value="bench" ${m.status==='bench'?'selected':''}>Bench</option>
+           <option value="dead" ${m.status==='dead'?'selected':''}>Dead</option>
+         </select>
+         <div style="margin-top:5px;">
+           <button class="primary" onclick="dupeModel('${m.id}')">Dup</button>
+           <button style="background:#fee; border-color:#faa; color:#b00;" onclick="delModel('${m.id}')">Del</button>
+         </div>
+       </div>
     </div>
-    <table class="stats"><tr><th>Mov</th><td>${u.stats.move}</td></tr><tr><th>Rng</th><td>${u.stats.ranged}</td></tr><tr><th>Mel</th><td>${u.stats.melee}</td></tr><tr><th>Arm</th><td>${u.stats.armour}</td></tr><tr><th>Base</th><td>${u.base}</td></tr></table>
-    <div class="block"><div class="hdr">Battlekit</div><div class="tiny">${u.battlekitRule}</div>
-      <div class="kit-grid"><div class="kit-box"><h4>Fixed</h4>${fixed.length?fixed.map(i=>`<span class="pill">${i}</span>`).join(""):""}</div><div class="kit-box"><h4>Optional</h4><div class="kit-list">${kitChecks}</div></div></div>
+
+    <div class="row">
+      <div class="col" style="flex:1;">
+        <label>Characteristics (Base + Mod)</label>
+        <table class="stats-table">
+          <tr><th>Move</th><th>Ranged</th><th>Melee</th><th>Armour</th></tr>
+          <tr>
+            <td>${u.stats.m}" ${modInput(m.id,'m',m.stats.m)} = <b>${fm}"</b></td>
+            <td>${fmtStat(u.stats.r)} ${modInput(m.id,'r',m.stats.r)} = <b>${fmtStat(fr)}</b></td>
+            <td>${fmtStat(u.stats.mel)} ${modInput(m.id,'mel',m.stats.mel)} = <b>${fmtStat(fmel)}</b></td>
+            <td>${u.stats.arm} ${modInput(m.id,'arm',m.stats.arm)} = <b>${farm}</b></td>
+          </tr>
+        </table>
+      </div>
+      <div class="col" style="width:140px;">
+        <label>Progression</label>
+        <div style="background:#fafafa; border:1px solid #ccc; padding:8px;">
+          <div style="margin-bottom:8px;">XP: <input type="number" value="${m.xp}" onchange="updateModel('${m.id}','xp',this.value)" style="width:50px;"></div>
+          <div>Scars: <input type="number" min="0" max="3" value="${m.scars}" onchange="updateModel('${m.id}','scars',this.value)" style="width:50px;"></div>
+        </div>
+      </div>
     </div>
-    <div class="divider"></div>
-    <div class="block"><div class="hdr">Abilities</div>${u.abilities.map(a=>`<div class="ability"><b>${a.name}:</b> ${a.text}</div>`).join("")}</div>
-    <div class="divider"></div>
-    <div class="block"><div class="hdr">Weapon Stats</div>${itemProfileTable([...fixed, ...(model.chosenKit||[])])}</div>
-    <div class="divider"></div>
-    <div class="block"><div class="hdr">Campaign</div>
-      <div class="row"><div class="col" style="flex:1"><label>Notes</label><input data-act="note" type="text" value="${escapeHtml(model.notes)}" /></div><div class="col"><label>Failed Promos</label><input data-act="failpromo" type="number" min="0" value="${model.failedPromotions}" /></div></div>
+
+    <div class="row" style="margin-top:10px;">
+      <div class="col" style="flex:2;">
+         <label>Fireteam Partner</label>
+         <input type="text" value="${m.fireteam}" onchange="updateModel('${m.id}','fireteam',this.value)" placeholder="None">
+      </div>
+      <div class="col" style="flex:3;">
+         <label>Keywords</label>
+         <div class="tiny" style="padding-top:6px;">HEARTHCELL, NEW ANTIOCH, ${u.role.toUpperCase()}</div>
+      </div>
+    </div>
+
+    <div class="divider" style="margin:15px 0; border-bottom:1px solid #eee;"></div>
+
+    <div class="split">
+      <div>
+        <label>Battlekit</label>
+        <div style="margin-bottom:8px;">
+           ${fixed.map(f=>`<span class="pill">${f}</span>`).join("")}
+        </div>
+        <div style="max-height:200px; overflow-y:auto; border:1px solid #eee; padding:5px;">
+          ${kitHTML || '<em class="tiny">No optional kit</em>'}
+        </div>
+      </div>
+      <div>
+        <label>Abilities & Notes</label>
+        <div class="tiny" style="margin-bottom:10px;">
+          ${u.ab.join(", ")}
+        </div>
+        <label>Notes / Injuries</label>
+        <textarea onchange="updateModel('${m.id}','notes',this.value)">${m.notes}</textarea>
+      </div>
     </div>
   `;
-
-  panel.querySelectorAll('input[type="checkbox"][data-act="kit"]').forEach(cb=>{
-    cb.addEventListener("change", ()=>{
-      const item = decodeURIComponent(cb.getAttribute("data-item"));
-      const set = new Set(model.chosenKit||[]);
-      if (cb.checked) set.add(item); else set.delete(item);
-      model.chosenKit = Array.from(set); renderAll();
-    });
-  });
-  panel.querySelector('select[data-act="status"]').addEventListener("change", (e)=>{ model.status=e.target.value; renderAll(); });
-  panel.querySelector('input[data-act="note"]').addEventListener("input", (e)=>{ model.notes=e.target.value; });
-  panel.querySelector('input[data-act="failpromo"]').addEventListener("input", (e)=>{ model.failedPromotions=parseInt(e.target.value)||0; });
 }
 
-function escapeHtml(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-
-/* ============================================================
-   PRINT & IO
-   ============================================================ */
-function renderPrintView(){
-  const container = document.getElementById("printArea");
-  const limits = CAMPAIGN_SCALING[gameNumber];
-  let html = `
-    <div class="print-header"><h1>Hearthcell Warband</h1><div>Game ${gameNumber} • ${roster.filter(m=>m.status!=='dead').length} Models • ${totalPoints()} / ${limits.pts} 👑</div></div>
-    <div class="print-section"><div class="print-card" style="background:#fafafa;"><h3>Warband Rules</h3>${WARBAND_RULES_HTML.replace(/<details.*?>|<\/details>|<summary>.*?<\/summary>|<div class="titlebar".*?<\/div>/g, "")}</div></div>
-    <div class="print-grid">
-  `;
-  roster.filter(m => m.status !== "dead").forEach(model => {
-    const u = UNITS[model.unitKey];
-    html += `<div class="print-col"><div class="print-card"><div class="head"><h3>${model.name}</h3><div class="meta"><span class="pill">${u.role}</span><span class="pill">${modelTotalCost(model)} 👑</span>${model.status==='bench'?'<span class="pill">BENCH</span>':''}</div></div>
-      <table class="stats"><tr><th>Mov</th><th>Rng</th><th>Mel</th><th>Arm</th><th>Base</th></tr><tr><td>${u.stats.move}</td><td>${u.stats.ranged}</td><td>${u.stats.melee}</td><td>${u.stats.armour}</td><td>${u.base}</td></tr></table>
-      <div class="block"><div class="hdr">Abilities</div>${u.abilities.map(a=>`<div class="ability"><b>${a.name}:</b> ${a.text}</div>`).join("")}</div>
-      <div class="block"><div class="hdr">Weapons & Gear</div>${itemProfileTable([...(u.kit?.fixed||[]), ...(model.chosenKit||[])], true)}</div>
-      ${model.notes ? `<div class="block"><div class="hdr">Notes</div><div>${escapeHtml(model.notes)}</div></div>` : ''}
-    </div></div>`;
-  });
-  html += `</div>`;
-  container.innerHTML = html;
+// Helpers for Stats
+function fmtStat(n){ return n > 0 ? `+${n}` : `${n}`; }
+function modInput(id, stat, val){ 
+  return `<input type="number" class="stat-mod" value="${val}" onchange="updateStat('${id}','${stat}',this.value)">`; 
 }
 
-function addUnit(k){ if(roster.filter(m=>m.unitKey===k && m.status!=="dead").length >= UNITS[k].limit) return alert("Limit reached"); roster.push(cloneUnit(k)); selectedId=roster[roster.length-1].id; renderAll(); }
-function removeModel(id){ roster=roster.filter(m=>m.id!==id); if(selectedId===id) showWarband(); else renderAll(); }
-function duplicateModel(id){ const src=roster.find(m=>m.id===id); if(src){ roster.push({...JSON.parse(JSON.stringify(src)), id:uid(), status:'bench'}); selectedId=roster[roster.length-1].id; renderAll(); }}
-function fixRoster(){ roster.forEach(m=> { const allowed = new Set(KIT_ALLOWED[UNITS[m.unitKey].kit?.allowed||"NONE"]||[]); m.chosenKit = (m.chosenKit||[]).filter(k=>allowed.has(k)); }); renderAll(); }
+/* ================= MODEL ACTIONS ================= */
+function updateModel(id, field, val){
+  const m = roster.find(x=>x.id===id);
+  if(!m) return;
+  if(field==='xp' || field==='scars') m[field] = parseInt(val)||0;
+  else m[field] = val;
+  renderAll();
+}
+function updateStat(id, stat, val){
+  const m = roster.find(x=>x.id===id);
+  if(m) { m.stats[stat] = parseInt(val)||0; renderAll(); }
+}
+function toggleKit(id, item){
+  const m = roster.find(x=>x.id===id);
+  if(!m) return;
+  if(m.kit.includes(item)) m.kit = m.kit.filter(k=>k!==item);
+  else m.kit.push(item);
+  renderAll();
+}
+function dupeModel(id){
+  const m = roster.find(x=>x.id===id);
+  if(m){
+    const clone = JSON.parse(JSON.stringify(m));
+    clone.id = uid();
+    clone.name += " (Copy)";
+    clone.status = 'bench';
+    roster.push(clone);
+    selectedId = clone.id;
+    renderAll();
+  }
+}
+function delModel(id){
+  if(confirm("Delete model?")){
+    roster = roster.filter(x=>x.id!==id);
+    selectedId = null;
+    document.getElementById("detailPanel").innerHTML = "";
+    renderAll();
+  }
+}
 
-function exportJSON(){ document.getElementById("ioBox").value = JSON.stringify({ version: "0.9.3", gameNumber, roster, notes: document.getElementById("notesBox").value, costs: BATTLEKIT_COSTS }, null, 2); }
+/* ================= BATTLE LOG ================= */
+function addLogEntry(){
+  battleLog.push({ game: battleLog.length+1, scenario:"", result:"", notes:"" });
+  renderLog();
+}
+function renderLog(){
+  const tbody = document.querySelector("#logTable tbody");
+  tbody.innerHTML = "";
+  battleLog.forEach((entry, idx) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${idx+1}</td>
+      <td><input type="text" value="${entry.scenario}" onchange="battleLog[${idx}].scenario=this.value" style="width:100%; border:none;"></td>
+      <td><input type="text" value="${entry.result}" onchange="battleLog[${idx}].result=this.value" style="width:100%; border:none;" placeholder="W/L/D"></td>
+      <td><input type="text" value="${entry.notes}" onchange="battleLog[${idx}].notes=this.value" style="width:100%; border:none;" placeholder="Deeds..."></td>
+      <td style="text-align:center;"><button onclick="battleLog.splice(${idx},1); renderLog();" style="color:red; border:none; background:none;">X</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ================= IO & PRINT ================= */
+function exportJSON(){
+  const data = { version: "1.0", gameNum, warband, roster, battleLog };
+  document.getElementById("ioBox").value = JSON.stringify(data, null, 2);
+}
 function importJSON(){
-  try {
+  try{
     const d = JSON.parse(document.getElementById("ioBox").value);
-    roster = d.roster||[]; gameNumber = d.gameNumber||1; document.getElementById("gamePicker").value = gameNumber;
-    document.getElementById("notesBox").value = d.notes||"";
-    if(d.costs) Object.assign(BATTLEKIT_COSTS, d.costs);
-    showWarband();
+    if(d.roster) roster = d.roster;
+    if(d.battleLog) battleLog = d.battleLog;
+    if(d.gameNum) { gameNum=d.gameNum; document.getElementById("gamePicker").value=gameNum; }
+    if(d.warband) {
+      warband = d.warband;
+      // sync inputs
+      document.getElementById('wbName').value = warband.name||"";
+      document.getElementById('wbFaction').value = warband.faction||"";
+      document.getElementById('wbPatron').value = warband.patron||"";
+      document.getElementById('wbVP').value = warband.vp||0;
+      document.getElementById('wbGold').value = warband.gold||0;
+      document.getElementById('wbGlory').value = warband.glory||0;
+      document.getElementById('wbArsenal').value = warband.arsenal||"";
+      document.getElementById('wbSkills').value = warband.skills||"";
+      document.getElementById('wbLocs').value = warband.locs||"";
+    }
+    renderAll(); renderLog();
+    alert("Loaded!");
   } catch(e){ alert("Invalid JSON"); }
 }
 
-/* ============================================================
-   EVENTS
-   ============================================================ */
-document.getElementById("gamePicker").addEventListener("change", (e)=>{ gameNumber=parseInt(e.target.value); renderAll(); });
-document.getElementById("btnAddUnit").addEventListener("click", ()=>addUnit(document.getElementById("unitPicker").value));
-document.getElementById("btnFix").addEventListener("click", fixRoster);
-document.getElementById("btnClear").addEventListener("click", ()=>{ if(confirm("Clear?")){roster=[]; showWarband();} });
-document.getElementById("btnPrint").addEventListener("click", ()=>{ renderPrintView(); window.print(); });
-document.getElementById("btnExport").addEventListener("click", exportJSON);
-document.getElementById("btnImport").addEventListener("click", importJSON);
-document.getElementById("rosterList").addEventListener("click", (e)=>{ 
-  const btn = e.target.closest("button");
-  if(btn){ if(btn.dataset.act==="dup") duplicateModel(btn.dataset.id); else if(btn.dataset.act==="remove") removeModel(btn.dataset.id); }
-});
+function printRoster(){
+  const div = document.getElementById("printArea");
+  const limit = SCALING[gameNum];
+  const activeModels = roster.filter(m=>m.status!=='dead');
+  
+  // Page 1: Campaign HQ
+  let html = `
+    <div class="print-page">
+      <div class="print-header">
+        <div>
+           <h1>${warband.name || "Untitled Warband"}</h1>
+           <div>Faction: ${warband.faction} • Patron: ${warband.patron}</div>
+        </div>
+        <div style="text-align:right;">
+           <h3>Game ${gameNum} Limits</h3>
+           ${document.getElementById("statusLine").innerText}
+        </div>
+      </div>
+      
+      <div class="print-grid">
+        <div class="print-card">
+           <h3>Treasury</h3>
+           <div><b>Strongbox:</b> ${warband.gold} 👑</div>
+           <div><b>Glory:</b> ${warband.glory}</div>
+           <div><b>Camp. VPs:</b> ${warband.vp}</div>
+           <hr>
+           <h4>Arsenal</h4>
+           <div style="font-size:12px; white-space:pre-wrap;">${warband.arsenal}</div>
+        </div>
+        <div class="print-card">
+           <h3>Exploration</h3>
+           <h4>Skills</h4>
+           <div style="font-size:12px; white-space:pre-wrap;">${warband.skills}</div>
+           <hr>
+           <h4>Locations</h4>
+           <div style="font-size:12px; white-space:pre-wrap;">${warband.locs}</div>
+        </div>
+      </div>
 
-/* INIT */
-renderUnitPicker();
-showWarband();
+      <div class="print-card">
+         <h3>Battle Log</h3>
+         <table class="log">
+           <thead><tr><th>#</th><th>Scenario</th><th>Res</th><th>Deeds</th></tr></thead>
+           <tbody>
+             ${battleLog.map((b,i)=>`<tr><td>${i+1}</td><td>${b.scenario}</td><td>${b.result}</td><td>${b.notes}</td></tr>`).join("")}
+           </tbody>
+         </table>
+      </div>
+    </div>
+  `;
+
+  // Page 2: Models
+  html += `<div class="print-header"><h1>Muster Roll</h1></div><div class="print-grid">`;
+  
+  activeModels.forEach(m => {
+    const u = UNITS[m.key];
+    const cost = getCost(m);
+    const fm = u.stats.m + (m.stats.m||0);
+    const fr = u.stats.r + (m.stats.r||0);
+    const fmel = u.stats.mel + (m.stats.mel||0);
+    const farm = u.stats.arm + (m.stats.arm||0);
+    
+    html += `
+    <div class="print-card">
+      <div style="display:flex; justify-content:space-between; border-bottom:1px solid #000; padding-bottom:4px;">
+        <b>${m.name}</b> <span>${cost}👑</span>
+      </div>
+      <div style="font-size:12px; margin-bottom:4px;">
+         ${u.role} • ${m.status.toUpperCase()} • XP:${m.xp} • Scars:${m.scars}
+      </div>
+      
+      <table class="print-stats">
+        <tr><th>Mov</th><th>Rng</th><th>Mel</th><th>Arm</th></tr>
+        <tr><td>${fm}"</td><td>${fmtStat(fr)}</td><td>${fmtStat(fmel)}</td><td>${farm}</td></tr>
+      </table>
+      
+      <div style="margin-top:6px; font-size:12px;">
+        <b>Kit:</b> ${(u.kit.fixed||[]).join(", ")} ${m.kit.length?", "+m.kit.join(", "):""}
+      </div>
+      ${m.fireteam ? `<div style="font-size:12px;"><b>Fireteam:</b> ${m.fireteam}</div>` : ""}
+      
+      <div style="margin-top:6px; font-size:12px; font-style:italic;">
+        ${u.ab.join(", ")}
+      </div>
+      
+      ${m.notes ? `<div style="margin-top:6px; border-top:1px dashed #ccc; padding-top:2px; font-size:11px;">${m.notes}</div>` : ""}
+    </div>
+    `;
+  });
+  html += `</div>`;
+
+  div.innerHTML = html;
+  window.print();
+}
+
+// Start
+init();
 </script>
 </body>
 </html>
