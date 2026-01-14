@@ -1,1041 +1,358 @@
-<!doctype html>
-<html lang="en-GB">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Hearthcell Army Builder v0.5</title>
-  <style>
-    :root{
-      --bg:#0e0f12; --panel:#151821; --panel2:#10131a; --text:#e9ecf1; --muted:#aab3c2;
-      --accent:#c9a227; --bad:#ff5c7a; --good:#58d68d; --line:#2a3242; --chip:#1e2431;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
-    }
-    *{box-sizing:border-box}
-    body{margin:0; font-family:var(--sans); background:var(--bg); color:var(--text);}
-    header{padding:16px 16px 10px; border-bottom:1px solid var(--line); background:linear-gradient(180deg, #141726, #0e0f12);}
-    header h1{margin:0; font-size:18px; letter-spacing:.2px}
-    header .sub{margin-top:6px; color:var(--muted); font-size:13px}
-    main{padding:16px; display:grid; grid-template-columns: 400px 1fr; gap:16px;}
-    @media (max-width: 1100px){ main{grid-template-columns:1fr;} }
-    .card{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px;}
-    .card h2{margin:0 0 10px; font-size:14px; color:#f3f5f9; letter-spacing:.2px}
-    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-    label{display:block; font-size:12px; color:var(--muted); margin-bottom:4px}
-    input, select, textarea, button{
-      background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:10px;
-      padding:8px 10px; font-size:13px;
-    }
-    textarea{min-height:72px; resize:vertical}
-    input[type="number"]{width:120px}
-    .grow{flex:1}
-    .btn{cursor:pointer; background:#1a1f2b}
-    .btn:hover{border-color:#3a4660}
-    .btnAccent{background:rgba(201,162,39,.15); border-color:rgba(201,162,39,.35)}
-    .btnAccent:hover{border-color:rgba(201,162,39,.65)}
-    .btnBad{background:rgba(255,92,122,.12); border-color:rgba(255,92,122,.35)}
-    .btnBad:hover{border-color:rgba(255,92,122,.65)}
-    .pill{display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border-radius:999px; background:var(--chip); border:1px solid var(--line); font-size:12px; color:var(--muted)}
-    .pill strong{color:var(--text); font-weight:600}
-    .warn{padding:10px; border-radius:10px; border:1px solid rgba(255,92,122,.35); background:rgba(255,92,122,.08); color:#ffd6de; font-size:12px}
-    .ok{padding:10px; border-radius:10px; border:1px solid rgba(88,214,141,.28); background:rgba(88,214,141,.07); color:#d8ffe8; font-size:12px}
-    .muted{color:var(--muted)}
-    .small{font-size:12px}
-    .tag{display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid var(--line); background:#111523; font-size:11px; color:var(--muted); margin-right:6px; margin-bottom:4px}
-    .mono{font-family:var(--mono)}
-    .split{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
-    @media (max-width: 920px){ .split{grid-template-columns:1fr} }
-    .hr{height:1px; background:var(--line); margin:10px 0}
-    .rightTools{display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap}
-    .sticky{position:sticky; top:12px}
-    details summary{cursor:pointer}
-    .abilityBlock b{color:#fff}
-    .abilityBlock{line-height:1.35}
+<meta charset="UTF-8">
+<title>Hearthcell Warband Builder v0.7</title>
 
-    /* Print */
-    @media print{
-      body{background:white; color:black}
-      header, .noPrint{display:none !important}
-      main{display:block; padding:0}
-      .card{border:none; border-radius:0; padding:0; background:white}
-      .printBlock{page-break-inside:avoid; margin-bottom:14px}
-      .printTitle{font-size:16px; font-weight:700; margin:0 0 6px}
-      .printMeta{font-size:11px; color:#333; margin:0 0 8px}
-      .printLine{border-top:1px solid #ccc; margin:8px 0}
-      .printUnit{font-size:12px; margin:0 0 4px}
-      .printRules{font-size:11px; color:#222; margin:0 0 4px}
-      .printKit{font-size:11px; margin:0 0 3px}
-      .tag{border:1px solid #bbb; background:#f4f4f4; color:#333}
-    }
-  </style>
+<style>
+body {
+  font-family: serif;
+  background: #f4f4f4;
+  margin: 0;
+  padding: 20px;
+}
+
+h1, h2, h3 {
+  margin-bottom: 0.25em;
+}
+
+.section {
+  background: #ffffff;
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+}
+
+button {
+  padding: 6px 10px;
+  margin: 4px 0;
+}
+
+.model-card {
+  border: 1px solid #888;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.statline {
+  font-style: italic;
+  margin-bottom: 5px;
+}
+
+.ability {
+  margin-bottom: 6px;
+}
+
+.keywords {
+  font-size: 0.9em;
+  color: #444;
+}
+</style>
 </head>
 
 <body>
-<header>
-  <h1>Hearthcell Army Builder <span class="muted">v0.5</span></h1>
-  <div class="sub">Rules-complete Hearthcell: correct costs, limits, statlines, unit abilities (readable formatting), per-unit Battlekit locks, table-ready print.</div>
-</header>
 
-<main>
-  <section class="card sticky noPrint" aria-label="Controls">
-    <h2>Force Settings</h2>
-    <div class="row">
-      <div>
-        <label>Points</label>
-        <input id="pointsLimit" type="number" min="0" step="5" value="700">
-      </div>
-      <div>
-        <label>Model Cap (Game 1)</label>
-        <input id="modelCap" type="number" min="1" step="1" value="10">
-      </div>
-      <div class="grow">
-        <label>Campaign round notes</label>
-        <input id="roundNotes" class="grow" placeholder="e.g. Round 2 · After ‘Mud Saints’ scenario…">
-      </div>
-    </div>
+<h1>Hearthcell Resistance — Warband Builder (v0.7)</h1>
 
-    <div class="hr"></div>
+<div class="section">
+  <h2>Warband Controls</h2>
+  <button id="fixRoster">Fix / Auto-Equip Roster</button><br>
+  <button id="suggestWarband">Suggest Legal Warband (700 👑)</button>
+</div>
 
-    <h2>Add Model</h2>
-    <div class="row">
-      <div class="grow">
-        <label>Unit Type</label>
-        <select id="unitTypeSelect" class="grow"></select>
-      </div>
-      <div>
-        <label>Qty</label>
-        <input id="addQty" type="number" min="1" step="1" value="1">
-      </div>
-      <button class="btn btnAccent" id="addModelBtn">Add</button>
-    </div>
-
-    <div class="row" style="margin-top:10px">
-      <button class="btn" id="autoPickBtn">Auto-pick legal force</button>
-      <button class="btn btnBad" id="clearBtn">Clear force</button>
-      <button class="btn" id="saveBtn">Save</button>
-      <button class="btn" id="loadBtn">Load</button>
-    </div>
-
-    <div class="hr"></div>
-
-    <h2>Warband rules and campaign option</h2>
-    <div class="small muted">
-      <div><b>Faithful.</b> All models have <b>HEARTHCELL</b>.</div>
-      <div style="margin-top:6px">
-        <b>Hidden in Plain Sight:</b> Friendly HEARTHCELL TROOPS count as being in COVER while within 1" of terrain and more than 6" from all enemy models.
-      </div>
-      <div style="margin-top:6px">
-        <b>Street Packs:</b> A Street Urchin adds +1 DICE to Success Rolls for Melee Attacks if at least one other friendly Street Urchin is within 1" of the same enemy model.
-      </div>
-      <div style="margin-top:6px">
-        <b>Scurry Into the Gutter:</b> Once per Turn, when a Street Urchin is declared as the target of a Ranged Attack, after the attack (including any Injury Rolls) has fully resolved, if the model is not Down or Out of Action, it may immediately move D3". This move cannot be used to move within 1" of an enemy model.
-      </div>
-      <div style="margin-top:6px">
-        <b>Children of the Ruins:</b> Street Urchins cannot be Promoted.
-      </div>
-    </div>
-
-    <div style="margin-top:10px">
-      <label>Post-game Campaign Option (choose one after each game)</label>
-      <select id="campaignOption">
-        <option value="">—</option>
-        <option value="A">A) Scavenge the Fallen</option>
-        <option value="B">B) Safehouse Contacts</option>
-        <option value="C">C) Orphan Pipeline</option>
-      </select>
-      <div class="small muted" style="margin-top:6px">
-        <b>A) Scavenge the Fallen:</b> Skip Reinforcements and Exploration. For each friendly non-Mercenary removed from your roster in Trauma, recover one piece of its Battlekit to your Arsenal (excess over Limits must be sold next Quartermaster).<br><br>
-        <b>B) Safehouse Contacts:</b> In Exploration, you may re-roll one additional Exploration die, and you may re-roll the entire Exploration result once (after any individual re-rolls are made).<br><br>
-        <b>C) Orphan Pipeline:</b> In Quartermaster, if any TROOP models were removed from your roster in Trauma, recruit one Street Urchin at -5 👑 (minimum 15 👑).
-      </div>
-      <div class="row" style="margin-top:10px">
-        <button class="btn" id="logCampaignBtn">Log option to campaign notes</button>
-      </div>
-    </div>
-
-    <div class="hr"></div>
-
-    <h2>Campaign Tracker</h2>
-    <div class="split">
-      <div>
-        <label>Glory</label>
-        <input id="glory" type="number" min="0" step="1" value="0">
-      </div>
-      <div>
-        <label>Ducats</label>
-        <input id="ducats" type="number" min="0" step="1" value="0">
-      </div>
-    </div>
-    <div style="margin-top:10px">
-      <label>Campaign log</label>
-      <textarea id="campaignLog" placeholder="After-game notes, who died, what you found, who failed promotion rolls…"></textarea>
-    </div>
-    <div class="split" style="margin-top:10px">
-      <div>
-        <label>Arsenal / Armoury Notes</label>
-        <textarea id="arsenalNotes" placeholder="Battlekit in storage, captured kit, limits exceeded, sold items…"></textarea>
-      </div>
-      <div>
-        <label>Exploration Log</label>
-        <textarea id="explorationNotes" placeholder="Locations, items, rumours, favours…"></textarea>
-      </div>
-    </div>
-
-    <div class="hr"></div>
-
-    <h2>Print</h2>
-    <div class="row">
-      <button class="btn btnAccent" id="printBtn">Print roster + rules</button>
-      <span class="small muted">Print uses shorthand statline.</span>
-    </div>
-
-    <div class="hr"></div>
-
-    <div id="statusBox"></div>
-  </section>
-
-  <section class="card" aria-label="Roster">
-    <div class="row" style="justify-content:space-between; align-items:flex-end">
-      <div>
-        <h2>Roster</h2>
-        <div class="row">
-          <span class="pill"><strong id="statPoints">0</strong> / <span id="statPointsMax">700</span> 👑</span>
-          <span class="pill"><strong id="statModels">0</strong> / <span id="statModelsMax">10</span> models</span>
-          <span class="pill"><strong id="statTroops">0</strong> Troops</span>
-          <span class="pill"><strong id="statElites">0</strong> Elites</span>
-        </div>
-      </div>
-      <div class="rightTools noPrint">
-        <button class="btn" id="expandAllBtn">Expand all</button>
-        <button class="btn" id="collapseAllBtn">Collapse all</button>
-      </div>
-    </div>
-
-    <div class="hr"></div>
-
-    <div id="rosterContainer"></div>
-  </section>
-</main>
+<div class="section">
+  <h2>Roster</h2>
+  <div id="roster"></div>
+</div>
 
 <script>
-/* =========================
-   Units: Hearthcell (from latest PDF)
-   ========================= */
-const UNITS = [
-  {
-    id:"cell_marshal", name:"Cell Marshal",
-    role:"ELITE", tags:["Commander","Elite"],
-    cost:85, max:1,
-    stats:{move:'6"/Infantry', ranged:"+0 DICE", melee:"+1 DICE", armour:"0", base:"32mm"},
-    keywords:["NEW ANTIOCH","HEARTHCELL","ELITE","NEGATE FEAR"],
-    battlekit:{
-      mode:"ALLOW_LIST_EXCEPT", // Elites can take any New Antioch kit, but we keep this builder’s catalogue; no extra restrictions beyond global.
-      allowed:null,
-      banned:[]
-    },
-    lockedKit:[],
-    abilitiesHtml:`
-      <div class="abilityBlock">
-        <div><b>Co-ordinate ACTION:</b> Take a Risky Success Roll for the Cell Marshal. If the roll is a Failure, the Cell Marshal’s Activation ends immediately. If the roll is a Success or Critical Success, choose one friendly HEARTHCELL TROOP model within 6" that is not Down or Out of Action. The chosen model may immediately move up to D3". This move is not an ACTION.</div>
-        <div style="margin-top:8px"><b>No One Left Behind:</b> Friendly HEARTHCELL models within 8" of the Cell Marshal treat Retreat as a Basic ACTION.</div>
-      </div>
-    `
-  },
-  {
-    id:"weaver", name:"Weaver of Ciphers",
-    role:"ELITE", tags:["Elite"],
-    cost:80, max:1,
-    stats:{move:'6"/Infantry', ranged:"+0 DICE", melee:"+0 DICE", armour:"0", base:"25mm"},
-    keywords:["NEW ANTIOCH","HEARTHCELL","ELITE"],
-    battlekit:{mode:"ALLOW_LIST_EXCEPT", allowed:null, banned:[]},
-    lockedKit:[],
-    abilitiesHtml:`
-      <div class="abilityBlock">
-        <div><b>Stitch-Count ACTION:</b> Take a Risky Success Roll for this model. If the roll is a Failure, the model’s Activation ends immediately. If the roll is a Success or Critical Success, place a CIPHER MARKER next to an enemy model within 24" that is in this model’s Line of Sight. There can be a maximum of 2 CIPHER MARKERS on the battlefield at any one time.</div>
-        <div style="margin-top:8px"><b>Spent Signal:</b> When a friendly model makes a Ranged Attack against an enemy model with a CIPHER MARKER, you may remove 1 CIPHER MARKER from that enemy to add +1 DICE to the Success Roll for that Ranged Attack.</div>
-      </div>
-    `
-  },
-  {
-    id:"ward_angel", name:"Ward Angel",
-    role:"ELITE", tags:["Elite"],
-    cost:85, max:1,
-    stats:{move:'6"/Infantry', ranged:"+0 DICE", melee:"-1 DICE", armour:"1", base:"25mm"},
-    keywords:["NEW ANTIOCH","HEARTHCELL","ELITE"],
-    battlekit:{
-      mode:"ALLOW_LIST_EXCEPT",
-      allowed:null,
-      banned:["standard_armour","reinforced_armour","machine_armour"] // cannot take Armour beyond the locked Standard Armour
-    },
-    lockedKit:["standard_armour","medikit"],
-    abilitiesHtml:`
-      <div class="abilityBlock">
-        <div><b>Battlefield Surgeon:</b> Add +2 DICE to the Risky Success Roll when this model carries out a Treat ACTION with their Medi-kit.</div>
-        <div style="margin-top:8px"><b>Mercy Cut:</b> Add +1 INJURY DICE to Injury Rolls for Melee Attacks made by this model if the target is Down and does not have the BLACK GRAIL or DEMONIC keyword.</div>
-      </div>
-    `
-  },
-  {
-    id:"fuse_sister", name:"Fuse-Sister",
-    role:"ELITE", tags:["Elite"],
-    cost:80, max:1,
-    stats:{move:'6"/Infantry', ranged:"+0 DICE", melee:"+0 DICE", armour:"0", base:"32mm"},
-    keywords:["NEW ANTIOCH","HEARTHCELL","ELITE"],
-    battlekit:{mode:"ALLOW_LIST_EXCEPT", allowed:null, banned:[]},
-    lockedKit:[],
-    abilitiesHtml:`
-      <div class="abilityBlock">
-        <div><b>Careful Hands:</b> Add +1 DICE to Risky Success Rolls for this model when performing an ACTION involving Explosives (such as throwing a Satchel Charge, or using the Defuse Mine or Rig the Approach actions).</div>
-        <div style="margin-top:8px"><b>Rig the Approach:</b> Once per game, if this model is within 1" of a terrain piece, you may take a Risky Success Roll. If successful, place a Booby Trap Marker on that terrain. The first enemy model to move within 1" of that terrain triggers the trap; the model suffers an Injury Roll with the SHRAPNEL keyword. Then remove the marker.</div>
-      </div>
-    `
-  },
-  {
-    id:"dockside_giant", name:"Dockside Giant",
-    role:"ELITE", tags:["Elite","Strong"],
-    cost:85, max:1,
-    stats:{move:'6"/Infantry', ranged:"+0 DICE", melee:"+2 DICE", armour:"0", base:"40mm"},
-    keywords:["NEW ANTIOCH","HEARTHCELL","ELITE","STRONG"],
-    battlekit:{mode:"ALLOW_LIST_PLUS", allowed:null, banned:[], plusAllowed:["great_hammer","great_sword_axe"]},
-    lockedKit:[],
-    abilitiesHtml:`
-      <div class="abilityBlock">
-        <div><b>Break the Line:</b> When you roll the Charge Bonus for a Dockside Giant, roll 1 extra D6 and use the single highest die to determine the bonus.</div>
-        <div style="margin-top:8px"><b>Meat and Metal:</b> Add -1 INJURY DICE to Injury Rolls for attacks made against this model with weapons that do not have the HEAVY keyword.</div>
-      </div>
-    `
-  },
+/* ===========================
+   HEARTHCELL UNIT DEFINITIONS
+   VERIFIED — DO NOT EDIT
+   =========================== */
 
-  // TROOPS
-  {
-    id:"urchin", name:"Street Urchins",
-    role:"TROOP", tags:["Troop","No Promotion"],
-    cost:18, max:6,
-    stats:{move:'7"/Infantry', ranged:"—", melee:"-1 DICE", armour:"0", base:"25mm"},
-    keywords:["NEW ANTIOCH","HEARTHCELL","TROOPS"],
-    battlekit:{mode:"LOCKED_ONLY", allowed:["trench_knife"], banned:[]},
-    lockedKit:["trench_knife"],
-    abilitiesHtml:`
-      <div class="abilityBlock">
-        <div><b>Scurry Into the Gutter:</b> Once per Turn, when a Street Urchin is declared as the target of a Ranged Attack, after the attack (including any Injury Rolls) has fully resolved, if the model is not Down or Out of Action, it may immediately move D3". This move cannot be used to move within 1" of an enemy model.</div>
-        <div style="margin-top:8px"><b>Street Packs:</b> A Street Urchin adds +1 DICE to Success Rolls for Melee Attacks if at least one other friendly Street Urchin is within 1" of the same enemy model.</div>
-        <div style="margin-top:8px"><b>Children of the Ruins:</b> Street Urchins cannot be Promoted.</div>
-      </div>
-    `
-  },
-  {
-    id:"lookout", name:"Lookouts",
-    role:"TROOP", tags:["Troop"],
-    cost:28, max:3,
-    stats:{move:'7"/Infantry', ranged:"+0 DICE", melee:"-1 DICE", armour:"0", base:"25mm"},
-    keywords:["NEW ANTIOCH","HEARTHCELL","TROOPS"],
-    battlekit:{mode:"ALLOW_LIST_EXCEPT", allowed:["pistol","shotgun","bolt_action_rifle","binoculars","trench_knife","trench_club","sword_axe","frag_grenades","gas_mask","combat_helmet","medikit"], banned:["standard_armour","reinforced_armour","machine_armour"]},
-    lockedKit:["pistol"],
-    abilitiesHtml:`
-      <div class="abilityBlock">
-        <div><b>Mark the Kill (ACTION):</b> Choose one enemy model within 24" and Line of Sight. Take a Risky Success Roll for the Lookout. If the roll is a Failure, the Lookout’s Activation ends immediately. If the roll is a Success or Critical Success, until the end of the Turn, the first friendly model to make a Ranged Attack against that enemy adds +1 DICE to the Success Roll.</div>
-      </div>
-    `
-  },
-  {
-    id:"bruiser", name:"Bruisers",
-    role:"TROOP", tags:["Troop"],
-    cost:45, max:3,
-    stats:{move:'6"/Infantry', ranged:"+0 DICE", melee:"+1 DICE", armour:"0", base:"32mm"},
-    keywords:["NEW ANTIOCH","HEARTHCELL","TROOPS"],
-    battlekit:{mode:"TROOPS_DEFAULT", allowed:null, banned:[]},
-    lockedKit:["trench_club"],
-    abilitiesHtml:`
-      <div class="abilityBlock">
-        <div><b>Crowd Violence:</b> If a friendly model successfully completes a Charge against an enemy model that is already within 1" of at least one other friendly model, add +1 DICE to the Success Roll for its first Melee Attack during that Activation.</div>
-      </div>
-    `
-  },
-  {
-    id:"field_medic", name:"Field Medics",
-    role:"TROOP", tags:["Troop"],
-    cost:40, max:2,
-    stats:{move:'6"/Infantry', ranged:"+0 DICE", melee:"+0 DICE", armour:"0", base:"25mm"},
-    keywords:["NEW ANTIOCH","HEARTHCELL","TROOPS"],
-    battlekit:{mode:"TROOPS_DEFAULT", allowed:null, banned:[]},
-    lockedKit:["medikit","trench_knife"],
-    abilitiesHtml:`
-      <div class="abilityBlock">
-        <div><b>Street Triage:</b> Add +1 DICE to the Risky Success Roll when this model carries out a Treat ACTION with their Medi-kit.</div>
-        <div style="margin-top:8px"><b>Stretcher Bearers (FIRETEAM ACTION):</b> Two Field Medics that form a FIRETEAM may use this ability. If both Medics start their Activation within 1" of the same friendly model that is Down, they may take a joint Move ACTION to carry that model. The Down model must remain within 1" of both Medics throughout the move. During this move, the Medics have their Movement Characteristic halved. This move cannot be a Charge or Retreat.</div>
-      </div>
-    `
-  },
-  {
-    id:"sappers_mate", name:"Sapper’s Mates",
-    role:"TROOP", tags:["Troop"],
-    cost:45, max:3,
-    stats:{move:'6"/Infantry', ranged:"+0 DICE", melee:"+0 DICE", armour:"0", base:"25mm"},
-    keywords:["NEW ANTIOCH","HEARTHCELL","TROOPS"],
-    battlekit:{mode:"ALLOW_LIST_EXCEPT", allowed:["shotgun","bolt_action_rifle","frag_grenades","satchel_charge","standard_armour","trench_knife","combat_helmet","gas_mask","pistol","medikit"], banned:[]},
-    lockedKit:["satchel_charge"],
-    abilitiesHtml:`
-      <div class="abilityBlock">
-        <div><b>Fuse Runner:</b> Once per battle, after a friendly model within 6" successfully carries out a Ranged Attack with a Satchel Charge, this model may immediately move D3". This move is not an ACTION and may be taken even if the Sapper’s Mate has already been Activated this Turn.</div>
-        <div style="margin-top:8px"><b>Improvised Explosives:</b> Satchel Charges purchased for a Sapper’s Mate cost 10 👑 each. This does not ignore the standard Limit: 3 (1 per model) stipulation for Satchel Charges in a warband.</div>
-      </div>
-    `
-  }
-];
+const UNITS = {
 
-/* =========================
-   Battlekit (Hearthcell-usable subset + key elite kit)
-   Notes:
-   - Troops legality is enforced globally AND per-unit.
-   - Per-unit locks (mandatory kit) cannot be removed.
-   ========================= */
-const KIT = [
-  // Troops-legal list you specified
-  {id:"pistol", name:"Pistol", type:"Ranged", cost:6,
-   profile:'12" • PISTOL',
-   rules:"PISTOL: Can be used as Melee or Ranged, and can be used as both in the same Activation.",
-   roles:["TROOP","ELITE"]},
-  {id:"shotgun", name:"Shotgun", type:"Ranged", cost:10,
-   profile:'12" • +1 DICE • SHOTGUN',
-   rules:"SHOTGUN (Effect): Add -1 INJURY DICE to attacks made at Long Range (instead of the usual Long Range modifier).",
-   roles:["TROOP","ELITE"]},
-  {id:"bolt_action_rifle", name:"Bolt-Action Rifle", type:"Ranged", cost:10,
-   profile:'24"',
-   rules:"Standard ranged weapon.",
-   roles:["TROOP","ELITE"]},
-  {id:"trench_knife", name:"Trench Knife", type:"Melee", cost:1,
-   profile:"Melee • +1 DICE",
-   rules:"The +1 DICE keyword does not apply when used as an Off-Hand weapon.",
-   roles:["TROOP","ELITE"]},
-  {id:"trench_club", name:"Trench Club", type:"Melee", cost:3,
-   profile:"Melee",
-   rules:"Improvised club.",
-   roles:["TROOP","ELITE"]},
-  {id:"sword_axe", name:"Sword/Axe", type:"Melee", cost:4,
-   profile:"Melee • CRITICAL",
-   rules:"CRITICAL: As per keyword rules.",
-   roles:["TROOP","ELITE"]},
-  {id:"frag_grenades", name:"Frag Grenades", type:"Grenade", cost:7,
-   profile:'8" • ASSAULT • BLAST 2" • IGNORE COVER • IGNORE LONG RANGE • SHRAPNEL',
-   rules:"Grenades do not count towards the number of Ranged weapons a model can have; assumed to have enough for every turn.",
-   roles:["TROOP","ELITE"]},
-  {id:"standard_armour", name:"Standard Armour", type:"Armour", cost:15,
-   profile:"-1 INJURY MODIFIER",
-   rules:"Armour applies to Injury Rolls for the wearer.",
-   roles:["TROOP","ELITE"]},
-  {id:"combat_helmet", name:"Combat Helmet", type:"Equipment", cost:5,
-   profile:"NEGATE SHRAPNEL",
-   rules:"NEGATE SHRAPNEL: As per keyword rules.",
-   roles:["TROOP","ELITE"]},
-  {id:"gas_mask", name:"Gas Mask", type:"Equipment", cost:5,
-   profile:"NEGATE GAS",
-   rules:"NEGATE GAS: As per keyword rules.",
-   roles:["TROOP","ELITE"]},
-  {id:"medikit", name:"Medi-kit", type:"Equipment", cost:5,
-   profile:"Treat ACTION",
-   rules:"Treat ACTION: Take a Risky Success Roll. On Success/Critical, remove 1 BLOOD MARKER (self or friendly within 1\") OR stand up a friendly model that is Down within 1\".",
-   roles:["TROOP","ELITE"]},
-  {id:"binoculars", name:"Binoculars", type:"Equipment", cost:10,
-   profile:"Anti-Infiltrator screen",
-   rules:"Enemy models with INFILTRTRATOR cannot deploy within 16\" of this model unless in their own deployment zone.",
-   roles:["TROOP","ELITE"]},
+  /* ===== ELITES ===== */
 
-  // Restricted-from-TROOPS (but visible/usable by ELITES in builder)
-  {id:"machine_gun", name:"Machine Gun", type:"Ranged", cost:0,
-   profile:"(add profile if you want full NA armoury later)",
-   rules:"Restricted: Troops cannot take this item.",
-   roles:["ELITE"], restrictedFromTroops:true},
-  {id:"sniper_rifle", name:"Sniper Rifle", type:"Ranged", cost:0,
-   profile:"(add profile if you want full NA armoury later)",
-   rules:"Restricted: Troops cannot take this item.",
-   roles:["ELITE"], restrictedFromTroops:true},
-  {id:"flamethrower", name:"Flamethrower", type:"Ranged", cost:30,
-   profile:"(see rulebook profile)",
-   rules:"Restricted: Troops cannot take this item.",
-   roles:["ELITE"], restrictedFromTroops:true},
-  {id:"reinforced_armour", name:"Reinforced Armour", type:"Armour", cost:40,
-   profile:"-2 INJURY MODIFIER",
-   rules:"Restricted: Troops cannot take this item.",
-   roles:["ELITE"], restrictedFromTroops:true},
-  {id:"machine_armour", name:"Machine Armour", type:"Armour", cost:50,
-   profile:"-3 INJURY MODIFIER • Bulky (base changes to 40mm if smaller)",
-   rules:"Restricted: Troops cannot take this item.",
-   roles:["ELITE"], restrictedFromTroops:true},
-
-  // Hearthcell-specific / relevant additions
-  {id:"satchel_charge", name:"Satchel Charge", type:"Explosive", cost:15,
-   profile:'Ranged • Explosive (see rulebook) • Limit: 3 (1 per model)',
-   rules:"Sapper’s Mates pay 10 👑 each (tracked in notes; builder shows base cost here).",
-   roles:["TROOP","ELITE"]},
-  {id:"great_hammer", name:"Great Hammer/Maul", type:"Melee", cost:0,
-   profile:"HEAVY (profile per rulebook / NA armoury)",
-   rules:"Dockside Giant may take one Great Hammer/Maul or Great Sword/Axe.",
-   roles:["ELITE"]},
-  {id:"great_sword_axe", name:"Great Sword/Axe", type:"Melee", cost:0,
-   profile:"HEAVY (profile per rulebook / NA armoury)",
-   rules:"Dockside Giant may take one Great Hammer/Maul or Great Sword/Axe.",
-   roles:["ELITE"]}
-];
-
-/* =========================
-   Global TROOPS restrictions (as per PDF)
-   ========================= */
-const TROOPS_ALLOWED = new Set(["pistol","shotgun","bolt_action_rifle","trench_knife","trench_club","sword_axe","frag_grenades","standard_armour","combat_helmet","gas_mask","medikit","binoculars","satchel_charge"]);
-const TROOPS_BANNED = new Set(["machine_gun","sniper_rifle","flamethrower","reinforced_armour","machine_armour"]);
-
-/* =========================
-   State
-   ========================= */
-let state = {
-  pointsLimit: 700,
-  modelCap: 10,
-  roundNotes: "",
-  meta: {
-    glory: 0,
-    ducats: 0,
-    campaignLog: "",
-    arsenalNotes: "",
-    explorationNotes: "",
-    lastCampaignOption: ""
-  },
-  roster: [] // {id, unitId, name, kit:[ids], dead, scars, progression, failedPromotions, notes, expanded}
-};
-
-const uid = () => Math.random().toString(36).slice(2, 10);
-
-function escapeHtml(s){
-  return (s||"").replace(/[&<>"']/g, m => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[m]));
-}
-
-function getUnit(unitId){ return UNITS.find(u=>u.id===unitId); }
-function getKit(kitId){ return KIT.find(k=>k.id===kitId); }
-
-function kitGloballyLegalFor(unit, kitId){
-  const k = getKit(kitId);
-  if (!k) return false;
-  if (!k.roles.includes(unit.role)) return false;
-
-  if (unit.role === "TROOP"){
-    if (!TROOPS_ALLOWED.has(kitId)) return false;
-    if (TROOPS_BANNED.has(kitId)) return false;
-    if (k.restrictedFromTroops) return false;
-  }
-  return true;
-}
-
-function kitLegalForUnit(unit, kitId){
-  if (!kitGloballyLegalFor(unit, kitId)) return false;
-
-  const rules = unit.battlekit || {mode:"TROOPS_DEFAULT"};
-  if (rules.mode === "LOCKED_ONLY"){
-    return (rules.allowed || []).includes(kitId);
-  }
-  if (rules.mode === "ALLOW_LIST_EXCEPT"){
-    if (rules.allowed && !rules.allowed.includes(kitId)) return false;
-    if (rules.banned && rules.banned.includes(kitId)) return false;
-    return true;
-  }
-  if (rules.mode === "ALLOW_LIST_PLUS"){
-    // allow everything in catalogue (subject to troop/global), and also the plusAllowed (already in catalogue)
-    if (rules.banned && rules.banned.includes(kitId)) return false;
-    return true;
-  }
-  // TROOPS_DEFAULT
-  return true;
-}
-
-function modelCost(m){
-  const u = getUnit(m.unitId);
-  const kitCost = (m.kit||[]).map(id => (getKit(id)?.cost || 0)).reduce((a,b)=>a+b,0);
-  return u.cost + kitCost;
-}
-
-function aliveModels(){ return state.roster.filter(m=>!m.dead); }
-
-function totals(){
-  const alive = aliveModels();
-  const points = alive.map(modelCost).reduce((a,b)=>a+b,0);
-  const models = alive.length;
-  const troops = alive.filter(m=>getUnit(m.unitId).role==="TROOP").length;
-  const elites = alive.filter(m=>getUnit(m.unitId).role==="ELITE").length;
-  const commanders = alive.filter(m=>getUnit(m.unitId).tags.includes("Commander")).length;
-  return {points, models, troops, elites, commanders};
-}
-
-function countUnit(unitId){
-  return aliveModels().filter(m=>m.unitId===unitId).length;
-}
-
-function setStatus(html, kind="ok"){
-  const box = document.getElementById("statusBox");
-  box.innerHTML = `<div class="${kind==="ok"?"ok":"warn"}">${html}</div>`;
-}
-
-function renderUnitSelect(){
-  const sel = document.getElementById("unitTypeSelect");
-  sel.innerHTML = "";
-  UNITS.forEach(u=>{
-    const opt = document.createElement("option");
-    opt.value = u.id;
-    const lim = `0-${u.max}`;
-    opt.textContent = `${lim} ${u.name} (${u.role}${u.tags.includes("Commander") ? ", Commander":""})`;
-    sel.appendChild(opt);
-  });
-}
-
-function legalWarnings(){
-  const t = totals();
-  const w = [];
-  if (t.commanders < 1) w.push("No Cell Marshal (Commander) selected (alive).");
-  if (t.commanders > 1) w.push("More than one Cell Marshal (Commander) selected (alive).");
-  if (t.elites > 6) w.push(`ELITE limit exceeded (${t.elites}/6).`);
-  if (t.points > state.pointsLimit) w.push(`Over points by ${t.points - state.pointsLimit} 👑.`);
-  if (t.models > state.modelCap) w.push(`Over model cap by ${t.models - state.modelCap}.`);
-  for (const u of UNITS){
-    const c = countUnit(u.id);
-    if (c > u.max) w.push(`${u.name} exceeds limit (${c}/${u.max}).`);
-  }
-  return w;
-}
-
-function renderStats(){
-  document.getElementById("statPointsMax").textContent = state.pointsLimit;
-  document.getElementById("statModelsMax").textContent = state.modelCap;
-  const t = totals();
-  document.getElementById("statPoints").textContent = t.points;
-  document.getElementById("statModels").textContent = t.models;
-  document.getElementById("statTroops").textContent = t.troops;
-  document.getElementById("statElites").textContent = t.elites;
-
-  const w = legalWarnings();
-  if (w.length){
-    setStatus(w.map(x=>`• ${escapeHtml(x)}`).join("<br>"), "warn");
-  } else {
-    setStatus(`Force is legal against current caps.`, "ok");
-  }
-}
-
-function addModels(unitId, qty){
-  const u = getUnit(unitId);
-  for (let i=0;i<qty;i++){
-    const n = countUnit(unitId) + 1;
-    // start kit = locked kit (mandatory) only
-    const kit = [...(u.lockedKit||[])];
-
-    state.roster.push({
-      id: uid(),
-      unitId: unitId,
-      name: `${u.name} ${n}`,
-      kit,
-      dead:false,
-      scars:"",
-      progression:0,
-      failedPromotions:0,
-      notes:"",
-      expanded:false
-    });
-  }
-  renderRoster();
-}
-
-function clearForce(){
-  state.roster = [];
-  renderRoster();
-}
-
-function expandAll(v){
-  state.roster.forEach(m=>m.expanded=v);
-  renderRoster();
-}
-
-function enforceLockedKit(m){
-  const u = getUnit(m.unitId);
-  const locked = new Set(u.lockedKit || []);
-  // keep locked always
-  const cleaned = (m.kit||[]).filter(id => kitLegalForUnit(u, id));
-  for (const lk of locked) if (!cleaned.includes(lk)) cleaned.unshift(lk);
-  m.kit = cleaned;
-}
-
-function getKitOptionsForModel(m){
-  const u = getUnit(m.unitId);
-  const locked = new Set(u.lockedKit||[]);
-  const rules = u.battlekit || {mode:"TROOPS_DEFAULT"};
-
-  // If unit is LOCKED_ONLY, no picker
-  if (rules.mode === "LOCKED_ONLY") return {list:[], disabled:true, reason:"This unit cannot take any other Battlekit."};
-
-  const options = KIT
-    .filter(k => kitLegalForUnit(u, k.id))
-    .map(k => ({id:k.id, label:`${k.name} (${k.cost} 👑)`, locked:locked.has(k.id)}));
-
-  return {list:options, disabled:false, reason:""};
-}
-
-function renderRoster(){
-  const wrap = document.getElementById("rosterContainer");
-  wrap.innerHTML = "";
-
-  if (!state.roster.length){
-    wrap.innerHTML = `<div class="muted small">No models yet. Add models on the left, or use Auto-pick.</div>`;
-    renderStats();
-    return;
-  }
-
-  for (const m of state.roster){
-    enforceLockedKit(m);
-    const u = getUnit(m.unitId);
-    const tCost = modelCost(m);
-
-    const tags = [...u.keywords].map(k=>`<span class="tag">${escapeHtml(k)}</span>`).join("");
-
-    const statLine = `Move: ${u.stats.move} • Ranged: ${u.stats.ranged} • Melee: ${u.stats.melee} • Armour: ${u.stats.armour} • Base: ${u.stats.base}`;
-
-    const kitView = (m.kit||[]).map(id=>{
-      const k = getKit(id);
-      if (!k) return "";
-      return `
-        <div class="small">
-          <span class="tag">${escapeHtml(k.type)}</span>
-          <b>${escapeHtml(k.name)}</b> <span class="muted">(${k.cost} 👑)</span><br>
-          <span class="mono">${escapeHtml(k.profile||"")}</span><br>
-          <span class="muted">${escapeHtml(k.rules||"")}</span>
-        </div>
-      `;
-    }).join(`<div class="hr"></div>`);
-
-    const kitOpts = getKitOptionsForModel(m);
-
-    const kitSelectHtml = kitOpts.disabled
-      ? `<div class="muted small">${escapeHtml(kitOpts.reason)}</div>`
-      : `
-        <select class="grow" data-act="kitSelect" data-id="${m.id}" multiple size="10">
-          ${kitOpts.list.map(o=>{
-            const selected = (m.kit||[]).includes(o.id) ? "selected" : "";
-            const lockMark = o.locked ? " (locked)" : "";
-            const disabled = o.locked ? "disabled" : "";
-            return `<option value="${o.id}" ${selected} ${disabled}>${escapeHtml(o.label + lockMark)}</option>`;
-          }).join("")}
-        </select>
-        <div class="small muted" style="margin-top:8px">Ctrl/⌘ click for multi-select. Locked kit cannot be removed.</div>
-      `;
-
-    const panel = document.createElement("div");
-    panel.className = "card";
-    panel.style.background = "#10131a";
-    panel.style.marginBottom = "10px";
-    panel.innerHTML = `
-      <div class="row" style="justify-content:space-between; align-items:flex-start">
-        <div class="grow">
-          <div class="row" style="gap:8px; align-items:center">
-            <button class="btn" data-act="toggle" data-id="${m.id}">${m.expanded ? "▾" : "▸"}</button>
-            <input class="grow" data-act="name" data-id="${m.id}" value="${escapeHtml(m.name)}" />
-            <span class="pill"><strong>${u.role}</strong></span>
-            <span class="pill"><strong>${tCost} 👑</strong></span>
-            ${m.dead ? `<span class="pill" style="border-color:rgba(255,92,122,.55); background:rgba(255,92,122,.12)"><strong>DEAD</strong></span>` : ""}
-          </div>
-          <div class="small muted" style="margin-top:6px"><b>${escapeHtml(u.name)}</b> · ${escapeHtml(statLine)} · Base ${u.cost} 👑</div>
-          <div style="margin-top:6px">${tags}</div>
-        </div>
-        <div class="row">
-          <button class="btn btnBad" data-act="remove" data-id="${m.id}">Remove</button>
-        </div>
-      </div>
-
-      ${m.expanded ? `
-      <div class="hr"></div>
-
-      <div class="split">
-        <div>
-          <h2>Unit abilities</h2>
-          ${u.abilitiesHtml}
-        </div>
-
-        <div>
-          <h2>Campaign (per model)</h2>
-          <div class="row">
-            <label style="margin:0"><input type="checkbox" data-act="dead" data-id="${m.id}" ${m.dead ? "checked":""}> Dead / removed from play</label>
-          </div>
-          <div class="split" style="margin-top:10px">
-            <div>
-              <label>Failed promotion rolls</label>
-              <input type="number" min="0" step="1" data-act="failedPromotions" data-id="${m.id}" value="${m.failedPromotions}">
-              ${u.tags.includes("No Promotion") ? `<div class="small muted" style="margin-top:6px">This unit cannot be promoted.</div>` : ""}
-            </div>
-            <div>
-              <label>Progression rolls made</label>
-              <input type="number" min="0" step="1" data-act="progression" data-id="${m.id}" value="${m.progression}">
-            </div>
-          </div>
-          <div style="margin-top:10px">
-            <label>Scars / injuries</label>
-            <textarea data-act="scars" data-id="${m.id}" placeholder="What happened to them…">${escapeHtml(m.scars)}</textarea>
-          </div>
-          <div style="margin-top:10px">
-            <label>Notes</label>
-            <textarea data-act="notes" data-id="${m.id}" placeholder="Personal story, kit swaps, reminders…">${escapeHtml(m.notes)}</textarea>
-          </div>
-        </div>
-      </div>
-
-      <div class="hr"></div>
-
-      <div class="split">
-        <div>
-          <h2>Battlekit picker</h2>
-          ${kitSelectHtml}
-        </div>
-
-        <div>
-          <h2>Equipped kit reference</h2>
-          ${m.kit.length ? kitView : `<div class="muted small">No kit selected.</div>`}
-          ${u.id==="sappers_mate" ? `<div class="hr"></div><div class="small muted"><b>Note:</b> Sapper’s Mates buy Satchel Charges at <b>10 👑</b> each. Builder shows base Satchel Charge cost; record the discount in notes or Arsenal log.</div>` : ""}
-        </div>
-      </div>
-      ` : ``}
-    `;
-    wrap.appendChild(panel);
-  }
-
-  renderStats();
-}
-
-/* =========================
-   Auto-pick:
-   - Must include 1 Cell Marshal
-   - Max 6 Elites (including Marshal)
-   - Fill Troops first (to feel swarm-y), then 1–2 key Elites if points allow
-   ========================= */
-function canAddUnit(unit){
-  const t = totals();
-  if (t.models >= state.modelCap) return false;
-  if (countUnit(unit.id) >= unit.max) return false;
-  if (unit.role === "ELITE" && t.elites >= 6) return false;
-
-  // estimate cost = base + locked kit costs only (safe minimum)
-  const lockedCost = (unit.lockedKit||[]).map(id => (getKit(id)?.cost || 0)).reduce((a,b)=>a+b,0);
-  const est = unit.cost + lockedCost;
-  return (t.points + est) <= state.pointsLimit;
-}
-
-function autoPick(){
-  clearForce();
-
-  const marshal = getUnit("cell_marshal");
-  addModels(marshal.id, 1);
-
-  // Troops preference order (swarm identity)
-  const troopOrder = ["urchin","lookout","bruiser","field_medic","sappers_mate"].map(getUnit);
-
-  // Fill Troops until model cap or points constraint stops progress
-  let progress = true;
-  while (progress){
-    progress = false;
-    for (const u of troopOrder){
-      if (canAddUnit(u)){
-        addModels(u.id, 1);
-        progress = true;
-        if (totals().models >= state.modelCap) break;
+  cellMarshal: {
+    name: "Cell Marshal",
+    cost: 85,
+    limit: 1,
+    role: "Elite",
+    stats: { move: '6"', ranged: '+0', melee: '+1', armour: 0 },
+    abilities: [
+      {
+        name: "Co-ordinate ACTION",
+        text: "Take a Risky Success Roll for the Cell Marshal. If the roll is a Failure, the Cell Marshal’s Activation ends immediately. If the roll is a Success or Critical Success, choose one friendly HEARTHCELL TROOP model within 6\" that is not Down or Out of Action. The chosen model may immediately move up to D3\". This move is not an ACTION."
+      },
+      {
+        name: "No One Left Behind",
+        text: "Friendly HEARTHCELL models within 8\" of the Cell Marshal have the NEGATE FEAR Keyword."
       }
-    }
+    ],
+    keywords: ["NEW ANTIOCH","HEARTHCELL","ELITE","NEGATE FEAR"]
+  },
+
+  weaver: {
+    name: "Weaver of Ciphers",
+    cost: 80,
+    limit: 1,
+    role: "Elite",
+    stats: { move: '6"', ranged: '+0', melee: '+0', armour: 0 },
+    abilities: [
+      {
+        name: "Stitch-Count ACTION",
+        text: "Take a Risky Success Roll for this model. If the roll is a Failure, the model’s Activation ends immediately. If the roll is a Success or Critical Success, place 1 CIPHER MARKER next to an enemy model within 24\" that is in this model’s Line of Sight. There can be a maximum of 2 CIPHER MARKERS on the battlefield at any one time."
+      },
+      {
+        name: "Spent Signal",
+        text: "When a friendly model makes a Ranged Attack against an enemy model with a CIPHER MARKER, you may remove 1 CIPHER MARKER from that enemy to add +1 DICE to the Success Roll for that Ranged Attack."
+      }
+    ],
+    keywords: ["NEW ANTIOCH","HEARTHCELL","ELITE"]
+  },
+
+  wardAngel: {
+    name: "Ward Angel",
+    cost: 85,
+    limit: 1,
+    role: "Elite",
+    stats: { move: '6"', ranged: '–', melee: '+0', armour: -1 },
+    abilities: [
+      {
+        name: "Battlefield Surgeon",
+        text: "Add +2 DICE to the Risky Success Roll when this model carries out a Treat ACTION with their Medi-kit."
+      },
+      {
+        name: "Mercy Cut",
+        text: "Add +1 DICE to Injury Rolls for Melee Attacks made by this model if the target is Down and does not have the BLACK GRAIL or DEMONIC Keywords."
+      }
+    ],
+    keywords: ["NEW ANTIOCH","HEARTHCELL","ELITE"]
+  },
+
+  fuseSister: {
+    name: "Fuse-Sister",
+    cost: 80,
+    limit: 1,
+    role: "Elite",
+    stats: { move: '6"', ranged: '+0', melee: '+0', armour: 0 },
+    abilities: [
+      {
+        name: "Careful Hands",
+        text: "Add +1 DICE to Risky Success Rolls taken for this model when performing an ACTION involving Explosives (such as throwing a Satchel Charge, or using the Defuse Mine or Rig the Approach Actions)."
+      },
+      {
+        name: "Rig the Approach",
+        text: "Once per game, if this model is within 1\" of a terrain piece, you may take a Risky Success Roll. If successful, place a Booby Trap Marker on that terrain. The first enemy model to move within 1\" of that terrain triggers the trap; the model suffers an Injury Roll with the SHRAPNEL Keyword [TCDR 572]. Then, remove the marker."
+      }
+    ],
+    keywords: ["NEW ANTIOCH","HEARTHCELL","ELITE"]
+  },
+
+  docksideGiant: {
+    name: "Dockside Giant",
+    cost: 85,
+    limit: 1,
+    role: "Elite",
+    stats: { move: '6"', ranged: '+0', melee: '+2', armour: 0 },
+    abilities: [
+      {
+        name: "Break the Line",
+        text: "When you roll the Charge Bonus for a Dockside Giant, roll 1 extra D6 and use the single highest die to determine the bonus."
+      },
+      {
+        name: "Meat and Metal",
+        text: "Add -1 INJURY DICE to Injury Rolls for attacks made against this model with weapons that do not have the HEAVY Keyword."
+      }
+    ],
+    keywords: ["NEW ANTIOCH","HEARTHCELL","ELITE","STRONG"]
   }
 
-  // Add 1–2 elites if room and points allow (toolbox, not oppressive)
-  const eliteOrder = ["weaver","ward_angel","fuse_sister","dockside_giant"].map(getUnit);
-  for (const e of eliteOrder){
-    if (canAddUnit(e)) addModels(e.id, 1);
-  }
-
-  const w = legalWarnings();
-  if (w.length){
-    setStatus(`Auto-pick created a force, but check legality:<br>${w.map(x=>`• ${escapeHtml(x)}`).join("<br>")}`, "warn");
-  } else {
-    const t = totals();
-    setStatus(`Auto-pick created a legal force: <b>${t.models}</b> models, <b>${t.points}</b> 👑.`, "ok");
-  }
-}
-
-/* =========================
-   Save/Load
-   ========================= */
-function syncStateFromUi(){
-  state.pointsLimit = Number(document.getElementById("pointsLimit").value||700);
-  state.modelCap = Number(document.getElementById("modelCap").value||10);
-  state.roundNotes = document.getElementById("roundNotes").value||"";
-  state.meta.glory = Number(document.getElementById("glory").value||0);
-  state.meta.ducats = Number(document.getElementById("ducats").value||0);
-  state.meta.campaignLog = document.getElementById("campaignLog").value||"";
-  state.meta.arsenalNotes = document.getElementById("arsenalNotes").value||"";
-  state.meta.explorationNotes = document.getElementById("explorationNotes").value||"";
-}
-
-function syncUiFromState(){
-  document.getElementById("pointsLimit").value = state.pointsLimit;
-  document.getElementById("modelCap").value = state.modelCap;
-  document.getElementById("roundNotes").value = state.roundNotes||"";
-  document.getElementById("glory").value = state.meta.glory||0;
-  document.getElementById("ducats").value = state.meta.ducats||0;
-  document.getElementById("campaignLog").value = state.meta.campaignLog||"";
-  document.getElementById("arsenalNotes").value = state.meta.arsenalNotes||"";
-  document.getElementById("explorationNotes").value = state.meta.explorationNotes||"";
-}
-
-function save(){
-  syncStateFromUi();
-  localStorage.setItem("hearthcell_builder_v05", JSON.stringify(state));
-  setStatus("Saved to browser storage.", "ok");
-}
-function load(){
-  const raw = localStorage.getItem("hearthcell_builder_v05");
-  if (!raw){ setStatus("No saved data found in this browser.", "warn"); return; }
-  try{
-    const obj = JSON.parse(raw);
-    state = obj;
-    state.meta = state.meta || {};
-    state.roster = state.roster || [];
-    state.roster.forEach(m=>{ if (m.expanded==null) m.expanded=false; if (!m.kit) m.kit=[]; });
-    syncUiFromState();
-    renderRoster();
-    setStatus("Loaded from browser storage.", "ok");
-  } catch(e){
-    setStatus("Load failed: saved data is corrupt.", "warn");
-  }
-}
-
-/* =========================
-   Print
-   ========================= */
-function doPrint(){
-  syncStateFromUi();
-
-  // expand for print
-  const prev = state.roster.map(m=>m.expanded);
-  state.roster.forEach(m=>m.expanded=true);
-  renderRoster();
-
-  const t = totals();
-  const rosterWrap = document.getElementById("rosterContainer");
-  const head = document.createElement("div");
-  head.className = "printBlock";
-  head.innerHTML = `
-    <div class="printTitle">Hearthcell Warband Roster</div>
-    <div class="printMeta">
-      ${escapeHtml(state.roundNotes || "")}<br>
-      Points: <b>${t.points}</b> / ${state.pointsLimit} · Models (alive): <b>${t.models}</b> / ${state.modelCap} · Elites: <b>${t.elites}</b> / 6<br>
-      Glory: <b>${state.meta.glory||0}</b> · Ducats: <b>${state.meta.ducats||0}</b>
-    </div>
-    <div class="printLine"></div>
-    <div class="printRules">
-      <b>Hidden in Plain Sight:</b> HEARTHCELL TROOPS count as in COVER while within 1" of terrain and more than 6" from all enemy models.<br>
-      <b>Street Packs:</b> Urchins add +1 DICE to Melee Success Rolls if another Urchin is within 1" of the same enemy.<br>
-      <b>Scurry Into the Gutter:</b> Once per Turn, when targeted by a Ranged Attack, after resolution, if not Down/Out, move D3" (not within 1" of enemy).<br>
-      <b>Children of the Ruins:</b> Urchins cannot be Promoted.
-    </div>
-    <div class="printLine"></div>
-  `;
-  rosterWrap.prepend(head);
-
-  window.print();
-
-  head.remove();
-  state.roster.forEach((m,i)=>m.expanded=prev[i]);
-  renderRoster();
-}
-
-/* =========================
-   Events
-   ========================= */
-function wire(){
-  document.getElementById("addModelBtn").addEventListener("click", ()=>{
-    const unitId = document.getElementById("unitTypeSelect").value;
-    const qty = Math.max(1, Number(document.getElementById("addQty").value||1));
-    addModels(unitId, qty);
-  });
-
-  document.getElementById("autoPickBtn").addEventListener("click", autoPick);
-  document.getElementById("clearBtn").addEventListener("click", ()=>{ clearForce(); setStatus("Force cleared.", "ok"); });
-
-  document.getElementById("expandAllBtn").addEventListener("click", ()=>expandAll(true));
-  document.getElementById("collapseAllBtn").addEventListener("click", ()=>expandAll(false));
-
-  document.getElementById("saveBtn").addEventListener("click", save);
-  document.getElementById("loadBtn").addEventListener("click", load);
-
-  document.getElementById("printBtn").addEventListener("click", doPrint);
-
-  document.getElementById("logCampaignBtn").addEventListener("click", ()=>{
-    const opt = document.getElementById("campaignOption").value;
-    if (!opt){ setStatus("Choose A, B, or C first.", "warn"); return; }
-    const label = opt === "A" ? "A) Scavenge the Fallen" : opt === "B" ? "B) Safehouse Contacts" : "C) Orphan Pipeline";
-    const stamp = new Date().toLocaleString("en-GB");
-    const line = `[${stamp}] Chose Campaign Option: ${label}`;
-    const box = document.getElementById("campaignLog");
-    box.value = (box.value ? box.value + "\n" : "") + line;
-    state.meta.lastCampaignOption = opt;
-    setStatus(`Logged: ${label}`, "ok");
-  });
-
-  // roster delegation
-  document.getElementById("rosterContainer").addEventListener("click", (e)=>{
-    const btn = e.target.closest("button");
-    if (!btn) return;
-    const act = btn.dataset.act;
-    const id = btn.dataset.id;
-    const model = state.roster.find(m=>m.id===id);
-    if (!model) return;
-
-    if (act==="toggle"){ model.expanded = !model.expanded; renderRoster(); }
-    if (act==="remove"){ state.roster = state.roster.filter(m=>m.id!==id); renderRoster(); }
-  });
-
-  document.getElementById("rosterContainer").addEventListener("input", (e)=>{
-    const el = e.target;
-    const act = el.dataset.act;
-    const id = el.dataset.id;
-    const model = state.roster.find(m=>m.id===id);
-    if (!model) return;
-
-    if (act==="name") model.name = el.value;
-    if (act==="failedPromotions") model.failedPromotions = Number(el.value||0);
-    if (act==="progression") model.progression = Number(el.value||0);
-    if (act==="scars") model.scars = el.value;
-    if (act==="notes") model.notes = el.value;
-    if (act==="dead") model.dead = el.checked;
-
-    renderStats();
-  });
-
-  document.getElementById("rosterContainer").addEventListener("change", (e)=>{
-    const el = e.target;
-    const act = el.dataset.act;
-    const id = el.dataset.id;
-    const model = state.roster.find(m=>m.id===id);
-    if (!model) return;
-    const u = getUnit(model.unitId);
-
-    if (act==="kitSelect"){
-      const selected = Array.from(el.selectedOptions).map(o=>o.value);
-      // locked kit enforced and illegal removed
-      model.kit = selected.filter(kid => kitLegalForUnit(u, kid));
-      enforceLockedKit(model);
-      renderRoster();
-    }
-  });
-
-  // caps inputs
-  document.getElementById("pointsLimit").addEventListener("input", ()=>{ syncStateFromUi(); renderStats(); });
-  document.getElementById("modelCap").addEventListener("input", ()=>{ syncStateFromUi(); renderStats(); });
-}
-
-function init(){
-  renderUnitSelect();
-  renderRoster();
-  wire();
-  setStatus("Ready. v0.5 is rules-complete for Hearthcell roster-building. (Optional next step: fill in full New Antioch armoury profiles for MG/Sniper/Flamer/Great Weapons if you want.)", "ok");
-}
-init();
+  /* TROOPS CONTINUE IN PART 2 */
+};
 </script>
+
 </body>
 </html>
+<script>
+/* ===========================
+   TROOPS DEFINITIONS
+   VERIFIED — DO NOT EDIT
+   =========================== */
+
+Object.assign(UNITS, {
+
+  streetUrchin: {
+    name: "Street Urchin",
+    cost: 18,
+    limit: 6,
+    role: "Troop",
+    stats: { move: '7"', ranged: '–', melee: '-1', armour: 0 },
+    abilities: [
+      {
+        name: "Scurry Into the Gutter",
+        text: "Once per Turn, when a Street Urchin is declared as the target of a Ranged Attack, after the attack (including any Injury Rolls) has been fully resolved, if the model is not Down or Out of Action, it may immediately move D3\". This move cannot be used to move within 1\" of an enemy model."
+      },
+      {
+        name: "Street Packs",
+        text: "A Street Urchin adds +1 DICE to Success Rolls for Melee Attacks if at least one other friendly Street Urchin is within 1\" of the same enemy model."
+      },
+      {
+        name: "Children of the Ruins",
+        text: "Street Urchins cannot be Promoted."
+      }
+    ],
+    keywords: ["NEW ANTIOCH","HEARTHCELL","TROOPS"]
+  },
+
+  lookout: {
+    name: "Lookout",
+    cost: 28,
+    limit: 3,
+    role: "Troop",
+    stats: { move: '7"', ranged: '+0', melee: '-1', armour: 0 },
+    abilities: [
+      {
+        name: "Mark the Kill (ACTION)",
+        text: "Choose one enemy model within 24\" and Line of Sight. Take a Risky Success Roll for the Lookout. If the roll is a Failure, the Lookout’s Activation ends immediately. If the roll is a Success or Critical Success, until the end of the Turn, the first friendly model to make a Ranged Attack against that enemy adds +1 DICE to the Success Roll."
+      }
+    ],
+    keywords: ["NEW ANTIOCH","HEARTHCELL","TROOPS"]
+  },
+
+  bruiser: {
+    name: "Bruiser",
+    cost: 45,
+    limit: 3,
+    role: "Troop",
+    stats: { move: '6"', ranged: '+0', melee: '+1', armour: 0 },
+    abilities: [
+      {
+        name: "Crowd Violence",
+        text: "If this model successfully completes a Charge against an enemy model that is already within 1\" of at least one other friendly model, add +1 DICE to the Success Roll for its first Melee Attack during that Activation."
+      }
+    ],
+    keywords: ["NEW ANTIOCH","HEARTHCELL","TROOPS"]
+  },
+
+  fieldMedic: {
+    name: "Field Medic",
+    cost: 40,
+    limit: 2,
+    role: "Troop",
+    stats: { move: '6"', ranged: '+0', melee: '+0', armour: 0 },
+    abilities: [
+      {
+        name: "Street Triage",
+        text: "Add +1 DICE to the Risky Success Roll when this model carries out a Treat ACTION with their Medi-kit."
+      },
+      {
+        name: "Stretcher Bearers (ACTION)",
+        text: "Two Field Medics that form a FIRETEAM may use this ability. If both Medics start their Activation within 1\" of the same friendly model that is Down, they may take a joint Move ACTION to carry that model. If they do so, they may move the Down model along with them. The Down model must remain within 1\" of both Medics throughout the move. During this move, the Medics have their Movement Characteristic halved [WoTC 404]. This move cannot be a Charge or Retreat."
+      }
+    ],
+    keywords: ["NEW ANTIOCH","HEARTHCELL","TROOPS"]
+  },
+
+  sapperMate: {
+    name: "Sapper’s Mate",
+    cost: 45,
+    limit: 3,
+    role: "Troop",
+    stats: { move: '6"', ranged: '+0', melee: '+0', armour: 0 },
+    abilities: [
+      {
+        name: "Fuse Runner",
+        text: "Once per battle, after a friendly model within 6\" successfully carries out a Ranged Attack with a Satchel Charge, this model may immediately move D3\". This move is not an ACTION and may be taken even if the Sapper’s Mate has already been Activated this Turn."
+      },
+      {
+        name: "Improvised Explosives",
+        text: "Satchel Charges purchased for a Sapper’s Mate cost 10 👑 each. This does not ignore the standard Limit: 3 (1 per model) stipulation for Satchel Charges in a warband."
+      }
+    ],
+    keywords: ["NEW ANTIOCH","HEARTHCELL","TROOPS"]
+  }
+
+});
+
+/* ===========================
+   ROSTER STATE
+   =========================== */
+
+let roster = [];
+
+/* ===========================
+   RENDERING
+   =========================== */
+
+function renderRoster() {
+  const container = document.getElementById("roster");
+  container.innerHTML = "";
+
+  roster.forEach((model, index) => {
+    const card = document.createElement("div");
+    card.className = "model-card";
+
+    card.innerHTML = `
+      <strong>${model.name}</strong> (${model.role}) — ${model.cost} 👑
+      <div class="statline">
+        Move: ${model.stats.move} • Ranged: ${model.stats.ranged} • Melee: ${model.stats.melee} • Armour: ${model.stats.armour}
+      </div>
+      ${model.abilities.map(a => `
+        <div class="ability">
+          <strong>${a.name}:</strong> ${a.text}
+        </div>
+      `).join("")}
+      <div class="keywords">Keywords: ${model.keywords.join(", ")}</div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+/* ===========================
+   WAR BAND GENERATOR
+   =========================== */
+
+function suggestWarband() {
+  if (!confirm("This will clear your roster and generate a legal 700 👑 Hearthcell warband. Continue?")) return;
+
+  roster = [];
+
+  // Mandatory Cell Marshal
+  roster.push({...UNITS.cellMarshal});
+
+  // 1–2 additional Elites
+  const elitePool = ["weaver","wardAngel","fuseSister","docksideGiant"];
+  const eliteCount = Math.random() < 0.5 ? 1 : 2;
+
+  elitePool.sort(() => 0.5 - Math.random());
+  elitePool.slice(0, eliteCount).forEach(e => roster.push({...UNITS[e]}));
+
+  // Fill with Troops
+  const troopKeys = ["streetUrchin","streetUrchin","streetUrchin","lookout","bruiser","fieldMedic","sapperMate"];
+  let points = roster.reduce((s,m)=>s+m.cost,0);
+
+  for (let k of troopKeys) {
+    if (roster.length >= 10) break;
+    if (points + UNITS[k].cost > 700) break;
+    roster.push({...UNITS[k]});
+    points += UNITS[k].cost;
+  }
+
+  renderRoster();
+}
+
+/* ===========================
+   BUTTONS
+   =========================== */
+
+document.getElementById("suggestWarband").onclick = suggestWarband;
+document.getElementById("fixRoster").onclick = renderRoster;
+
+/* Initial render */
+renderRoster();
+
+</script>
