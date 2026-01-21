@@ -5,22 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rackham 2026 Bingo</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #e63946; color: white; text-align: center; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #e63946; color: white; text-align: center; padding: 20px; margin: 0; }
         .container { max-width: 900px; margin: auto; }
-        h1 { font-size: 3rem; text-shadow: 2px 2px #1d3557; }
+        h1 { font-size: 3rem; text-shadow: 2px 2px #1d3557; margin-bottom: 20px; }
         
-        /* Submission Form Section */
         #submit-box { background: white; color: #1d3557; padding: 25px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         input, select { width: 90%; padding: 12px; margin: 10px 0; border: 2px solid #ddd; border-radius: 5px; font-size: 1rem; }
         button { background: #1d3557; color: white; border: none; padding: 15px 30px; font-size: 1.1rem; border-radius: 5px; cursor: pointer; transition: 0.3s; }
         button:hover { background: #457b9d; }
 
-        /* Leaderboard Section */
-        #leaderboard { background: #f1faee; color: #1d3557; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
-        #scores { list-style: none; padding: 0; font-size: 1.3rem; font-weight: bold; }
+        #leaderboard, #activity { background: #f1faee; color: #1d3557; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
+        #scores, #feed { list-style: none; padding: 0; font-size: 1.2rem; }
+        #scores li { font-weight: bold; margin: 5px 0; }
+        .photo-link { font-size: 0.9rem; color: #e63946; text-decoration: none; margin-left: 10px; font-weight: normal; }
 
-        /* Bingo Grid */
-        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
         .cell { background: white; color: #1d3557; padding: 10px; font-size: 0.8rem; border: 2px solid #1d3557; border-radius: 5px; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
         
         @media (max-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } }
@@ -36,16 +35,22 @@
             <form id="bingoForm">
                 <select id="taskInput" required>
                     <option value="">-- Choose Completed Task --</option>
-                    </select>
+                </select>
                 <input type="text" id="nameInput" placeholder="Enter Your Discord Name" required>
+                <input type="url" id="photoInput" placeholder="Paste Photo URL (Optional)">
                 <br>
                 <button type="submit">Submit Achievement</button>
             </form>
         </div>
 
         <div id="leaderboard">
-            <h2>🏆 Leaderboard</h2>
-            <ul id="scores">Loading scores...</ul>
+            <h2>🏆 Top Painters</h2>
+            <ul id="scores">Loading...</ul>
+        </div>
+
+        <div id="activity">
+            <h2>📸 Recent Activity</h2>
+            <ul id="feed">No photos yet.</ul>
         </div>
 
         <div class="grid" id="bingo-grid"></div>
@@ -63,63 +68,73 @@
             "22. Create hobby blog (5 posts).", "23. Paint all minis in a board game.", "24. Write a battle report.", "25. Publish 10 blog posts."
         ];
 
-        // 1. Populate Dropdown and Grid
         const taskSelect = document.getElementById('taskInput');
         const grid = document.getElementById('bingo-grid');
 
         tasks.forEach(task => {
-            // Fill Select
             let opt = document.createElement('option');
-            opt.value = task;
-            opt.innerText = task;
+            opt.value = task; opt.innerText = task;
             taskSelect.appendChild(opt);
-            // Fill Grid
+
             let div = document.createElement('div');
-            div.className = 'cell';
-            div.innerText = task;
+            div.className = 'cell'; div.innerText = task;
             grid.appendChild(div);
         });
 
-        // 2. Handle Form Submission
         document.getElementById('bingoForm').onsubmit = function(e) {
             e.preventDefault();
             const task = document.getElementById('taskInput').value;
             const name = document.getElementById('nameInput').value;
+            const photo = document.getElementById('photoInput').value;
 
             const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSeSOkt3hXCeo4-YCQw9tmuj8bpMBLTxtjxNa9ofXRXK6ctYjg/formResponse";
-            const finalUrl = `${formUrl}?entry.433321389=${encodeURIComponent(task)}&entry.302390584=${encodeURIComponent(name)}&submit=Submit`;
+            const finalUrl = `${formUrl}?entry.433321389=${encodeURIComponent(task)}&entry.302390584=${encodeURIComponent(name)}&entry.605767216=${encodeURIComponent(photo)}&submit=Submit`;
 
-            fetch(finalUrl, { mode: 'no-cors' })
-            .then(() => {
+            fetch(finalUrl, { mode: 'no-cors' }).then(() => {
                 alert("Success! Achievement logged.");
                 document.getElementById('bingoForm').reset();
-                setTimeout(updateLeaderboard, 2000); // Reload scores after 2 seconds
+                setTimeout(updateData, 2000);
             });
         };
 
-        // 3. Load Leaderboard
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRmV1fy2w6d9ETMRO5WsVItg33hxhPsc55I1WzxVi2vzKAoQtLpgJC-jzUb4asstzarskjEXAO8l154/pub?output=csv';
 
-        async function updateLeaderboard() {
+        async function updateData() {
             try {
                 const response = await fetch(csvUrl);
                 const data = await response.text();
                 const rows = data.split('\n').slice(1);
                 let scoreMap = {};
+                let recentActivity = [];
 
                 rows.forEach(row => {
                     const columns = row.split(',');
-                    const name = columns[2]; // Using Player Name column (C)
-                    if (name) scoreMap[name] = (scoreMap[name] || 0) + 1;
+                    const name = columns[2]; 
+                    const taskName = columns[1];
+                    const photoUrl = columns[3]; // The Photo Link column
+
+                    if (name && name.trim() !== "") {
+                        scoreMap[name] = (scoreMap[name] || 0) + 1;
+                        if (photoUrl && photoUrl.includes('http')) {
+                            recentActivity.unshift({ name, taskName, photoUrl });
+                        }
+                    }
                 });
 
+                // Update Leaderboard
                 const sorted = Object.entries(scoreMap).sort((a, b) => b[1] - a[1]);
-                let html = sorted.map(([name, score]) => `<li>${name}: ${score} Tasks</li>`).join('');
-                document.getElementById('scores').innerHTML = html || "No entries yet.";
-            } catch (e) { document.getElementById('scores').innerHTML = "Error loading scores."; }
+                document.getElementById('scores').innerHTML = sorted.map(([name, score]) => `<li>${name}: ${score} Tasks</li>`).join('') || "No entries yet.";
+
+                // Update Recent Activity (Last 5 photos)
+                const activityHtml = recentActivity.slice(0, 5).map(item => 
+                    `<li>${item.name} finished ${item.taskName} <a href="${item.photoUrl}" target="_blank" class="photo-link">[View Photo 🖼️]</a></li>`
+                ).join('');
+                document.getElementById('feed').innerHTML = activityHtml || "No photos shared yet.";
+
+            } catch (e) { document.getElementById('scores').innerHTML = "Error loading data."; }
         }
 
-        updateLeaderboard();
+        updateData();
     </script>
 </body>
 </html>
